@@ -4,9 +4,9 @@ import "core:fmt"
 import m "core:math/linalg/hlsl"
 import rl "vendor:raylib"
 
-PlayerMaxLife :: int(5)
-LinesOfBricks :: int(5)
-BrikesPerLine :: int(20)
+PlayerMaxLife :: i32(5)
+LinesOfBricks :: i32(5)
+BricksPerLine :: i32(20)
 
 ScreenWidth :: i32(800)
 ScreenHeight :: i32(450)
@@ -14,6 +14,14 @@ ScreenHeight :: i32(450)
 game_over := false
 is_running := true
 pause := false
+game: Game
+
+Game :: struct {
+	player:    Paddle,
+	ball:      Ball,
+	bricks:    [dynamic]Brick,
+	brickSize: m.float2,
+}
 
 
 Paddle :: struct {
@@ -39,7 +47,22 @@ InitWindow :: proc(width: i32, height: i32, window_name: string) {
 	rl.SetTargetFPS(60)
 }
 
-InitGame :: proc() {}
+InitGame :: proc() {
+	ball := Ball{}
+
+	player := Paddle {
+		position = {f32(ScreenWidth) / 2.0, f32(ScreenHeight) * 7.0 / 8.0},
+		size = {f32(ScreenWidth) / 10.0, 20.0},
+		life = PlayerMaxLife,
+	}
+
+	game = Game {
+		player = player,
+		ball = ball,
+		bricks = make([dynamic]Brick, 0, LinesOfBricks * BricksPerLine),
+		brickSize = m.float2{f32(rl.GetScreenWidth() / BricksPerLine), f32(40)},
+	}
+}
 
 UpdateGame :: proc() {}
 
@@ -51,9 +74,18 @@ CloseWindow :: proc() {
 
 DrawGame :: proc() {
 	rl.BeginDrawing()
+	defer rl.EndDrawing()
+
 	rl.ClearBackground(rl.RAYWHITE)
-	rl.DrawText("Hello World!", 100, 100, 20, rl.DARKGRAY)
-	rl.EndDrawing()
+
+  player := game.player
+	rl.DrawRectangle(
+		i32(player.position[0] - player.size[0] / 2.0),
+		i32(player.position[1] - player.size[1] / 2.0),
+		i32(player.size[0]),
+		i32(player.size[1]),
+		rl.BLACK
+	)
 }
 
 
