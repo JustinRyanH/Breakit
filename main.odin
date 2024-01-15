@@ -80,10 +80,10 @@ DrawGame :: proc() {
 
   player := game.player
 	rl.DrawRectangle(
-		i32(player.position[0] - player.size[0] / 2.0),
-		i32(player.position[1] - player.size[1] / 2.0),
-		i32(player.size[0]),
-		i32(player.size[1]),
+		i32(player.position.x - player.size.x / 2.0),
+		i32(player.position.y - player.size.y / 2.0),
+		i32(player.size.x),
+		i32(player.size.y),
 		rl.BLACK
 	)
 }
