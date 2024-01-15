@@ -34,12 +34,20 @@ Brick :: struct {
 	active:   bool,
 }
 
-InitGame :: proc() {
+InitWindow :: proc(width: i32, height: i32, window_name: string) {
 	rl.InitWindow(800, 600, "Pong")
 	rl.SetTargetFPS(60)
 }
 
+InitGame :: proc() {}
+
 UpdateGame :: proc() {}
+
+UnloadGame :: proc() {}
+
+CloseWindow :: proc() {
+	rl.CloseWindow()
+}
 
 DrawGame :: proc() {
 	rl.BeginDrawing()
@@ -50,9 +58,13 @@ DrawGame :: proc() {
 
 
 main :: proc() {
+	InitWindow(ScreenWidth, ScreenHeight, "Pong")
 	InitGame()
 
 	for is_running && rl.WindowShouldClose() == false {
 		DrawGame()
 	}
+
+	UnloadGame()
+	CloseWindow()
 }
