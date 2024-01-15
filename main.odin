@@ -48,8 +48,6 @@ DrawGame :: proc() {
 	rl.EndDrawing()
 }
 
-UploadGame :: proc() {}
-
 UpdateDrawFrame :: proc() {}
 
 
