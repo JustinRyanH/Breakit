@@ -55,12 +55,12 @@ InitGame :: proc() {
 		life = PlayerMaxLife,
 	}
 
-	ball := Ball{
-    position = {player.position.x, player.position.y - 20.0 },
-    velocity = m.float2{ 0, 0 },
-    radius = 7.0,
-    active = false,
-  }
+	ball := Ball {
+		position = {player.position.x, player.position.y - 20.0},
+		velocity = m.float2{0, 0},
+		radius = 7.0,
+		active = false,
+	}
 
 	game = Game {
 		player = player,
@@ -71,30 +71,30 @@ InitGame :: proc() {
 }
 
 UpdateGame :: proc() {
-    paddle := &game.player
-    ball := &game.ball
+	paddle := &game.player
+	ball := &game.ball
 
-  if (rl.IsKeyDown(rl.KeyboardKey.LEFT)) {
-    paddle.position -= m.float2 { 5.0, 0.0 }
-  }
-  if (rl.IsKeyDown(rl.KeyboardKey.RIGHT)) {
-    paddle.position += m.float2 { 5.0, 0.0 }
-  }
+	if (rl.IsKeyDown(rl.KeyboardKey.LEFT)) {
+		paddle.position -= m.float2{5.0, 0.0}
+	}
+	if (rl.IsKeyDown(rl.KeyboardKey.RIGHT)) {
+		paddle.position += m.float2{5.0, 0.0}
+	}
 
-  if (paddle.position.x - paddle.size.x / 2.0 <= 0.0) {
-    paddle.position.x = paddle.size.x / 2.0; 
-  }
+	if (paddle.position.x - paddle.size.x / 2.0 <= 0.0) {
+		paddle.position.x = paddle.size.x / 2.0
+	}
 
-  if (paddle.position.x + paddle.size.x / 2.0 >= f32(rl.GetScreenWidth())) {
-    paddle.position.x = f32(rl.GetScreenWidth()) - paddle.size.x / 2.0; 
-  }
+	if (paddle.position.x + paddle.size.x / 2.0 >= f32(rl.GetScreenWidth())) {
+		paddle.position.x = f32(rl.GetScreenWidth()) - paddle.size.x / 2.0
+	}
 
 
-  if (!ball.active) {
+	if (!ball.active) {
 
-    new_position := paddle.position - m.float2 { 0.0, 20.0 }
-    ball.position = new_position
-  }
+		new_position := paddle.position - m.float2{0.0, 20.0}
+		ball.position = new_position
+	}
 }
 
 UnloadGame :: proc() {}
@@ -109,18 +109,18 @@ DrawGame :: proc() {
 
 	rl.ClearBackground(rl.RAYWHITE)
 
-  player := game.player
-  ball := game.ball
+	player := game.player
+	ball := game.ball
 
 	rl.DrawRectangle(
 		i32(player.position.x - player.size.x / 2.0),
 		i32(player.position.y - player.size.y / 2.0),
 		i32(player.size.x),
 		i32(player.size.y),
-		rl.BLACK
+		rl.BLACK,
 	)
 
-  rl.DrawCircleV(auto_cast ball.position, auto_cast ball.radius, rl.MAROON)
+	rl.DrawCircleV(auto_cast ball.position, auto_cast ball.radius, rl.MAROON)
 }
 
 
@@ -129,7 +129,7 @@ main :: proc() {
 	InitGame()
 
 	for is_running && rl.WindowShouldClose() == false {
-    UpdateGame()
+		UpdateGame()
 		DrawGame()
 	}
 
