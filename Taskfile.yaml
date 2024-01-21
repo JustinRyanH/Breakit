@@ -1,0 +1,29 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task: test
+
+  build:
+    cmds:
+      - odin build . -out=bin/Breakit
+    aliases:
+      - b
+    silent: true
+    generates:
+      - bin/Breakit
+    sources:
+      - ./**/*.odin
+
+  test:
+    cmds:
+      - odin test .
+    aliases:
+      - t
+    method: none
+    silent: true
+    sources:
+      - ./**/*.doin
+
+interval: 250ms
