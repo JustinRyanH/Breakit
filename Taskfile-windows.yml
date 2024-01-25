@@ -7,12 +7,12 @@ tasks:
 
   build:
     cmds:
-      - odin build . -out:bin/Breakit
+      - odin build . -out:bin/Breakit.exe
     aliases:
       - b
     silent: true
     generates:
-      - bin/Breakit
+      - bin/Breakit.exe
     sources:
       - ./**/*.odin
 
