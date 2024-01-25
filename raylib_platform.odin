@@ -14,6 +14,7 @@ main :: proc() {
 		defer rl.EndDrawing()
 
 		rl.ClearBackground(rl.RAYWHITE)
-		rl.DrawText("Congrats you created your first window", 190, 200, 20, rl.LIGHTGRAY)
+		rl.DrawText("Congrats you created your first window", 190, 200, 20, rl.DARKBLUE)
 	}
 }
+
