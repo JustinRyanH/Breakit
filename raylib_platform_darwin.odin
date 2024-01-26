@@ -6,11 +6,27 @@ import "core:dynlib"
 import "core:fmt"
 import "core:os"
 
+import rl "vendor:raylib"
+
 import "game"
 
 
 GameDLLFileName :: "./bin/game.dylib"
 
+hot_reload :: proc(api: GameAPI) -> GameAPI {
+	new_api, new_api_ok := load_game_api(api.api_version + 1)
+
+	if new_api_ok {
+		game_memory := api.memory()
+
+		unload_game_api(api)
+
+		new_api.hot_reloaded(game_memory)
+		return new_api
+	}
+	return api
+
+}
 
 main :: proc() {
 	game_api_version := 0
@@ -26,29 +42,22 @@ main :: proc() {
 
 	game_api.init()
 
+	rl.InitWindow(800, 600, "Breakit")
+	defer rl.CloseWindow()
+
 	for {
 		if (game_api.update() == false) {
 			break
 		}
+		if (rl.WindowShouldClose()) {
+			break
+		}
 
 		dll_time, dll_time_err := os.last_write_time_by_name(GameDLLFileName)
-
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
 
 		if reload {
-			new_api, new_api_ok := load_game_api(game_api_version)
-
-			if new_api_ok {
-				game_memory := game_api.memory()
-
-				unload_game_api(game_api)
-
-				game_api = new_api
-
-				game_api.hot_reloaded(game_memory)
-
-				game_api_version += 1
-			}
+			game_api = hot_reload(game_api)
 		}
 	}
 
