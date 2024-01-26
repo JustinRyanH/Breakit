@@ -13,16 +13,13 @@ import "game"
 
 
 main :: proc() {
-	game_api_version := 0
-	game_api, game_api_ok := game_api_load(game_api_version, "game", "./bin")
+	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
 	if !game_api_ok {
 		fmt.println("Failed to load Game API")
 		return
 	}
 	fmt.println("Loaded Game API")
-
-	game_api_version += 1
 
 	game_api.init()
 

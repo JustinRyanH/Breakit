@@ -28,10 +28,10 @@ GameAPI :: struct {
 	// DLL specific items
 	lib:          dynlib.Library,
 	dll_time:     os.File_Time,
-	api_version:  int,
+	iteration:  int,
 }
 
-game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
+game_api_load :: proc(iteration: int, name: string, path: string) -> (GameAPI, bool) {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
 	}
@@ -46,7 +46,7 @@ game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI,
 		return {}, false
 	}
 
-	new_name := fmt.tprintf("{0}_{1}{2}", name, api_version, dll_extension)
+	new_name := fmt.tprintf("{0}_{1}{2}", name, iteration, dll_extension)
 	new_file := filepath.join({path, new_name}, context.temp_allocator)
 
 	when ODIN_OS == .Darwin {
@@ -83,7 +83,7 @@ game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI,
 		// Meta
 		lib          = lib,
 		dll_time     = dll_time,
-		api_version  = api_version,
+		iteration  = iteration,
 	}
 
 	if api.init == nil ||
@@ -109,8 +109,18 @@ game_api_file_path :: proc(api: GameAPI) -> string {
 	return filepath.join({api.path, file_name}, context.temp_allocator)
 }
 
+game_api_version_path :: proc(api: GameAPI) -> string {
+	when ODIN_OS == .Darwin {
+		dll_extension := ".dylib"
+	}
+
+	new_name := fmt.tprintf("{0}_{1}{2}", api.name, api.iteration, dll_extension)
+	return filepath.join({api.path, new_name}, context.temp_allocator)
+
+}
+
 game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
-	new_api, new_api_ok := game_api_load(api.api_version + 1, api.name, api.path)
+	new_api, new_api_ok := game_api_load(api.iteration + 1, api.name, api.path)
 
 	if new_api_ok {
 		game_memory := api.memory()
@@ -130,8 +140,8 @@ game_api_unload :: proc(api: GameAPI) {
 		dynlib.unload_library(api.lib)
 	}
 
-	del_cmd := fmt.ctprintf("rm bin\\game_{0}.dylib", api.api_version)
+	del_cmd := fmt.ctprintf("rm bin\\game_{0}.dylib", api.iteration)
 	if libc.system(del_cmd) != 0 {
-		fmt.println("Failed to remove game_{0}.dylib copy", api.api_version)
+		fmt.println("Failed to remove game_{0}.dylib copy", api.iteration)
 	}
 }
