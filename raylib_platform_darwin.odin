@@ -16,7 +16,7 @@ GameDLLFileName :: "./bin/game.dylib"
 
 main :: proc() {
 	game_api_version := 0
-	game_api, game_api_ok := game_api_load_v2(game_api_version, "game", "./bin")
+	game_api, game_api_ok := game_api_load(game_api_version, "game", "./bin")
 
 	if !game_api_ok {
 		fmt.println("Failed to load Game API")
@@ -79,7 +79,7 @@ GameAPI :: struct {
 	api_version:  int,
 }
 
-game_api_load_v2 :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
+game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
 	}
@@ -148,7 +148,7 @@ game_api_load_v2 :: proc(api_version: int, name: string, path: string) -> (GameA
 }
 
 game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
-	new_api, new_api_ok := game_api_load_v2(api.api_version + 1, api.api_name, api.api_path)
+	new_api, new_api_ok := game_api_load(api.api_version + 1, api.api_name, api.api_path)
 
 	if new_api_ok {
 		game_memory := api.memory()
