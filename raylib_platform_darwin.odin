@@ -13,24 +13,9 @@ import "game"
 
 GameDLLFileName :: "./bin/game.dylib"
 
-hot_reload :: proc(api: GameAPI) -> GameAPI {
-	new_api, new_api_ok := load_game_api(api.api_version + 1)
-
-	if new_api_ok {
-		game_memory := api.memory()
-
-		unload_game_api(api)
-
-		new_api.hot_reloaded(game_memory)
-		return new_api
-	}
-	return api
-
-}
-
 main :: proc() {
 	game_api_version := 0
-	game_api, game_api_ok := load_game_api(game_api_version)
+	game_api, game_api_ok := game_api_laod(game_api_version)
 
 	if !game_api_ok {
 		fmt.println("Failed to load Game API")
@@ -57,12 +42,12 @@ main :: proc() {
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
 
 		if reload {
-			game_api = hot_reload(game_api)
+			game_api = game_api_hot_load(game_api)
 		}
 	}
 
 	game_api.shutdown()
-	unload_game_api(game_api)
+	game_api_unload(game_api)
 }
 
 GameAPI :: struct {
@@ -80,7 +65,7 @@ GameAPI :: struct {
 	api_version:  int,
 }
 
-load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
+game_api_laod :: proc(api_version: int) -> (GameAPI, bool) {
 	dll_time, dll_time_err := os.last_write_time_by_name(GameDLLFileName)
 
 	if dll_time_err != os.ERROR_NONE {
@@ -122,7 +107,7 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
 	   api.shutdown == nil ||
 	   api.memory == nil ||
 	   api.hot_reloaded == nil {
-		unload_game_api(api)
+		game_api_unload(api)
 		fmt.println("Game DLL missing required procedure")
 		return {}, false
 	}
@@ -131,7 +116,23 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
 	return api, true
 }
 
-unload_game_api :: proc(api: GameAPI) {
+game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
+	new_api, new_api_ok := game_api_laod(api.api_version + 1)
+
+	if new_api_ok {
+		game_memory := api.memory()
+
+		game_api_unload(api)
+
+		new_api.hot_reloaded(game_memory)
+		return new_api
+	}
+	return api
+
+}
+
+
+game_api_unload :: proc(api: GameAPI) {
 	if api.lib != nil {
 		dynlib.unload_library(api.lib)
 	}
