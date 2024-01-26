@@ -140,8 +140,11 @@ game_api_unload :: proc(api: GameAPI) {
 		dynlib.unload_library(api.lib)
 	}
 
-	del_cmd := fmt.ctprintf("rm bin\\game_{0}.dylib", api.iteration)
+  when ODIN_OS == .Darwin {
+
+    del_cmd := fmt.ctprintf("rm {}", game_api_version_path(api))
+  }
 	if libc.system(del_cmd) != 0 {
-		fmt.println("Failed to remove game_{0}.dylib copy", api.iteration)
+		fmt.println("Failed to remove game_{0}.dylib copy", game_api_version_path(api))
 	}
 }
