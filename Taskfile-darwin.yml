@@ -20,7 +20,7 @@ tasks:
     generates:
       - bin/Breakit.exe
     sources:
-      - ./raylib_platform.odin
+      - ./src/**/*.odin
 
   platform_debug:
     cmds:
@@ -31,7 +31,7 @@ tasks:
     generates:
       - bin/Breakit.exe
     sources:
-      - ./raylib_platform.odin
+      - ./src/**/*.odin
 
   game:
     cmds:
@@ -40,9 +40,9 @@ tasks:
       - g
     silent: true
     generates:
-      - bin/game.dll
+      - bin/game.dylib
     sources:
-      - ./game/**/*.odin
+      - ./src/game/**/*.odin
 
   game_debug:
     cmds:
@@ -51,9 +51,9 @@ tasks:
       - gd
     silent: true
     generates:
-      - bin/game.dll
+      - bin/game.dylib
     sources:
-      - ./game/**/*.odin
+      - ./src/game/**/*.odin
 
   test:
     cmds:
