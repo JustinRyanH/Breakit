@@ -16,7 +16,6 @@ game_init :: proc() {
 
 @(export)
 game_update :: proc() -> bool {
-	g_mem.some_state += 1
 	return true
 }
 

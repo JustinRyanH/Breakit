@@ -5,16 +5,55 @@ tasks:
     cmds:
       - task: test
 
-  build:
+  setup:
+    cmds:
+      - task: platform
+      - task: game
+      - task: test
+
+  platform:
     cmds:
       - odin build . -out:bin/Breakit
     aliases:
-      - b
+      - p
     silent: true
     generates:
-      - bin/Breakit
+      - bin/Breakit.exe
     sources:
-      - ./**/*.odin
+      - ./raylib_platform_darwin.odin
+
+  platform_debug:
+    cmds:
+      - odin build . -out:bin/Breakit -debug
+    aliases:
+      - pd
+    silent: true
+    generates:
+      - bin/Breakit.exe
+    sources:
+      - ./raylib_platform_darwin.odin
+
+  game:
+    cmds:
+      - odin build game/ -build-mode:dll -out:bin/game.dylib
+    aliases:
+      - g
+    silent: true
+    generates:
+      - bin/game.dll
+    sources:
+      - ./game/**/*.odin
+
+  game_debug:
+    cmds:
+      - odin build game/ -build-mode:dll -out:bin/game.dylib -debug
+    aliases:
+      - gd
+    silent: true
+    generates:
+      - bin/game.dll
+    sources:
+      - ./game/**/*.odin
 
   test:
     cmds:
@@ -25,5 +64,3 @@ tasks:
     silent: true
     sources:
       - ./**/*.doin
-
-interval: 250ms
