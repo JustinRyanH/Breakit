@@ -2,7 +2,6 @@
 package main
 
 
-import "core:c/libc"
 import "core:dynlib"
 import "core:fmt"
 import "core:os"
@@ -46,14 +45,16 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 
 	new_file := game_api_version_path(api)
 
-	when ODIN_OS == .Darwin {
-		copy_cmd := fmt.ctprintf("cp {0} {1}", api_file, new_file)
-	}
 
-	if libc.system(copy_cmd) != 0 {
-		fmt.println("Failed to copy game.dylib to", new_file)
-		return {}, false
-	}
+  data, success := os.read_entire_file_from_filename(api_file)
+  if !success {
+    fmt.println("Failed to open file");
+    return {}, false
+  }
+  success = os.write_entire_file(new_file, data)
+  if !success {
+    fmt.println("Failed to copy game.dylib to", new_file)
+  }
 
 	lib, lib_ok := dynlib.load_library(new_file)
 
@@ -65,7 +66,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	// Method Definitions
 	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
 	api.update = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
-  api.draw = cast(proc())(dynlib.symbol_address(lib, "game_draw") or_else nil)
+	api.draw = cast(proc())(dynlib.symbol_address(lib, "game_draw") or_else nil)
 	api.shutdown = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
 	api.memory = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
 	api.hot_reloaded =
@@ -81,7 +82,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	   api.shutdown == nil ||
 	   api.memory == nil ||
 	   api.hot_reloaded == nil ||
-     api.draw == nil {
+	   api.draw == nil {
 		game_api_unload(api)
 		fmt.println("Game DLL missing required procedure")
 		return {}, false
@@ -94,6 +95,8 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 game_api_file_path :: proc(api: GameAPI) -> string {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
+	} else when ODIN_OS == .Windows {
+		dll_extension := ".dll"
 	}
 
 	file_name := fmt.tprintf("{0}{1}", api.name, dll_extension)
@@ -103,6 +106,8 @@ game_api_file_path :: proc(api: GameAPI) -> string {
 game_api_version_path :: proc(api: GameAPI) -> string {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
+	} else when ODIN_OS == .Windows {
+		dll_extension := ".dll"
 	}
 
 	new_name := fmt.tprintf("{0}_{1}{2}", api.name, api.iteration, dll_extension)
@@ -131,11 +136,8 @@ game_api_unload :: proc(api: GameAPI) {
 		dynlib.unload_library(api.lib)
 	}
 
-	when ODIN_OS == .Darwin {
-
-		del_cmd := fmt.ctprintf("rm {}", game_api_version_path(api))
-	}
-	if libc.system(del_cmd) != 0 {
-		fmt.println("Failed to remove game_{0}.dylib copy", game_api_version_path(api))
-	}
+  err := os.remove(game_api_version_path(api))
+  if err != os.ERROR_NONE {
+		fmt.printf("Failed to remove {0} copy\n", game_api_version_path(api))
+  }
 }
