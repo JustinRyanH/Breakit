@@ -20,7 +20,7 @@ tasks:
     generates:
       - bin/Breakit.exe
     sources:
-      - ./raylib_platform_darwin.odin
+      - ./raylib_platform.odin
 
   platform_debug:
     cmds:
@@ -31,7 +31,7 @@ tasks:
     generates:
       - bin/Breakit.exe
     sources:
-      - ./raylib_platform_darwin.odin
+      - ./raylib_platform.odin
 
   game:
     cmds:
