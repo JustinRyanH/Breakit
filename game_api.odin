@@ -46,11 +46,19 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	new_file := game_api_version_path(api)
 
 
-  data, success := os.read_entire_file_from_filename(api_file)
-  if !success {
+  file_handle, file_handle_err := os.open(api_file)
+  if file_handle_err != os.ERROR_NONE {
     fmt.println("Failed to open file");
     return {}, false
   }
+
+  data, success := os.read_entire_file_from_handle(file_handle)
+  if !success {
+    fmt.println("Failed to read data out of file");
+    return {}, false
+  }
+  os.close(file_handle)
+
   success = os.write_entire_file(new_file, data)
   if !success {
     fmt.println("Failed to copy game.dylib to", new_file)
