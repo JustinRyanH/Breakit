@@ -16,7 +16,7 @@ GameDLLFileName :: "./bin/game.dylib"
 
 main :: proc() {
 	game_api_version := 0
-	game_api, game_api_ok := game_api_laod_v2(game_api_version, "game", "./bin")
+	game_api, game_api_ok := game_api_load_v2(game_api_version, "game", "./bin")
 
 	if !game_api_ok {
 		fmt.println("Failed to load Game API")
@@ -62,6 +62,9 @@ main :: proc() {
 }
 
 GameAPI :: struct {
+	api_name:     string,
+	api_path:     string,
+
 	// Accessible Procs
 	init:         proc(),
 	update:       proc() -> bool,
@@ -77,10 +80,10 @@ GameAPI :: struct {
 }
 
 game_api_laod :: proc(api_version: int) -> (GameAPI, bool) {
-	return game_api_laod_v2(api_version, "game", "./bin")
+	return game_api_load_v2(api_version, "game", "./bin")
 }
 
-game_api_laod_v2 :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
+game_api_load_v2 :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
 	}
@@ -115,6 +118,10 @@ game_api_laod_v2 :: proc(api_version: int, name: string, path: string) -> (GameA
 	}
 
 	api := GameAPI {
+		api_name     = name,
+		api_path     = path,
+
+		// Methods
 		init         = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil),
 		update       = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil),
 		shutdown     = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil),
@@ -123,6 +130,8 @@ game_api_laod_v2 :: proc(api_version: int, name: string, path: string) -> (GameA
 		hot_reloaded = cast(proc(
 			_: rawptr,
 		))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil),
+
+		// Meta
 		lib          = lib,
 		dll_time     = dll_time,
 		api_version  = api_version,
