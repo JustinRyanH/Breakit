@@ -61,13 +61,16 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
+  // Method Definitions
   api.init         = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
   api.update       = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
   api.shutdown     = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
   api.memory       = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
   api.hot_reloaded = cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil)
-  api.lib          = lib
-  api.dll_time     = dll_time
+
+  // Library and Meta Information
+  api.lib        = lib
+  api.dll_time   = dll_time
   api.iteration  = iteration
 
 	if api.init == nil ||
