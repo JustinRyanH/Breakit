@@ -16,7 +16,7 @@ game_init :: proc() {
 
 @(export)
 game_update :: proc() -> bool {
-	return true
+	return false
 }
 
 @(export)

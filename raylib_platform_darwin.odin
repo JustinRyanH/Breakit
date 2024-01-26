@@ -5,6 +5,7 @@ import "core:c/libc"
 import "core:dynlib"
 import "core:fmt"
 import "core:os"
+import "core:path/filepath"
 
 import rl "vendor:raylib"
 
@@ -15,7 +16,7 @@ GameDLLFileName :: "./bin/game.dylib"
 
 main :: proc() {
 	game_api_version := 0
-	game_api, game_api_ok := game_api_laod(game_api_version)
+	game_api, game_api_ok := game_api_laod_v2(game_api_version, "game", "./bin")
 
 	if !game_api_ok {
 		fmt.println("Failed to load Game API")
@@ -82,6 +83,68 @@ game_api_laod :: proc(api_version: int) -> (GameAPI, bool) {
 	}
 
 	lib, lib_ok := dynlib.load_library(dll_name)
+
+	if !lib_ok {
+		fmt.println("Failed loading game DLL")
+		return {}, false
+	}
+
+	api := GameAPI {
+		init         = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil),
+		update       = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil),
+		shutdown     = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil),
+		memory       = cast(proc(
+		) -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil),
+		hot_reloaded = cast(proc(
+			_: rawptr,
+		))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil),
+		lib          = lib,
+		dll_time     = dll_time,
+		api_version  = api_version,
+	}
+
+	if api.init == nil ||
+	   api.update == nil ||
+	   api.shutdown == nil ||
+	   api.memory == nil ||
+	   api.hot_reloaded == nil {
+		game_api_unload(api)
+		fmt.println("Game DLL missing required procedure")
+		return {}, false
+	}
+
+
+	return api, true
+}
+
+game_api_laod_v2 :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
+	when ODIN_OS == .Darwin {
+		dll_extension := ".dylib"
+	}
+
+	file_name := fmt.tprintf("{0}{1}", name, dll_extension)
+	api_file := filepath.join({path, file_name})
+
+	dll_time, dll_time_err := os.last_write_time_by_name(api_file)
+
+	if dll_time_err != os.ERROR_NONE {
+		fmt.println("Could not fetch last write date of", api_file)
+		return {}, false
+	}
+
+	new_name := fmt.tprintf("{0}_{1}{2}", name, api_version, dll_extension)
+	new_file := filepath.join({path, new_name}, context.temp_allocator)
+
+	when ODIN_OS == .Darwin {
+		copy_cmd := fmt.ctprintf("cp {0} {1}", api_file, new_file)
+	}
+
+	if libc.system(copy_cmd) != 0 {
+		fmt.println("Failed to copy game.dylib to", new_file)
+		return {}, false
+	}
+
+	lib, lib_ok := dynlib.load_library(new_file)
 
 	if !lib_ok {
 		fmt.println("Failed loading game DLL")
