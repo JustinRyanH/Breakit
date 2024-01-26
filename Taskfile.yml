@@ -1,5 +1,7 @@
 version: 3
 
+interval: 250ms
+
 includes:
   cmd:
     taskfile: ./Taskfile-{{OS}}.yml
