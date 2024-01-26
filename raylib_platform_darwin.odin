@@ -79,10 +79,6 @@ GameAPI :: struct {
 	api_version:  int,
 }
 
-game_api_laod :: proc(api_version: int) -> (GameAPI, bool) {
-	return game_api_load_v2(api_version, "game", "./bin")
-}
-
 game_api_load_v2 :: proc(api_version: int, name: string, path: string) -> (GameAPI, bool) {
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
@@ -152,7 +148,7 @@ game_api_load_v2 :: proc(api_version: int, name: string, path: string) -> (GameA
 }
 
 game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
-	new_api, new_api_ok := game_api_laod(api.api_version + 1)
+	new_api, new_api_ok := game_api_load_v2(api.api_version + 1, api.api_name, api.api_path)
 
 	if new_api_ok {
 		game_memory := api.memory()
