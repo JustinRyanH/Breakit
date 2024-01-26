@@ -16,7 +16,9 @@ game_init :: proc() {
 
 @(export)
 game_update :: proc() -> bool {
-	return false
+	g_mem.some_state = 0
+	fmt.println("some_state", g_mem.some_state)
+	return true
 }
 
 @(export)

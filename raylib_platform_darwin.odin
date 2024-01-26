@@ -31,6 +31,8 @@ main :: proc() {
 	rl.InitWindow(800, 600, "Breakit")
 	defer rl.CloseWindow()
 
+	rl.SetTargetFPS(30.0)
+
 	for {
 		if (game_api.update() == false) {
 			break
@@ -44,6 +46,14 @@ main :: proc() {
 
 		if reload {
 			game_api = game_api_hot_load(game_api)
+		}
+
+		{
+			rl.BeginDrawing()
+			defer rl.EndDrawing()
+
+			rl.ClearBackground(rl.RAYWHITE)
+			rl.DrawText("Breakit", 200, 200, 20, rl.DARKGRAY)
 		}
 	}
 
