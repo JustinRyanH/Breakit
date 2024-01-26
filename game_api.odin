@@ -28,14 +28,14 @@ GameAPI :: struct {
 	// DLL specific items
 	lib:          dynlib.Library,
 	dll_time:     os.File_Time,
-	iteration:  int,
+	iteration:    int,
 }
 
 game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameAPI, failed: bool) {
-  api.name = name
-  api.path = path
+	api.name = name
+	api.path = path
 
-  api_file := game_api_file_path(api)
+	api_file := game_api_file_path(api)
 	dll_time, dll_time_err := os.last_write_time_by_name(api_file)
 
 	if dll_time_err != os.ERROR_NONE {
@@ -43,7 +43,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
-  new_file := game_api_version_path(api)
+	new_file := game_api_version_path(api)
 
 	when ODIN_OS == .Darwin {
 		copy_cmd := fmt.ctprintf("cp {0} {1}", api_file, new_file)
@@ -61,17 +61,18 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
-  // Method Definitions
-  api.init         = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
-  api.update       = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
-  api.shutdown     = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
-  api.memory       = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
-  api.hot_reloaded = cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil)
+	// Method Definitions
+	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
+	api.update = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
+	api.shutdown = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
+	api.memory = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
+	api.hot_reloaded =
+	cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil)
 
-  // Library and Meta Information
-  api.lib        = lib
-  api.dll_time   = dll_time
-  api.iteration  = iteration
+	// Library and Meta Information
+	api.lib = lib
+	api.dll_time = dll_time
+	api.iteration = iteration
 
 	if api.init == nil ||
 	   api.update == nil ||
@@ -127,10 +128,10 @@ game_api_unload :: proc(api: GameAPI) {
 		dynlib.unload_library(api.lib)
 	}
 
-  when ODIN_OS == .Darwin {
+	when ODIN_OS == .Darwin {
 
-    del_cmd := fmt.ctprintf("rm {}", game_api_version_path(api))
-  }
+		del_cmd := fmt.ctprintf("rm {}", game_api_version_path(api))
+	}
 	if libc.system(del_cmd) != 0 {
 		fmt.println("Failed to remove game_{0}.dylib copy", game_api_version_path(api))
 	}
