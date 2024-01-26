@@ -62,8 +62,8 @@ main :: proc() {
 }
 
 GameAPI :: struct {
-	api_name:     string,
-	api_path:     string,
+	name:         string,
+	path:         string,
 
 	// Accessible Procs
 	init:         proc(),
@@ -114,8 +114,8 @@ game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI,
 	}
 
 	api := GameAPI {
-		api_name     = name,
-		api_path     = path,
+		name         = name,
+		path         = path,
 
 		// Methods
 		init         = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil),
@@ -148,7 +148,7 @@ game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI,
 }
 
 game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
-	new_api, new_api_ok := game_api_load(api.api_version + 1, api.api_name, api.api_path)
+	new_api, new_api_ok := game_api_load(api.api_version + 1, api.name, api.path)
 
 	if new_api_ok {
 		game_memory := api.memory()
