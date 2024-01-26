@@ -7,6 +7,8 @@ import "core:fmt"
 import "core:os"
 import "core:path/filepath"
 
+import rl "vendor:raylib"
+
 import "game"
 
 
@@ -17,7 +19,10 @@ main :: proc() {
 		fmt.println("Failed to load Game API")
 		return
 	}
-	fmt.println("Loaded Game API")
+
+	rl.InitWindow(800, 600, "Breakit")
+	rl.SetTargetFPS(30.0)
+	defer rl.CloseWindow()
 
 	game_api.init()
 
@@ -27,7 +32,17 @@ main :: proc() {
 		if (should_exit) {
 			break
 		}
-		game_api.draw()
+		if (rl.WindowShouldClose()) {
+			break
+		}
+
+		{
+			rl.BeginDrawing()
+			defer rl.EndDrawing()
+
+			rl.ClearBackground(rl.RAYWHITE)
+			rl.DrawText("Breakit", 200, 200, 20, rl.RED)
+		}
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time

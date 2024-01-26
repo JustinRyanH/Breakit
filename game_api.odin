@@ -1,4 +1,3 @@
-
 package main
 
 
@@ -19,7 +18,6 @@ GameAPI :: struct {
 	// Accessible Procs
 	init:         proc(),
 	update:       proc() -> bool,
-	draw:         proc(),
 	shutdown:     proc(),
 	memory:       proc() -> rawptr,
 	hot_reloaded: proc(_: rawptr),
@@ -34,6 +32,7 @@ GameAPI :: struct {
 game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameAPI, failed: bool) {
 	api.name = name
 	api.path = path
+	api.iteration = iteration
 
 	api_file := game_api_file_path(api)
 	dll_time, dll_time_err := os.last_write_time_by_name(api_file)
@@ -46,23 +45,23 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	new_file := game_api_version_path(api)
 
 
-  file_handle, file_handle_err := os.open(api_file)
-  if file_handle_err != os.ERROR_NONE {
-    fmt.println("Failed to open file");
-    return {}, false
-  }
+	file_handle, file_handle_err := os.open(api_file)
+	if file_handle_err != os.ERROR_NONE {
+		fmt.println("Failed to open file")
+		return {}, false
+	}
 
-  data, success := os.read_entire_file_from_handle(file_handle)
-  if !success {
-    fmt.println("Failed to read data out of file");
-    return {}, false
-  }
-  os.close(file_handle)
+	data, success := os.read_entire_file_from_handle(file_handle)
+	if !success {
+		fmt.println("Failed to read data out of file")
+		return {}, false
+	}
+	os.close(file_handle)
 
-  success = os.write_entire_file(new_file, data)
-  if !success {
-    fmt.println("Failed to copy game.dylib to", new_file)
-  }
+	success = os.write_entire_file(new_file, data)
+	if !success {
+		fmt.println("Failed to copy game.dylib to", new_file)
+	}
 
 	lib, lib_ok := dynlib.load_library(new_file)
 
@@ -74,7 +73,6 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	// Method Definitions
 	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
 	api.update = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
-	api.draw = cast(proc())(dynlib.symbol_address(lib, "game_draw") or_else nil)
 	api.shutdown = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
 	api.memory = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
 	api.hot_reloaded =
@@ -83,14 +81,12 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	// Library and Meta Information
 	api.lib = lib
 	api.dll_time = dll_time
-	api.iteration = iteration
 
 	if api.init == nil ||
 	   api.update == nil ||
 	   api.shutdown == nil ||
 	   api.memory == nil ||
-	   api.hot_reloaded == nil ||
-	   api.draw == nil {
+	   api.hot_reloaded == nil {
 		game_api_unload(api)
 		fmt.println("Game DLL missing required procedure")
 		return {}, false
@@ -144,8 +140,8 @@ game_api_unload :: proc(api: GameAPI) {
 		dynlib.unload_library(api.lib)
 	}
 
-  err := os.remove(game_api_version_path(api))
-  if err != os.ERROR_NONE {
+	err := os.remove(game_api_version_path(api))
+	if err != os.ERROR_NONE {
 		fmt.printf("Failed to remove {0} copy\n", game_api_version_path(api))
-  }
+	}
 }
