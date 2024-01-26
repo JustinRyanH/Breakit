@@ -100,6 +100,15 @@ game_api_load :: proc(api_version: int, name: string, path: string) -> (GameAPI,
 	return api, true
 }
 
+game_api_file_path :: proc(api: GameAPI) -> string {
+	when ODIN_OS == .Darwin {
+		dll_extension := ".dylib"
+	}
+
+	file_name := fmt.tprintf("{0}{1}", api.name, dll_extension)
+	return filepath.join({api.path, file_name}, context.temp_allocator)
+}
+
 game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
 	new_api, new_api_ok := game_api_load(api.api_version + 1, api.name, api.path)
 

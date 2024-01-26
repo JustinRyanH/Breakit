@@ -12,8 +12,6 @@ import rl "vendor:raylib"
 import "game"
 
 
-GameDLLFileName :: "./bin/game.dylib"
-
 main :: proc() {
 	game_api_version := 0
 	game_api, game_api_ok := game_api_load(game_api_version, "game", "./bin")
@@ -41,7 +39,7 @@ main :: proc() {
 			break
 		}
 
-		dll_time, dll_time_err := os.last_write_time_by_name(GameDLLFileName)
+		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
 
 		if reload {
@@ -55,6 +53,7 @@ main :: proc() {
 			rl.ClearBackground(rl.RAYWHITE)
 			rl.DrawText("Breakit", 200, 200, 20, rl.DARKGRAY)
 		}
+		free_all(context.temp_allocator)
 	}
 
 	game_api.shutdown()
