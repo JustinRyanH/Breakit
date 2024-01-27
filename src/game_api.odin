@@ -16,7 +16,7 @@ GameAPI :: struct {
 	path:         string,
 
 	// Accessible Procs
-	init:         proc(),
+	init:         proc(_: game.FrameInput),
 	update:       proc(_: ^game.Context) -> bool,
 	draw:         proc(_: ^game.PlatformDrawCommands),
 	shutdown:     proc(),
@@ -72,7 +72,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	}
 
 	// Method Definitions
-	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
+	api.init = cast(proc(_: game.FrameInput))(dynlib.symbol_address(lib, "game_init") or_else nil)
 	api.update =
 	cast(proc(ctx: ^game.Context) -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
 	api.draw =

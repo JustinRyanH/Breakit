@@ -13,9 +13,10 @@ GameMemory :: struct {
 g_mem: ^GameMemory
 
 @(export)
-game_init :: proc() {
+game_init :: proc(frame: FrameInput) {
 	g_mem = new(GameMemory)
-	g_mem.ball_position = {400, 400}
+	meta := frame.current_frame.meta
+	g_mem.ball_position = {meta.screen_width / 2.0, meta.screen_height - 75}
 }
 
 @(export)

@@ -13,6 +13,10 @@ import "game"
 
 
 main :: proc() {
+	rl.InitWindow(800, 600, "Breakit")
+	rl.SetTargetFPS(30.0)
+	defer rl.CloseWindow()
+
 	ctx := platform_new_context()
 	defer deinit_game_context(ctx)
 
@@ -26,11 +30,7 @@ main :: proc() {
 		return
 	}
 
-	rl.InitWindow(800, 600, "Breakit")
-	rl.SetTargetFPS(30.0)
-	defer rl.CloseWindow()
-
-	game_api.init()
+	game_api.init(ctx.frame)
 
 
 	for {
