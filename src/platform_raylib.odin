@@ -70,8 +70,8 @@ collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
 	new_input.meta = game.FrameMeta {
 		frame_id,
 		rl.GetFrameTime(),
-		transmute(f32)rl.GetScreenWidth(),
-		transmute(f32)rl.GetScreenHeight(),
+		cast(f32)rl.GetScreenWidth(),
+		cast(f32)rl.GetScreenHeight(),
 	}
 	new_input.left_down = rl.IsKeyDown(.LEFT)
 	new_input.right_down = rl.IsKeyDown(.RIGHT)
