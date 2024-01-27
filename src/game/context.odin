@@ -2,6 +2,6 @@ package game
 
 
 Context :: struct {
-	input: FrameInput,
+	frame: FrameInput,
 	cmds:  PlatformCommands,
 }

@@ -9,6 +9,7 @@ import "game"
 
 allocat_and_init_game_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
+	ctx.frame = platform_update_frame(ctx.frame)
 	setup_raylib_platform(&ctx.cmds)
 	return ctx
 }

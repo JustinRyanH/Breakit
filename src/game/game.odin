@@ -22,7 +22,7 @@ game_init :: proc() {
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
 
-	input := ctx.input
+	input := ctx.frame
 	cmds := g_mem.ctx.cmds
 	dt := get_frame_time(input)
 
