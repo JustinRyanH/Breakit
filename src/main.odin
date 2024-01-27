@@ -33,7 +33,6 @@ main :: proc() {
 	game_api.init()
 	game_api.setup(ctx)
 
-
 	for {
 		defer free_all(context.temp_allocator)
 		ctx.frame = platform_update_frame(ctx.frame)
