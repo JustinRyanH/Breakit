@@ -14,6 +14,7 @@ import "game"
 
 main :: proc() {
 	platform := build_raylib_platform()
+	defer cleanup_raylib_platform(platform)
 	platform_draw := build_raylib_platform_draw()
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
