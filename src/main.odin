@@ -15,7 +15,9 @@ import "game"
 main :: proc() {
 	platform := build_raylib_platform()
 	defer cleanup_raylib_platform(platform)
+
 	platform_draw := build_raylib_platform_draw()
+	defer cleanup_raylib_platform_draw(platform_draw)
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
@@ -37,7 +39,7 @@ main :: proc() {
 			break
 		}
 
-		game_api.draw(&platform_draw)
+		game_api.draw(platform_draw)
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time

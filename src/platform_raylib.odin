@@ -16,13 +16,18 @@ cleanup_raylib_platform :: proc(cmd: ^game.PlatformCommands) {
 	free(cmd)
 }
 
-build_raylib_platform_draw :: proc() -> (cmd: game.PlatformDrawCommands) {
+build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
+	cmd := new(game.PlatformDrawCommands)
 	cmd.begin_drawing = cast(proc())(rl.BeginDrawing)
 	cmd.end_drawing = cast(proc())(rl.EndDrawing)
 	cmd.clear = raylib_clear_background
 	cmd.draw_text = raylib_draw_text
 
 	return cmd
+}
+
+cleanup_raylib_platform_draw :: proc(cmd: ^game.PlatformDrawCommands) {
+	free(cmd)
 }
 
 raylib_clear_background :: proc(color: game.Color) {
