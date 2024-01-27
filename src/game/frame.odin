@@ -23,6 +23,10 @@ FrameInput :: struct {
 }
 
 
+///////////////////////////////////////////
+// User Input Functions
+///////////////////////////////////////////
+
 // Is the Right Arrow down this frame
 is_right_arrow_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.right_down
@@ -54,6 +58,10 @@ was_left_arrow_pressed :: proc(input: FrameInput) -> bool {
 was_space_pressed :: proc(input: FrameInput) -> bool {
 	return input.current_frame.space_down && !input.last_frame.space_down
 }
+
+///////////////////////////////////////////
+// Testing
+///////////////////////////////////////////
 
 @(test)
 test_is_key_down :: proc(t: ^testing.T) {
