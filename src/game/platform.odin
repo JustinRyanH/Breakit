@@ -32,7 +32,11 @@ RAYWHITE :: Color{245, 245, 245, 255} // My own White (raylib logo)
 
 PlatformCommands :: struct {
 	should_close_game: proc() -> bool,
-	begin_drawing:     proc(),
-	end_drawing:       proc(),
-	clear:             proc(color: Color),
+}
+
+PlatformDrawCommands :: struct {
+	begin_drawing: proc(),
+	end_drawing:   proc(),
+	clear:         proc(color: Color),
+	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
 }

@@ -22,7 +22,14 @@ game_update :: proc(platform: PlatformCommands) -> bool {
 }
 
 @(export)
-game_draw :: proc() {
+game_draw :: proc(platform_draw: PlatformDrawCommands) {
+	{
+		platform_draw.begin_drawing()
+		defer platform_draw.end_drawing()
+
+		platform_draw.clear(BLACK)
+		platform_draw.draw_text("Breakit", 200, 200, 20, RED)
+	}
 }
 
 @(export)

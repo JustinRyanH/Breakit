@@ -18,6 +18,7 @@ GameAPI :: struct {
 	// Accessible Procs
 	init:         proc(),
 	update:       proc(_: game.PlatformCommands) -> bool,
+	draw:         proc(_: game.PlatformDrawCommands),
 	shutdown:     proc(),
 	memory:       proc() -> rawptr,
 	hot_reloaded: proc(_: rawptr),
@@ -72,7 +73,16 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 
 	// Method Definitions
 	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
-	api.update = cast(proc(platform: game.PlatformCommands) -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
+	api.update =
+	cast(proc(platform: game.PlatformCommands) -> bool)(dynlib.symbol_address(
+			lib,
+			"game_update",
+		) or_else nil)
+	api.draw =
+	cast(proc(platform: game.PlatformDrawCommands))(dynlib.symbol_address(
+			lib,
+			"game_draw",
+		) or_else nil)
 	api.shutdown = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
 	api.memory = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
 	api.hot_reloaded =
@@ -84,6 +94,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 
 	if api.init == nil ||
 	   api.update == nil ||
+	   api.draw == nil ||
 	   api.shutdown == nil ||
 	   api.memory == nil ||
 	   api.hot_reloaded == nil {
