@@ -37,7 +37,7 @@ main :: proc() {
 
 
 	for {
-		should_exit := game_api.update(platform)
+		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break
 		}

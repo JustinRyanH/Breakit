@@ -16,9 +16,9 @@ game_init :: proc() {
 }
 
 @(export)
-game_update :: proc(platform: ^PlatformCommands) -> bool {
+game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.some_state = 6
-	return platform.should_close_game()
+	return ctx.platform_cmds.should_close_game()
 }
 
 @(export)
