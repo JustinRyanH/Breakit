@@ -17,6 +17,12 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 	free(ctx)
 }
 
+platform_update_frame :: proc(previous_frame: game.FrameInput) -> (new_frame: game.FrameInput) {
+	new_frame.last_frame = previous_frame.current_frame
+	new_frame.current_frame = collect_user_input(new_frame.last_frame.meta.frame_id + 1)
+	return new_frame
+}
+
 setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 	cmds.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
 }
@@ -56,4 +62,19 @@ raylib_draw_rectangle :: proc(
 
 raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {
 	rl.DrawCircleV(pos, radius, cast(rl.Color)(color))
+}
+
+@(private = "file")
+collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
+	new_input.meta = game.FrameMeta {
+		frame_id,
+		rl.GetFrameTime(),
+		transmute(f32)rl.GetScreenWidth(),
+		transmute(f32)rl.GetScreenHeight(),
+	}
+	new_input.left_down = rl.IsKeyDown(.LEFT)
+	new_input.right_down = rl.IsKeyDown(.RIGHT)
+	new_input.space_down = rl.IsKeyDown(.SPACE)
+
+	return new_input
 }

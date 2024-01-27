@@ -5,6 +5,7 @@ import rl "vendor:raylib"
 
 GameMemory :: struct {
 	some_state: int,
+	ctx:        ^Context,
 }
 
 
@@ -18,7 +19,8 @@ game_init :: proc() {
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.some_state = 6
-	return ctx.platform_cmds.should_close_game()
+	g_mem.ctx = ctx
+	return g_mem.ctx.platform_cmds.should_close_game()
 }
 
 @(export)

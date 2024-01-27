@@ -5,8 +5,8 @@ import "core:testing"
 FrameMeta :: struct {
 	frame_id:      int,
 	frame_delta:   f32,
-	screen_width:  u32,
-	screen_height: u32,
+	screen_width:  f32,
+	screen_height: f32,
 }
 
 // Tracked User State Input
