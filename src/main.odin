@@ -34,7 +34,7 @@ main :: proc() {
 
 
 	for {
-		ctx.frame_input = platform_update_frame(ctx.frame_input)
+		ctx.input = platform_update_frame(ctx.input)
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break
