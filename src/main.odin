@@ -35,6 +35,7 @@ main :: proc() {
 
 
 	for {
+		defer free_all(context.temp_allocator)
 		ctx.frame = platform_update_frame(ctx.frame)
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
@@ -50,7 +51,6 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 
-		free_all(context.temp_allocator)
 	}
 
 	game_api.shutdown()
