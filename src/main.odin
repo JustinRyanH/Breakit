@@ -13,7 +13,7 @@ import "game"
 
 
 main :: proc() {
-	ctx := allocat_and_init_game_context()
+	ctx := platform_new_context()
 	defer deinit_game_context(ctx)
 
 	platform_draw := build_raylib_platform_draw()
