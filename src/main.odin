@@ -12,12 +12,6 @@ import rl "vendor:raylib"
 import "game"
 
 
-build_raylib_platform :: proc() -> (cmd: game.PlatformCommands) {
-	cmd.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
-	return cmd
-}
-
-
 main :: proc() {
 	platform := build_raylib_platform()
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
@@ -41,8 +35,8 @@ main :: proc() {
 		}
 
 		{
-			rl.BeginDrawing()
-			defer rl.EndDrawing()
+			platform.begin_drawing()
+			defer platform.end_drawing()
 
 			rl.ClearBackground(rl.RAYWHITE)
 			rl.DrawText("Breakit", 200, 200, 20, rl.RED)
