@@ -14,12 +14,12 @@ import "game"
 
 build_raylib_platform :: proc() -> (cmd: game.PlatformCommands) {
 	cmd.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
-  return cmd
+	return cmd
 }
 
 
 main :: proc() {
-  platform := build_raylib_platform()
+	platform := build_raylib_platform()
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
 	if !game_api_ok {
@@ -37,9 +37,6 @@ main :: proc() {
 	for {
 		should_exit := game_api.update(platform)
 		if (should_exit) {
-			break
-		}
-		if (rl.WindowShouldClose()) {
 			break
 		}
 
