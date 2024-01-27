@@ -24,6 +24,7 @@ build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd.clear = raylib_clear_background
 	cmd.draw_text = raylib_draw_text
 	cmd.draw_rect = raylib_draw_rectangle
+	cmd.draw_circle = raylib_draw_circle
 
 	return cmd
 }
@@ -47,4 +48,8 @@ raylib_draw_rectangle :: proc(
 	color: game.Color,
 ) {
 	rl.DrawRectanglePro(cast(rl.Rectangle)(rect), origin, rotation, cast(rl.Color)(color))
+}
+
+raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {
+	rl.DrawCircleV(pos, radius, cast(rl.Color)(color))
 }

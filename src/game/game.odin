@@ -30,6 +30,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 		rect := Rectangle{50, 50, 100, 100}
 		platform_draw.draw_rect(rect, {25, 25}, 0, BLUE)
+		platform_draw.draw_circle({500, 100}, 30, GREEN)
 
 
 		platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)

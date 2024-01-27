@@ -59,4 +59,5 @@ PlatformDrawCommands :: struct {
 	clear:         proc(color: Color),
 	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
 	draw_rect:     proc(rect: Rectangle, origin: linalg.Vector2f32, rotation: f32, color: Color),
+	draw_circle:   proc(pos: linalg.Vector2f32, radius: f32, color: Color),
 }
