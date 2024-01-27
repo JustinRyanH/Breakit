@@ -1,12 +1,14 @@
 package main
 
+import "core:fmt"
+
 import rl "vendor:raylib"
 
 import "game"
 
 build_raylib_platform :: proc() -> ^game.PlatformCommands {
 	cmd := new(game.PlatformCommands)
-	cmd.should_close_game = raylib_should_close_game
+	cmd.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
 	return cmd
 }
 
@@ -21,10 +23,6 @@ build_raylib_platform_draw :: proc() -> (cmd: game.PlatformDrawCommands) {
 	cmd.draw_text = raylib_draw_text
 
 	return cmd
-}
-
-raylib_should_close_game :: proc() -> bool {
-	return rl.WindowShouldClose()
 }
 
 raylib_clear_background :: proc(color: game.Color) {
