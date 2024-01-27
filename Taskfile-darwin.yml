@@ -23,6 +23,7 @@ tasks:
       - ./src/**/*.odin
 
   platform_debug:
+    deps: [game]
     cmds:
       - odin build src -out:bin/Breakit -debug
     aliases:
