@@ -17,8 +17,6 @@ main :: proc() {
 	ctx := allocat_and_init_game_context()
 	defer deinit_game_context(ctx)
 
-	platform := &ctx.platform_cmds
-
 	platform_draw := build_raylib_platform_draw()
 	defer cleanup_raylib_platform_draw(platform_draw)
 
