@@ -2,18 +2,21 @@ package game
 
 import "core:testing"
 
-// Tracked User State Input
-UserInput :: struct {
-	// Frame State
+FrameMeta :: struct {
 	frame_id:      int,
 	frame_delta:   f32,
 	screen_width:  u32,
 	screen_height: u32,
+}
+
+// Tracked User State Input
+UserInput :: struct {
+	meta:       FrameMeta,
 
 	// Keyboard Input
-	left_down:     bool,
-	right_down:    bool,
-	space_down:    bool,
+	left_down:  bool,
+	right_down: bool,
+	space_down: bool,
 }
 
 
@@ -67,8 +70,9 @@ was_space_pressed :: proc(input: FrameInput) -> bool {
 
 @(test)
 test_is_key_down :: proc(t: ^testing.T) {
-	current_frame := UserInput{0, 1.0 / 60.0, 500, 700, false, true, false}
-	last_frame := UserInput{0, 1.0 / 60.0, 500, 700, false, false, false}
+	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
+	current_frame := UserInput{meta, false, true, false}
+	last_frame := UserInput{meta, false, false, false}
 
 	input := FrameInput{current_frame, last_frame}
 
@@ -80,8 +84,9 @@ test_is_key_down :: proc(t: ^testing.T) {
 
 @(test)
 test_was_key_pressed :: proc(t: ^testing.T) {
-	current_frame := UserInput{0, 1.0 / 60.0, 500, 700, false, true, false}
-	last_frame := UserInput{0, 1.0 / 60.0, 500, 700, false, false, true}
+	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
+	current_frame := UserInput{meta, false, true, false}
+	last_frame := UserInput{meta, false, false, true}
 	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, was_right_arrow_pressed(input), "Right Arrow should be pressed")
