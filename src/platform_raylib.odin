@@ -9,7 +9,7 @@ import "game"
 
 allocat_and_init_game_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
-	setup_raylib_platform(&ctx.platform_cmds)
+	setup_raylib_platform(&ctx.cmds)
 	return ctx
 }
 

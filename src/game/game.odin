@@ -18,9 +18,10 @@ game_init :: proc() {
 
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
-	g_mem.some_state = 6
 	g_mem.ctx = ctx
-	return g_mem.ctx.platform_cmds.should_close_game()
+
+	cmds := g_mem.ctx.cmds
+	return cmds.should_close_game()
 }
 
 @(export)
