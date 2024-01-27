@@ -7,9 +7,25 @@ import rl "vendor:raylib"
 
 import "game"
 
+allocat_and_init_game_context :: proc() -> ^game.Context {
+	ctx := new(game.Context)
+	setup_raylib_platform(&ctx.platform_cmds)
+	return ctx
+}
+
+deinit_game_context :: proc(ctx: ^game.Context) {
+	free(ctx)
+}
+
+
+setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
+	cmds.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
+}
+
+
 build_raylib_platform :: proc() -> ^game.PlatformCommands {
 	cmd := new(game.PlatformCommands)
-	cmd.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
+	setup_raylib_platform(cmd)
 	return cmd
 }
 
