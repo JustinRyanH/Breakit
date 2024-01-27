@@ -32,6 +32,10 @@ FrameInput :: struct {
 // User Input Functions
 ///////////////////////////////////////////
 
+get_frame_time :: proc(input: FrameInput) -> f32 {
+	return input.current_frame.meta.frame_delta
+}
+
 // Is the Right Arrow down this frame
 is_right_arrow_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.right_down
