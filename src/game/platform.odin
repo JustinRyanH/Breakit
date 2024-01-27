@@ -1,5 +1,11 @@
 package game
 
+import "core:math/linalg"
+
+//////////////////////////
+///////  TYPES  //////////
+//////////////////////////
+
 Color :: distinct [4]u8
 
 LIGHTGRAY :: Color{200, 200, 200, 255} // Light Gray
@@ -30,6 +36,19 @@ BLANK :: Color{0, 0, 0, 0} // Blank (Transparent)
 MAGENTA :: Color{255, 0, 255, 255} // Magenta
 RAYWHITE :: Color{245, 245, 245, 255} // My own White (raylib logo)
 
+
+Rectangle :: struct {
+	x:      f32, // Rectangle top-left corner position x
+	y:      f32, // Rectangle top-left corner position y
+	width:  f32, // Rectangle width
+	height: f32, // Rectangle height
+}
+
+//////////////////////////
+// Platform Abstraction //
+//////////////////////////
+
+
 PlatformCommands :: struct {
 	should_close_game: proc() -> bool,
 }
@@ -39,4 +58,5 @@ PlatformDrawCommands :: struct {
 	end_drawing:   proc(),
 	clear:         proc(color: Color),
 	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
+	draw_rect:     proc(rect: Rectangle, origin: linalg.Vector2f32, rotation: f32, color: Color),
 }

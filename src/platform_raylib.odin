@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:math/linalg"
 
 import rl "vendor:raylib"
 
@@ -22,6 +23,7 @@ build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd.end_drawing = cast(proc())(rl.EndDrawing)
 	cmd.clear = raylib_clear_background
 	cmd.draw_text = raylib_draw_text
+	cmd.draw_rect = raylib_draw_rectangle
 
 	return cmd
 }
@@ -36,4 +38,13 @@ raylib_clear_background :: proc(color: game.Color) {
 
 raylib_draw_text :: proc(msg: cstring, x, y: i32, font_size: i32, color: game.Color) {
 	rl.DrawText(msg, x, y, font_size, rl.Color(color))
+}
+
+raylib_draw_rectangle :: proc(
+	rect: game.Rectangle,
+	origin: linalg.Vector2f32,
+	rotation: f32,
+	color: game.Color,
+) {
+	rl.DrawRectanglePro(cast(rl.Rectangle)(rect), origin, rotation, cast(rl.Color)(color))
 }
