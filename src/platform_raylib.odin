@@ -17,20 +17,8 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 	free(ctx)
 }
 
-
 setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 	cmds.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
-}
-
-
-build_raylib_platform :: proc() -> ^game.PlatformCommands {
-	cmd := new(game.PlatformCommands)
-	setup_raylib_platform(cmd)
-	return cmd
-}
-
-cleanup_raylib_platform :: proc(cmd: ^game.PlatformCommands) {
-	free(cmd)
 }
 
 build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
