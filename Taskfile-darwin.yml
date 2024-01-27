@@ -13,7 +13,7 @@ tasks:
 
   platform:
     cmds:
-      - odin build . -out:bin/Breakit
+      - odin build src -out:bin/Breakit
     aliases:
       - p
     silent: true
@@ -24,7 +24,7 @@ tasks:
 
   platform_debug:
     cmds:
-      - odin build . -out:bin/Breakit -debug
+      - odin build src -out:bin/Breakit -debug
     aliases:
       - pd
     silent: true
@@ -35,7 +35,7 @@ tasks:
 
   game:
     cmds:
-      - odin build game/ -build-mode:dll -out:bin/game.dylib
+      - odin build src/game/ -build-mode:dll -out:bin/game.dylib
     aliases:
       - g
     silent: true
@@ -46,7 +46,7 @@ tasks:
 
   game_debug:
     cmds:
-      - odin build game/ -build-mode:dll -out:bin/game.dylib -debug
+      - odin build src/game/ -build-mode:dll -out:bin/game.dylib -debug
     aliases:
       - gd
     silent: true
