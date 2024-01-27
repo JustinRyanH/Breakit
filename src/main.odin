@@ -13,7 +13,6 @@ import "game"
 
 
 main :: proc() {
-
 	ctx := allocat_and_init_game_context()
 	defer deinit_game_context(ctx)
 
