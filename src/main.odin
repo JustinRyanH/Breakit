@@ -38,7 +38,7 @@ main :: proc() {
 			platform.begin_drawing()
 			defer platform.end_drawing()
 
-			rl.ClearBackground(rl.RAYWHITE)
+			platform.clear(game.RAYWHITE)
 			rl.DrawText("Breakit", 200, 200, 20, rl.RED)
 		}
 
