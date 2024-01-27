@@ -30,7 +30,8 @@ main :: proc() {
 		return
 	}
 
-	game_api.init(ctx.frame)
+	game_api.init()
+	game_api.setup(ctx)
 
 
 	for {
