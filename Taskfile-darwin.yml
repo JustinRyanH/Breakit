@@ -36,6 +36,7 @@ tasks:
       - ./src/**/*.odin
 
   game:
+    deps: [test]
     cmds:
       - odin build src/game/ -build-mode:dll -out:bin/game.dylib
     aliases:
@@ -47,6 +48,7 @@ tasks:
       - ./src/game/**/*.odin
 
   game_debug:
+    deps: [test]
     cmds:
       - odin build src/game/ -build-mode:dll -out:bin/game.dylib -debug
     aliases:
@@ -59,10 +61,11 @@ tasks:
 
   test:
     cmds:
-      - odin test .
+      - odin test src/game
+      - odin test src
     aliases:
       - t
     method: none
     silent: true
     sources:
-      - ./**/*.doin
+      - ./src/**/*.doin

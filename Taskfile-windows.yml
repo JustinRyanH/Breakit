@@ -12,6 +12,7 @@ tasks:
       - task: test
 
   platform:
+    deps: [game]
     cmds:
       - odin build . -out:bin/Breakit.exe
     aliases:
@@ -23,6 +24,7 @@ tasks:
       - ./**/*.odin
 
   platform_debug:
+    deps: [game]
     cmds:
       - odin build . -out:bin/Breakit.exe -debug
     aliases:
@@ -34,6 +36,7 @@ tasks:
       - ./**/*.odin
 
   game:
+    deps: [test]
     cmds:
       - odin build game/ -build-mode:dll -out:bin/game.dll
     aliases:
@@ -45,6 +48,7 @@ tasks:
       - ./game/**/*.odin
 
   game_debug:
+    deps: [test]
     cmds:
       - odin build game/ -build-mode:dll -out:bin/game.dll -debug
     aliases:
@@ -57,10 +61,11 @@ tasks:
 
   test:
     cmds:
-      - odin test .
+      - odin test src/game
+      - odin test src
     aliases:
       - t
     method: none
     silent: true
     sources:
-      - ./**/*.doin
+      - ./src/**/*.doin
