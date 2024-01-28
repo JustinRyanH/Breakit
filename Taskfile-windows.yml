@@ -41,7 +41,7 @@ tasks:
       - odin build src/game -build-mode:dll -out:bin/game.dll
     aliases:
       - g
-    silent: false
+    silent: true
     generates:
       - ./bin/game.dll
     sources:
@@ -53,7 +53,7 @@ tasks:
       - odin build src/game -build-mode:dll -out:bin/game.dll -debug
     aliases:
       - gd
-    silent: false
+    silent: true
     generates:
       - ./bin/game.dll
     sources:
