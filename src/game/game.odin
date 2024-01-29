@@ -7,8 +7,11 @@ import rl "vendor:raylib"
 Vec2 :: math.Vector2f32
 
 GameMemory :: struct {
-	ctx:    ^Context,
-	paddle: Rectangle,
+	ctx:            ^Context,
+	paddle:         Rectangle,
+	ball:           Circle,
+	ball_direction: Vec2,
+	ball_speed:     f32,
 }
 
 
@@ -27,6 +30,9 @@ game_setup :: proc(ctx: ^Context) {
 
 	g_mem.paddle = Rectangle{paddle_position, paddle_size, 0.0}
 
+	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
+	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
+	g_mem.ball_speed = 300
 }
 
 @(export)
@@ -58,6 +64,12 @@ game_update :: proc(ctx: ^Context) -> bool {
 		paddle.pos.x = screen_width - paddle.size.x / 2
 	}
 
+	game.ball.pos += game.ball_direction * game.ball_speed * dt
+	if (game.ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
+		reset_ball()
+	}
+
+
 	return cmds.should_close_game()
 }
 
@@ -69,6 +81,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.clear(BLACK)
 
 	platform_draw.draw_shape(game.paddle, BLUE)
+	platform_draw.draw_shape(game.ball, RED)
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
@@ -87,4 +100,18 @@ game_memory :: proc() -> rawptr {
 @(export)
 game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
+}
+
+
+//////////////////////////////////////////
+// Game Functions
+//////////////////////////////////////////
+
+
+reset_ball :: proc() {
+	meta := g_mem.ctx.frame.current_frame.meta
+
+	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
+	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
+	g_mem.ball_speed = 300
 }
