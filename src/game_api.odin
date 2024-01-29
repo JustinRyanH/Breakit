@@ -108,6 +108,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 }
 
 game_api_file_path :: proc(api: GameAPI) -> string {
+	// TODO(jhr): Extraxct to constant
 	when ODIN_OS == .Darwin {
 		dll_extension := ".dylib"
 	} else when ODIN_OS == .Windows {
