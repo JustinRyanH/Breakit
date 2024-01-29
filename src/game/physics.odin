@@ -1,5 +1,6 @@
 package game
 
+import fmt "core:fmt"
 import math "core:math/linalg"
 
 
@@ -8,6 +9,7 @@ import math "core:math/linalg"
 /////////////////
 
 // Check collision between two rectangles
+// FIX: Does AABB and not OBB
 are_recs_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
 	rect_a_min, rect_a_extends := get_rect_extends(rec_a)
 	rect_b_min, rect_b_extends := get_rect_extends(rec_b)
@@ -18,6 +20,7 @@ are_recs_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
 	return overlap_horizontal && overlap_vertical
 }
 
+// Check collision between two circles
 are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 	delta := circle_a.pos - circle_b.pos
 	distance := math.vector_length(delta)
@@ -25,18 +28,21 @@ are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 	return false
 }
 
-is_circle_colliding_rectangle :: proc(circle: Circle, rectangle: Rectangle) -> bool {
-	rec_center := rectangle.pos + rectangle.size / 2.0
-	delta := circle.pos - rec_center
-	delta.x = math.abs(delta.x)
-	delta.y = math.abs(delta.y)
 
-	if (delta.x > (rectangle.size.x / 2.0 + circle.radius)) {return false}
-	if (delta.y > (rectangle.size.y / 2.0 + circle.radius)) {return false}
+// Checks collision between a circle and a rectangle
+// FIX: This is not consistent
+is_circle_colliding_rectangle :: proc(circle: Circle, rectangle: Rectangle) -> bool {
+	// Move the Circle to the origin
+	delta := math.abs(circle.pos - rectangle.pos)
+
+	half_rect_size := rectangle.size * 0.5
+
+	if (delta.x > (half_rect_size.x + circle.radius)) {return false}
+	if (delta.y > (half_rect_size.y + circle.radius)) {return false}
 
 	corner_distance_sq :=
-		(delta.x - rectangle.size.x / 2.0) * (delta.x - rectangle.size.x / 2.0) +
-		(delta.y - rectangle.size.y / 2.0) * (delta.y - rectangle.size.y / 2.0)
+		(delta.x - half_rect_size.x) * (delta.x - half_rect_size.x) +
+		(delta.y - half_rect_size.y) * (delta.y - half_rect_size.y)
 
 
 	return corner_distance_sq <= (circle.radius * circle.radius)
