@@ -54,20 +54,18 @@ raylib_draw_text :: proc(msg: cstring, x, y: i32, font_size: i32, color: game.Co
 raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 	switch s in shape {
 	case game.Circle:
-		raylib_draw_circle(s.pos, s.radius, color)
+		rl.DrawCircleV(s.pos, s.radius, cast(rl.Color)(color))
 	case game.Rectangle:
 		origin := s.size * 0.5
-		raylib_draw_rectangle(s, origin, color)
+		rl_rect: rl.Rectangle = {s.pos.x, s.pos.y, s.size.x, s.size.y}
+		rl.DrawRectanglePro(rl_rect, origin, s.rotation, cast(rl.Color)(color))
 	}
 }
 
 raylib_draw_rectangle :: proc(rect: game.Rectangle, origin: linalg.Vector2f32, color: game.Color) {
-	rl_rect: rl.Rectangle = {rect.pos.x, rect.pos.y, rect.size.x, rect.size.y}
-	rl.DrawRectanglePro(rl_rect, origin, rect.rotation, cast(rl.Color)(color))
 }
 
 raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {
-	rl.DrawCircleV(pos, radius, cast(rl.Color)(color))
 }
 
 @(private = "file")
