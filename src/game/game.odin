@@ -59,17 +59,17 @@ game_update :: proc(ctx: ^Context) -> bool {
 
 	input := ctx.frame
 	cmds := game.ctx.cmds
-	dt := get_frame_time(input)
+	dt := frame_query_delta(input)
 
 	screen_width := ctx.frame.current_frame.meta.screen_width
 	paddle := &game.paddle
 
 
 	ball_speed: f32 = 500
-	if is_right_arrow_down(input) {
+	if input_is_right_arrow_down(input) {
 		paddle.pos.x += ball_speed * dt
 	}
-	if is_left_arrow_down(input) {
+	if input_is_left_arrow_down(input) {
 		paddle.pos.x -= ball_speed * dt
 	}
 	if (paddle.pos.x <= paddle.size.x / 2) {
@@ -85,7 +85,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 		reset_ball()
 	}
 
-  game.mouse_rect.pos = get_mouse_position(input)
+  game.mouse_rect.pos = input_mouse_position(input)
 
 	return cmds.should_close_game()
 }
