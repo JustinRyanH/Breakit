@@ -65,8 +65,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 	platform_draw.clear(BLACK)
 
-	rect := Rectangle{game.paddle_position, game.paddle_size}
-	platform_draw.draw_rect(rect, {50, 15}, 0, BLUE)
+	rect := Rectangle{game.paddle_position, game.paddle_size, 0.0}
+	platform_draw.draw_shape(rect, BLUE)
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)

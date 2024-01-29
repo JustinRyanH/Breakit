@@ -38,9 +38,21 @@ RAYWHITE :: Color{245, 245, 245, 255} // My own White (raylib logo)
 
 
 Rectangle :: struct {
-	pos:  Vec2,
-	size: Vec2,
+	pos:      Vec2,
+	size:     Vec2,
+	rotation: f32,
 }
+
+Circle :: struct {
+	pos:    Vec2,
+	radius: f32,
+}
+
+Shape :: union {
+	Rectangle,
+	Circle,
+}
+
 
 //////////////////////////
 // Platform Abstraction //
@@ -56,6 +68,7 @@ PlatformDrawCommands :: struct {
 	end_drawing:   proc(),
 	clear:         proc(color: Color),
 	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
-	draw_rect:     proc(rect: Rectangle, origin: linalg.Vector2f32, rotation: f32, color: Color),
+	draw_shape:    proc(shape: Shape, color: Color),
+	draw_rect:     proc(rect: Rectangle, origin: linalg.Vector2f32, color: Color),
 	draw_circle:   proc(pos: linalg.Vector2f32, radius: f32, color: Color),
 }

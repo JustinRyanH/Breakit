@@ -36,6 +36,7 @@ build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd.draw_text = raylib_draw_text
 	cmd.draw_rect = raylib_draw_rectangle
 	cmd.draw_circle = raylib_draw_circle
+	cmd.draw_shape = raylib_draw_shape
 
 	return cmd
 }
@@ -52,14 +53,19 @@ raylib_draw_text :: proc(msg: cstring, x, y: i32, font_size: i32, color: game.Co
 	rl.DrawText(msg, x, y, font_size, rl.Color(color))
 }
 
-raylib_draw_rectangle :: proc(
-	rect: game.Rectangle,
-	origin: linalg.Vector2f32,
-	rotation: f32,
-	color: game.Color,
-) {
+raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
+	switch s in shape {
+	case game.Circle:
+		raylib_draw_circle(s.pos, s.radius, color)
+	case game.Rectangle:
+		origin := s.size * 0.5
+		raylib_draw_rectangle(s, origin, color)
+	}
+}
+
+raylib_draw_rectangle :: proc(rect: game.Rectangle, origin: linalg.Vector2f32, color: game.Color) {
 	rl_rect: rl.Rectangle = {rect.pos.x, rect.pos.y, rect.size.x, rect.size.y}
-	rl.DrawRectanglePro(rl_rect, origin, rotation, cast(rl.Color)(color))
+	rl.DrawRectanglePro(rl_rect, origin, rect.rotation, cast(rl.Color)(color))
 }
 
 raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {
