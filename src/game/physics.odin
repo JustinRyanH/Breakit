@@ -4,12 +4,19 @@ import math "core:math/linalg"
 
 
 // Check collision between two rectangles
-are_recs_colliding :: proc(rec1, rec2: Rectangle) -> bool {
-	overlap_horizontal :=
-		rec1.pos.x < (rec2.pos.x + rec2.size.x) && (rec1.pos.x + rec1.size.x) > rec2.pos.x
-	overlap_vertical :=
-		rec1.pos.y < (rec2.pos.y + rec2.size.y) && (rec1.pos.y + rec1.size.y) > rec2.pos.y
-	if (overlap_horizontal && overlap_vertical) {return true}
+are_recs_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
+
+	rect_a_min := rec_a.pos - (rec_a.size * 0.5)
+	rect_a_extends := rec_a.pos + (rec_a.size * 0.5)
+	rect_b_min := rec_b.pos - (rec_b.size * 0.5)
+	rect_b_extends := rec_b.pos + (rec_b.size * 0.5)
+
+	overlap_horizontal := (rect_a_min.x < rect_b_extends.x) && (rect_a_extends.x > rect_b_min.x)
+	overlap_vertical := (rect_a_min.y < rect_b_extends.y) && (rect_a_extends.y > rect_b_min.y)
+
+	if (overlap_horizontal && overlap_vertical) {
+		return true
+	}
 
 	return false
 }
