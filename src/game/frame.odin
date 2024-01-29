@@ -90,7 +90,6 @@ was_right_arrow_pressed :: proc(input: FrameInput) -> bool {
 	)
 }
 
-
 // Is the Left Arrow down this frame
 is_left_arrow_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.keyboard.left_down
