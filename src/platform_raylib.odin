@@ -62,12 +62,6 @@ raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 	}
 }
 
-raylib_draw_rectangle :: proc(rect: game.Rectangle, origin: linalg.Vector2f32, color: game.Color) {
-}
-
-raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {
-}
-
 @(private = "file")
 collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
 	new_input.meta = game.FrameMeta {
