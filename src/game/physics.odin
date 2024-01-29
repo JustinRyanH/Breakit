@@ -50,9 +50,7 @@ is_circle_colliding_rectangle :: proc(circle: Circle, rectangle: Rectangle) -> b
 }
 
 is_circle_colliding_rectangle_v2 :: proc(circle: Circle, rect: Rectangle) -> (is_colliding: bool) {
-	if (is_point_inside_rect(circle.pos, rect)) {
-		return true
-	}
+	if (is_point_inside_rect(circle.pos, rect)) {return true}
 	// Return true if circle is colliding with any of the rectangle's edges
 	return is_colliding
 }
