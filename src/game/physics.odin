@@ -3,6 +3,10 @@ package game
 import math "core:math/linalg"
 
 
+/////////////////
+/// Collision
+/////////////////
+
 // Check collision between two rectangles
 are_recs_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
 	rect_a_min, rect_a_extends := get_rect_extends(rec_a)
