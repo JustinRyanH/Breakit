@@ -65,12 +65,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 	platform_draw.clear(BLACK)
 
-	rect := Rectangle {
-		game.paddle_position.x,
-		game.paddle_position.y,
-		game.paddle_size.x,
-		game.paddle_size.y,
-	}
+	rect := Rectangle{game.paddle_position, game.paddle_size}
 	platform_draw.draw_rect(rect, {50, 15}, 0, BLUE)
 
 

@@ -58,7 +58,8 @@ raylib_draw_rectangle :: proc(
 	rotation: f32,
 	color: game.Color,
 ) {
-	rl.DrawRectanglePro(cast(rl.Rectangle)(rect), origin, rotation, cast(rl.Color)(color))
+	rl_rect: rl.Rectangle = {rect.pos.x, rect.pos.y, rect.size.x, rect.size.y}
+	rl.DrawRectanglePro(rl_rect, origin, rotation, cast(rl.Color)(color))
 }
 
 raylib_draw_circle :: proc(pos: linalg.Vector2f32, radius: f32, color: game.Color) {

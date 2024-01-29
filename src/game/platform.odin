@@ -38,10 +38,8 @@ RAYWHITE :: Color{245, 245, 245, 255} // My own White (raylib logo)
 
 
 Rectangle :: struct {
-	x:      f32, // Rectangle top-left corner position x
-	y:      f32, // Rectangle top-left corner position y
-	width:  f32, // Rectangle width
-	height: f32, // Rectangle height
+	pos:  Vec2,
+	size: Vec2,
 }
 
 //////////////////////////
