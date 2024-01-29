@@ -70,9 +70,9 @@ collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
 		cast(f32)rl.GetScreenWidth(),
 		cast(f32)rl.GetScreenHeight(),
 	}
-	new_input.left_down = rl.IsKeyDown(.LEFT)
-	new_input.right_down = rl.IsKeyDown(.RIGHT)
-	new_input.space_down = rl.IsKeyDown(.SPACE)
+	new_input.keyboard.left_down = rl.IsKeyDown(.LEFT)
+	new_input.keyboard.right_down = rl.IsKeyDown(.RIGHT)
+	new_input.keyboard.space_down = rl.IsKeyDown(.SPACE)
 
 	return new_input
 }
