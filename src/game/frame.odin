@@ -97,8 +97,8 @@ test_is_key_down :: proc(t: ^testing.T) {
 	keyboard_p := KeyboardInput{false, false, false}
 	keyboard_c := KeyboardInput{false, true, false}
 
-	last_frame := UserInput{meta, keyboard_p}
-	current_frame := UserInput{meta, keyboard_c}
+	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
+	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
 
 	input := FrameInput{current_frame, last_frame}
 
@@ -115,8 +115,8 @@ test_was_key_pressed :: proc(t: ^testing.T) {
 	keyboard_p := KeyboardInput{false, true, true}
 	keyboard_c := KeyboardInput{false, false, true}
 
-	last_frame := UserInput{meta, keyboard_p}
-	current_frame := UserInput{meta, keyboard_c}
+	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
+	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
 
 	input := FrameInput{current_frame, last_frame}
 
