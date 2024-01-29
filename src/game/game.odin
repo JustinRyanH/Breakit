@@ -100,8 +100,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.draw_shape(game.paddle, BLUE)
 	platform_draw.draw_shape(game.ball, RED)
 
-  static_rect_color := GREEN if are_rects_colliding(game.static_rect, game.mouse_rect) else RED
-  static_circle_color := GREEN if is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
+  static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
+  static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
 
   platform_draw.draw_shape(game.mouse_rect, PURPLE)
   platform_draw.draw_shape(game.static_circle, static_circle_color)
