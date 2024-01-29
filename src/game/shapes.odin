@@ -3,6 +3,29 @@ package game
 import fmt "core:fmt"
 import math "core:math/linalg"
 
+Rectangle :: struct {
+	pos:      Vec2,
+	size:     Vec2,
+	rotation: f32,
+}
+
+Circle :: struct {
+	pos:    Vec2,
+	radius: f32,
+}
+
+Line :: struct {
+	start:     Vec2,
+	end:       Vec2,
+	thickness: f32,
+}
+
+Shape :: union {
+	Rectangle,
+	Circle,
+	Line,
+}
+
 
 /////////////////
 /// Collision
