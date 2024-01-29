@@ -34,8 +34,6 @@ build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd.end_drawing = cast(proc())(rl.EndDrawing)
 	cmd.clear = raylib_clear_background
 	cmd.draw_text = raylib_draw_text
-	cmd.draw_rect = raylib_draw_rectangle
-	cmd.draw_circle = raylib_draw_circle
 	cmd.draw_shape = raylib_draw_shape
 
 	return cmd
