@@ -8,22 +8,19 @@ There are the tasks I want to work on next
 
 ## Core
 
-[ ] Start Menu
-[ ] Start Menu with Keyboard Selectable Options
-[ ] Bounce Sounds
-[ ] Particles on Hit
-[ ] Render Textures for the bricks
+[ ] Input Recording
+[ ] Input Recording Test File
+[ ] Input Playback
 [ ] MicroUI over Raygui
 
 ## Nice to Haves
 
-[ ] Input Recording
-[ ] Input Recording Test File
-[ ] Input Playback
-[ ] Input Recording, Hash the InputFrame struct.
-Create an update path as we change InputFrame
+[ ] Particles on Hit
 [ ] Input Recording, Stream Compress/Decompress
-[ ] Swap out the Raylib platform for mach
+[ ] Start Menu
+[ ] Start Menu with Keyboard Selectable Options
+[ ] Bounce Sounds
+[ ] Render Textures for the bricks
 
 ## DONE
 
