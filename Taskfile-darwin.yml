@@ -14,21 +14,9 @@ tasks:
   platform:
     deps: [game]
     cmds:
-      - odin build src -out:bin/Breakit
-    aliases:
-      - p
-    silent: true
-    generates:
-      - bin/Breakit
-    sources:
-      - ./src/**/*.odin
-
-  platform_debug:
-    deps: [game]
-    cmds:
       - odin build src -out:bin/Breakit -debug
     aliases:
-      - pd
+      - p
     silent: true
     generates:
       - bin/Breakit
@@ -38,21 +26,9 @@ tasks:
   game:
     deps: [test]
     cmds:
-      - odin build src/game/ -build-mode:dll -out:bin/game.dylib
-    aliases:
-      - g
-    silent: true
-    generates:
-      - bin/game.dylib
-    sources:
-      - ./src/game/**/*.odin
-
-  game_debug:
-    deps: [test]
-    cmds:
       - odin build src/game/ -build-mode:dll -out:bin/game.dylib -debug
     aliases:
-      - gd
+      - g
     silent: true
     generates:
       - bin/game.dylib
