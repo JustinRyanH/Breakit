@@ -1,5 +1,6 @@
 package game
 
+import math "core:math/linalg"
 import "core:testing"
 
 FrameMeta :: struct {
@@ -7,6 +8,12 @@ FrameMeta :: struct {
 	frame_delta:   f32,
 	screen_width:  f32,
 	screen_height: f32,
+}
+
+MouseInput :: struct {
+	pos:        math.Vector2f32,
+	left_down:  bool,
+	right_down: bool,
 }
 
 KeyboardInput :: struct {
@@ -18,8 +25,7 @@ KeyboardInput :: struct {
 // Tracked User State Input
 UserInput :: struct {
 	meta:     FrameMeta,
-
-	// Keyboard Input
+	mouse:    MouseInput,
 	keyboard: KeyboardInput,
 }
 
@@ -38,6 +44,14 @@ FrameInput :: struct {
 
 get_frame_time :: proc(input: FrameInput) -> f32 {
 	return input.current_frame.meta.frame_delta
+}
+
+get_mouse_position :: proc(input: FrameInput) -> math.Vector2f32 {
+	return input.current_frame.mouse.pos
+}
+
+get_mouse_delta :: proc(input: FrameInput) -> math.Vector2f32 {
+	return input.current_frame.mouse.pos - input.last_frame.mouse.pos
 }
 
 // Is the Right Arrow down this frame
