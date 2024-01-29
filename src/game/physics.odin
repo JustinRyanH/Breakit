@@ -14,11 +14,7 @@ are_recs_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
 	overlap_horizontal := (rect_a_min.x < rect_b_extends.x) && (rect_a_extends.x > rect_b_min.x)
 	overlap_vertical := (rect_a_min.y < rect_b_extends.y) && (rect_a_extends.y > rect_b_min.y)
 
-	if (overlap_horizontal && overlap_vertical) {
-		return true
-	}
-
-	return false
+	return overlap_horizontal && overlap_vertical
 }
 
 
