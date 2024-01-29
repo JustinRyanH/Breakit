@@ -48,9 +48,16 @@ Circle :: struct {
 	radius: f32,
 }
 
+Line :: struct {
+	start:     Vec2,
+	end:       Vec2,
+	thickness: f32,
+}
+
 Shape :: union {
 	Rectangle,
 	Circle,
+	Line,
 }
 
 

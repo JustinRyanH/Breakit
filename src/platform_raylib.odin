@@ -59,6 +59,8 @@ raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 		origin := s.size * 0.5
 		rl_rect: rl.Rectangle = {s.pos.x, s.pos.y, s.size.x, s.size.y}
 		rl.DrawRectanglePro(rl_rect, origin, s.rotation, cast(rl.Color)(color))
+	case game.Line:
+		rl.DrawLineEx(s.start, s.end, s.thickness, cast(rl.Color)(color))
 	}
 }
 

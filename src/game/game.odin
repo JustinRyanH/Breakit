@@ -107,6 +107,9 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
   platform_draw.draw_shape(game.static_circle, static_circle_color)
   platform_draw.draw_shape(game.static_rect, static_rect_color)
 
+  line_between_circle_and_mouse := Line{ game.mouse_rect.pos,  game.static_circle.pos, 1.0 }
+  platform_draw.draw_shape(line_between_circle_and_mouse, YELLOW)
+
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
 }
 
