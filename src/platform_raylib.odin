@@ -1,7 +1,7 @@
 package main
 
 import "core:fmt"
-import "core:math/linalg"
+import math "core:math/linalg"
 
 import rl "vendor:raylib"
 
@@ -73,6 +73,10 @@ collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
 	new_input.keyboard.left_down = rl.IsKeyDown(.LEFT)
 	new_input.keyboard.right_down = rl.IsKeyDown(.RIGHT)
 	new_input.keyboard.space_down = rl.IsKeyDown(.SPACE)
+
+	new_input.mouse.pos = cast(math.Vector2f32)(rl.GetMousePosition())
+	new_input.mouse.left_down = rl.IsMouseButtonDown(.LEFT)
+	new_input.mouse.right_down = rl.IsMouseButtonDown(.RIGHT)
 
 	return new_input
 }
