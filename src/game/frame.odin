@@ -42,30 +42,37 @@ FrameInput :: struct {
 // User Input Functions
 ///////////////////////////////////////////
 
+// Get the amount of time for this frame
 get_frame_time :: proc(input: FrameInput) -> f32 {
 	return input.current_frame.meta.frame_delta
 }
 
+// Get the mouse position this frame
 get_mouse_position :: proc(input: FrameInput) -> math.Vector2f32 {
 	return input.current_frame.mouse.pos
 }
 
+// Get the delta of the mouse position from the last frame
 get_mouse_delta :: proc(input: FrameInput) -> math.Vector2f32 {
 	return input.current_frame.mouse.pos - input.last_frame.mouse.pos
 }
 
+// Is the Left Mouse Button down this frame
 is_left_mouse_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.mouse.left_down
 }
 
+// Was the Left Mouse Button pressed the frame before, not this frame
 was_left_mouse_pressed :: proc(input: FrameInput) -> bool {
 	return was_pressed(input.last_frame.mouse.left_down, input.current_frame.mouse.left_down)
 }
 
+// Is the Right Mouse Button down this frame
 is_right_mouse_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.mouse.right_down
 }
 
+// Was the Right Mouse Button pressed the frame before, not this frame
 was_right_mouse_pressed :: proc(input: FrameInput) -> bool {
 	return was_pressed(input.last_frame.mouse.right_down, input.current_frame.mouse.right_down)
 }
