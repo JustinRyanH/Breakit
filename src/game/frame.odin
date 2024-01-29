@@ -82,7 +82,7 @@ is_right_arrow_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.keyboard.right_down
 }
 
-// Was the Right Arrow pressed the framae before
+// Was the Right Arrow pressed the framae before, not this frame
 was_right_arrow_pressed :: proc(input: FrameInput) -> bool {
 	return was_pressed(
 		input.last_frame.keyboard.right_down,
@@ -96,7 +96,7 @@ is_left_arrow_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.keyboard.left_down
 }
 
-// Was the Left Arrow pressed the frame before
+// Was the Left Arrow pressed the frame before, not this frame
 was_left_arrow_pressed :: proc(input: FrameInput) -> bool {
 	return was_pressed(input.last_frame.keyboard.left_down, input.current_frame.keyboard.left_down)
 }
@@ -106,7 +106,7 @@ is_space_down :: proc(input: FrameInput) -> bool {
 	return input.current_frame.keyboard.space_down
 }
 
-// Was the Space key pressed the frame before
+// Was the Space key pressed the frame before, not this frame
 was_space_pressed :: proc(input: FrameInput) -> bool {
 	return was_pressed(
 		input.last_frame.keyboard.space_down,
