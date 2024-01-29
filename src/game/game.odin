@@ -7,9 +7,8 @@ import rl "vendor:raylib"
 Vec2 :: math.Vector2f32
 
 GameMemory :: struct {
-	ctx:             ^Context,
-	paddle_position: Vec2,
-	paddle_size:     Vec2,
+	ctx:    ^Context,
+	paddle: Rectangle,
 }
 
 
@@ -23,8 +22,11 @@ game_init :: proc() {
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
-	g_mem.paddle_position = {meta.screen_width / 2.0, meta.screen_height - 25}
-	g_mem.paddle_size = {100, 20}
+	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
+	paddle_size := Vec2{100, 20}
+
+	g_mem.paddle = Rectangle{paddle_position, paddle_size, 0.0}
+
 }
 
 @(export)
@@ -38,21 +40,22 @@ game_update :: proc(ctx: ^Context) -> bool {
 	dt := get_frame_time(input)
 
 	screen_width := ctx.frame.current_frame.meta.screen_width
+	paddle := &game.paddle
 
 
-	ball_speed: f32 = 275
+	ball_speed: f32 = 500
 	if is_right_arrow_down(input) {
-		game.paddle_position.x += ball_speed * dt
+		paddle.pos.x += ball_speed * dt
 	}
 	if is_left_arrow_down(input) {
-		game.paddle_position.x -= ball_speed * dt
+		paddle.pos.x -= ball_speed * dt
 	}
-	if (game.paddle_position.x <= game.paddle_size.x / 2) {
-		game.paddle_position.x = game.paddle_size.x / 2
+	if (paddle.pos.x <= paddle.size.x / 2) {
+		paddle.pos.x = paddle.size.x / 2
 	}
 
-	if (game.paddle_position.x >= screen_width - game.paddle_size.x / 2) {
-		game.paddle_position.x = screen_width - game.paddle_size.x / 2
+	if (paddle.pos.x >= screen_width - paddle.size.x / 2) {
+		paddle.pos.x = screen_width - paddle.size.x / 2
 	}
 
 	return cmds.should_close_game()
@@ -65,8 +68,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 	platform_draw.clear(BLACK)
 
-	rect := Rectangle{game.paddle_position, game.paddle_size, 0.0}
-	platform_draw.draw_shape(rect, BLUE)
+	platform_draw.draw_shape(game.paddle, BLUE)
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
