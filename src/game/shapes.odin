@@ -2,6 +2,7 @@ package game
 
 import fmt "core:fmt"
 import math "core:math/linalg"
+import "core:testing"
 
 Rectangle :: struct {
 	pos:      Vec2,
@@ -97,6 +98,47 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 	return rect_min, rect_max
 }
 
+shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
+	rect_min, rect_max := shape_get_rect_extends(rect)
+	lines := make([]Line, 4, context.temp_allocator)
+	lines[0] = Line{rect_min, Vec2{rect_max.x, rect_min.y}, 0.0}
+	lines[1] = Line{Vec2{rect_max.x, rect_min.y}, rect_max, 0.0}
+	lines[2] = Line{Vec2{rect_min.x, rect_max.y}, rect_max, 0.0}
+	lines[3] = Line{rect_min, Vec2{rect_min.x, rect_max.y}, 0.0}
+	return lines
+}
+
+@(test)
+test_shape_rect_lines_t_unrotated :: proc(t: ^testing.T) {
+	// Return Lines of the Rectangle in a counter clockwise pattern
+	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
+
+	lines := shape_get_rect_lines_t(rect)
+
+	testing.expect(
+		t,
+		lines[0] == Line{Vec2{-0.5, -0.5}, Vec2{0.5, -0.5}, 0.0},
+		"First line is the top line",
+	)
+	testing.expect(
+		t,
+		lines[1] == Line{Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, 0.0},
+		"Second line is the right line",
+	)
+	testing.expect(
+		t,
+		lines[2] == Line{Vec2{-0.5, 0.5}, Vec2{0.5, 0.5}, 0.0},
+		"Third line is the bottom line",
+	)
+	testing.expect(
+		t,
+		lines[3] == Line{Vec2{-0.5, -0.5}, Vec2{-0.5, 0.5}, 0.0},
+		"Forth line is the bottom line",
+	)
+
+}
+
+
 @(test)
 test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
@@ -112,7 +154,4 @@ test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
 		max == Vec2{0.5, 0.5},
 		"origin is at zero so maximum extends is half width, right of origin",
 	)
-
-
-	// testing.expect(t, input_was_right_arrow_pressed(input), "Right Arrow should have been pressed")
 }
