@@ -139,7 +139,6 @@ test_shape_rect_lines_t_unrotated :: proc(t: ^testing.T) {
 
 }
 
-
 @(test)
 test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
