@@ -1,6 +1,6 @@
 package game
 
-import "core:math/linalg"
+import math "core:math/linalg"
 
 //////////////////////////
 ///////  TYPES  //////////
@@ -36,6 +36,14 @@ BLANK :: Color{0, 0, 0, 0} // Blank (Transparent)
 MAGENTA :: Color{255, 0, 255, 255} // Magenta
 RAYWHITE :: Color{245, 245, 245, 255} // My own White (raylib logo)
 
+// Raylib Camera brought over
+Camera2D :: struct {
+	offset:   math.Vector2f32, // Camera offset (displacement from target)
+	target:   math.Vector2f32, // Camera target (rotation and zoom origin)
+	rotation: f32, // Camera rotation in degrees
+	zoom:     f32, // Camera zoom (scaling), should be 1.0f by default
+}
+
 
 //////////////////////////
 // Platform Abstraction //
@@ -47,9 +55,11 @@ PlatformCommands :: struct {
 }
 
 PlatformDrawCommands :: struct {
-	begin_drawing: proc(),
-	end_drawing:   proc(),
-	clear:         proc(color: Color),
-	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
-	draw_shape:    proc(shape: Shape, color: Color),
+	begin_drawing:    proc(),
+	begin_drawing_2d: proc(camera: Camera2D),
+	end_drawing_2d:   proc(),
+	end_drawing:      proc(),
+	clear:            proc(color: Color),
+	draw_text:        proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
+	draw_shape:       proc(shape: Shape, color: Color),
 }

@@ -31,7 +31,9 @@ setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd := new(game.PlatformDrawCommands)
 	cmd.begin_drawing = cast(proc())(rl.BeginDrawing)
+	cmd.begin_drawing_2d = raylib_begin_drawing_2d
 	cmd.end_drawing = cast(proc())(rl.EndDrawing)
+	cmd.end_drawing_2d = raylib_end_drawing_2d
 	cmd.clear = raylib_clear_background
 	cmd.draw_text = raylib_draw_text
 	cmd.draw_shape = raylib_draw_shape
@@ -62,6 +64,14 @@ raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 	case game.Line:
 		rl.DrawLineEx(s.start, s.end, s.thickness, cast(rl.Color)(color))
 	}
+}
+
+raylib_begin_drawing_2d :: proc(camera: game.Camera2D) {
+	rl.BeginMode2D(cast(rl.Camera2D)(camera))
+}
+
+raylib_end_drawing_2d :: proc() {
+	rl.EndMode2D()
 }
 
 @(private = "file")
