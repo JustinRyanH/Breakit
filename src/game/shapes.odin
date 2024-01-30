@@ -96,3 +96,23 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 	rect_max := rect.pos + (rect.size * 0.5)
 	return rect_min, rect_max
 }
+
+@(test)
+test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
+	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
+	min, max := shape_get_rect_extends(rect)
+
+	testing.expect(
+		t,
+		min == Vec2{-0.5, -0.5},
+		"origin is at zero so minimum extends is half width, left of origin",
+	)
+	testing.expect(
+		t,
+		max == Vec2{0.5, 0.5},
+		"origin is at zero so maximum extends is half width, right of origin",
+	)
+
+
+	// testing.expect(t, input_was_right_arrow_pressed(input), "Right Arrow should have been pressed")
+}
