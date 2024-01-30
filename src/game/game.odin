@@ -121,9 +121,6 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
     platform_draw.draw_shape(Line{ Vec2 { -1000, 0 }, Vec2 { 1000, 0 }, 1 }, Color{ 255, 255, 255, 30 })
     platform_draw.draw_shape(Line{ Vec2 { 0, -1000 }, Vec2 { 0, 1000 }, 1 }, Color{ 255, 255, 255, 30 })
-    platform_draw.draw_shape(Circle{ Vec2{ 0, 0 }, 5 }, BLUE)
-    platform_draw.draw_shape(Circle{ Vec2{ 10, 10 }, 5 }, RED)
-    platform_draw.draw_shape(Circle{ Vec2{ -10, -10 }, 5 }, GREEN)
 
   }
 
