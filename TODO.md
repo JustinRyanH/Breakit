@@ -11,6 +11,7 @@ There are the tasks I want to work on next
 [ ] Input Recording
 [ ] Input Recording Test File
 [ ] Input Playback
+[ ] Steal Zylinski's Leak Detector
 [ ] MicroUI over Raygui
 
 ## Nice to Haves
