@@ -71,18 +71,6 @@ game_update :: proc(ctx: ^Context) -> bool {
   screen_height := ctx.frame.current_frame.meta.screen_height
 	paddle := &game.paddle
 
-  game.camera.target = Vec2{
-    0,
-    0,
-  }
-  game.camera.offset = Vec2 {
-    screen_width / 2,
-    screen_height / 2,
-  }
-
-  game.camera.zoom = -2.5
-  game.camera.rotation = 90
-
 	ball_speed: f32 = 500
 	if input_is_right_arrow_down(input) {
 		paddle.pos.x += ball_speed * dt
@@ -115,20 +103,11 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 	platform_draw.clear(BLACK)
 
-  {
-    platform_draw.begin_drawing_2d(game.camera)
-    defer platform_draw.end_drawing_2d()
-
-    platform_draw.draw_shape(Line{ Vec2 { -1000, 0 }, Vec2 { 1000, 0 }, 1 }, Color{ 255, 255, 255, 30 })
-    platform_draw.draw_shape(Line{ Vec2 { 0, -1000 }, Vec2 { 0, 1000 }, 1 }, Color{ 255, 255, 255, 30 })
-
-  }
-
-	// platform_draw.draw_shape(game.paddle, BLUE)
+	platform_draw.draw_shape(game.paddle, BLUE)
 	// platform_draw.draw_shape(game.ball, RED)
 
-  //static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
-  //static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
+  static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
+  static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
 
   //platform_draw.draw_shape(game.mouse_rect, WHITE)
   //platform_draw.draw_shape(game.static_circle, static_circle_color)
@@ -136,16 +115,28 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
   //platform_draw.draw_shape(Line{ game.mouse_rect.pos, game.static_circle.pos, 2.0 }, ORANGE)
 
-  //origin := Vec2 { 400, 400 }
-  //d := Vec2 { 20, -500 }
-  //platform_draw.draw_shape(Line{ origin, d, 3 }, RED)
+  
+  origin := Vec2 { 400, 400 }
+  d := Vec2 { 20, -500 }
+  test_line := Line{ origin, d, 3 }
+  platform_draw.draw_shape(test_line, RED)
 
-  //lines := shape_get_rect_lines_t(game.mouse_rect)
-  //for i := 0; i < len(lines); i += 1 {
-  //    line := lines[i]
-  //    line.thickness = 2.0
-  //    platform_draw.draw_shape(line, SKYBLUE)
-  //}
+  lines := shape_get_rect_lines_t(game.mouse_rect)
+  for i := 0; i < len(lines); i += 1 {
+      line := lines[i]
+      line.thickness = 2.0
+
+      ps := line.end - line.start
+
+      normalized_direction := math.length(ps)
+      platform_draw.draw_shape(Circle{ normalized_direction, 10 }, GREEN)
+      platform_draw.draw_shape(line, SKYBLUE)
+
+      mid_point := shape_get_line_mid_point(line)
+
+      platform_draw.draw_shape(Circle { mid_point, 5 }, ORANGE)
+      platform_draw.draw_text(fmt.ctprintf("Vec2(%d): %v, %v", i, mid_point), 350, 200 + (cast(i32)(i) * 24), 24, SKYBLUE)
+  }
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
