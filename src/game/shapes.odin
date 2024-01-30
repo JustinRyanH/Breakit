@@ -133,6 +133,14 @@ shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
 	return Vec2{-v.y, v.x} * l
 }
 
+shape_get_line_mid_point :: proc(line: Line) -> Vec2 {
+	line_at_origin := line.end - line.start
+	normalized_direction := math.length(line_at_origin)
+
+	normalized_mid_point := math.normalize(line_at_origin) * (normalized_direction * 0.5)
+	return normalized_mid_point + line.start
+}
+
 /////////////////////////////
 // Tests
 /////////////////////////////
