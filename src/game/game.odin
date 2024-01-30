@@ -13,6 +13,9 @@ GameMemory :: struct {
 	ball_direction: Vec2,
 	ball_speed:     f32,
 
+  // World Stuff
+  camera: Camera2D,
+
 	// TODO: Remove these
 	mouse_rect:     Rectangle,
 	static_circle:  Circle,
@@ -30,6 +33,8 @@ game_init :: proc() {
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
+  g_mem.camera.zoom = 1
+
 	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
 	paddle_size := Vec2{100, 20}
 
@@ -57,13 +62,26 @@ game_update :: proc(ctx: ^Context) -> bool {
 	game := g_mem
 
 
+
 	input := ctx.frame
 	cmds := game.ctx.cmds
 	dt := frame_query_delta(input)
 
 	screen_width := ctx.frame.current_frame.meta.screen_width
+  screen_height := ctx.frame.current_frame.meta.screen_height
 	paddle := &game.paddle
 
+  game.camera.target = Vec2{
+    0,
+    0,
+  }
+  game.camera.offset = Vec2 {
+    screen_width / 2,
+    screen_height / 2,
+  }
+
+  game.camera.zoom = -2.5
+  game.camera.rotation = 90
 
 	ball_speed: f32 = 500
 	if input_is_right_arrow_down(input) {
@@ -97,11 +115,23 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 	platform_draw.clear(BLACK)
 
+  {
+    platform_draw.begin_drawing_2d(game.camera)
+    defer platform_draw.end_drawing_2d()
+
+    platform_draw.draw_shape(Line{ Vec2 { -1000, 0 }, Vec2 { 1000, 0 }, 1 }, Color{ 255, 255, 255, 30 })
+    platform_draw.draw_shape(Line{ Vec2 { 0, -1000 }, Vec2 { 0, 1000 }, 1 }, Color{ 255, 255, 255, 30 })
+    platform_draw.draw_shape(Circle{ Vec2{ 0, 0 }, 5 }, BLUE)
+    platform_draw.draw_shape(Circle{ Vec2{ 10, 10 }, 5 }, RED)
+    platform_draw.draw_shape(Circle{ Vec2{ -10, -10 }, 5 }, GREEN)
+
+  }
+
 	// platform_draw.draw_shape(game.paddle, BLUE)
 	// platform_draw.draw_shape(game.ball, RED)
 
-  static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
-  static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
+  //static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
+  //static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
 
   //platform_draw.draw_shape(game.mouse_rect, WHITE)
   //platform_draw.draw_shape(game.static_circle, static_circle_color)
@@ -109,16 +139,16 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
   //platform_draw.draw_shape(Line{ game.mouse_rect.pos, game.static_circle.pos, 2.0 }, ORANGE)
 
-  origin := Vec2 { 400, 400 }
-  d := Vec2 { 20, -500 }
-  platform_draw.draw_shape(Line{ origin, d, 3 }, RED)
+  //origin := Vec2 { 400, 400 }
+  //d := Vec2 { 20, -500 }
+  //platform_draw.draw_shape(Line{ origin, d, 3 }, RED)
 
-  lines := shape_get_rect_lines_t(game.mouse_rect)
-  for i := 0; i < len(lines); i += 1 {
-      line := lines[i]
-      line.thickness = 2.0
-      platform_draw.draw_shape(line, SKYBLUE)
-  }
+  //lines := shape_get_rect_lines_t(game.mouse_rect)
+  //for i := 0; i < len(lines); i += 1 {
+  //    line := lines[i]
+  //    line.thickness = 2.0
+  //    platform_draw.draw_shape(line, SKYBLUE)
+  //}
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
