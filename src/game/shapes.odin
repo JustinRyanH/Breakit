@@ -91,6 +91,11 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	return true
 }
 
+
+/////////////////////////////////
+// Helpers
+/////////////////////////////////
+
 // Get the min and max vectors of a rectangles
 shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector2f32) {
 	rect_min := rect.pos - (rect.size * 0.5)
