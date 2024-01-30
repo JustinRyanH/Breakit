@@ -120,6 +120,9 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	return lines
 }
 
+/////////////////////////////
+// Tests
+/////////////////////////////
 
 @(test)
 test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
