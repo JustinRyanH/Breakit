@@ -100,7 +100,8 @@ game_update :: proc(ctx: ^Context) -> bool {
 game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
 	platform_draw.begin_drawing()
-	defer platform_draw.end_drawing()
+  defer platform_draw.end_drawing()
+
 	platform_draw.clear(BLACK)
 
 	platform_draw.draw_shape(game.paddle, BLUE)
@@ -109,14 +110,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
   static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
   static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
 
-  //platform_draw.draw_shape(game.mouse_rect, WHITE)
   //platform_draw.draw_shape(game.static_circle, static_circle_color)
   //platform_draw.draw_shape(game.static_rect, static_rect_color)
 
   //platform_draw.draw_shape(Line{ game.mouse_rect.pos, game.static_circle.pos, 2.0 }, ORANGE)
 
-  
-  origin := Vec2 { 400, 400 }
+    origin := Vec2 { 400, 400 }
   d := Vec2 { 20, -500 }
   test_line := Line{ origin, d, 3 }
   platform_draw.draw_shape(test_line, RED)
@@ -139,7 +138,6 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
       platform_draw.draw_shape(Line { mid_point, mid_normal, 2.5 }, ORANGE)
       platform_draw.draw_text(fmt.ctprintf("Vec2(%d): %v, %v", i, mid_point, mid_normal), 350, 200 + (cast(i32)(i) * 24), 24, SKYBLUE)
   }
-
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
 }
