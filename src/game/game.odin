@@ -132,10 +132,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
       platform_draw.draw_shape(Circle{ normalized_direction, 10 }, GREEN)
       platform_draw.draw_shape(line, SKYBLUE)
 
-      mid_point := shape_get_line_mid_point(line)
+      mid_point := shape_line_mid_point(line)
+      mid_normal := shape_line_normal(line) * 50 + mid_point
 
       platform_draw.draw_shape(Circle { mid_point, 5 }, ORANGE)
-      platform_draw.draw_text(fmt.ctprintf("Vec2(%d): %v, %v", i, mid_point), 350, 200 + (cast(i32)(i) * 24), 24, SKYBLUE)
+      platform_draw.draw_shape(Line { mid_point, mid_normal, 2.5 }, ORANGE)
+      platform_draw.draw_text(fmt.ctprintf("Vec2(%d): %v, %v", i, mid_point, mid_normal), 350, 200 + (cast(i32)(i) * 24), 24, SKYBLUE)
   }
 
 

@@ -130,15 +130,19 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
 	v := math.normalize(vec)
 	l := math.length(vec)
-	return Vec2{-v.y, v.x} * l
+	return Vec2{-v.y, v.x}
 }
 
-shape_get_line_mid_point :: proc(line: Line) -> Vec2 {
+shape_line_mid_point :: proc(line: Line) -> Vec2 {
 	line_at_origin := line.end - line.start
 	normalized_direction := math.length(line_at_origin)
 
 	normalized_mid_point := math.normalize(line_at_origin) * (normalized_direction * 0.5)
 	return normalized_mid_point + line.start
+}
+
+shape_line_normal :: proc(line: Line) -> Vec2 {
+	return shape_get_vector_normal(line.start - line.end)
 }
 
 /////////////////////////////
@@ -149,7 +153,7 @@ shape_get_line_mid_point :: proc(line: Line) -> Vec2 {
 test_shape_get_vector_normal :: proc(t: ^testing.T) {
 	v := Vec2{3, 4}
 	n := shape_get_vector_normal(v)
-	testing.expect(t, Vec2{-4, 3} == n, "Normal of Vector")
+	testing.expect(t, math.normalize(Vec2{-4, 3}) == n, "Normal of Vector")
 }
 
 @(test)
