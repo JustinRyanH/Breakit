@@ -98,6 +98,7 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 	return rect_min, rect_max
 }
 
+// Returns the lines of a rectangle at zero width, using the temp_allocator
 shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	lines := make([]Line, 4, context.temp_allocator)
