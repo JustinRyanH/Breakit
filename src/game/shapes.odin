@@ -103,6 +103,7 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 	return rect_min, rect_max
 }
 
+// Get the vertices around a rectangle, clockwise
 shape_get_rect_vertices_t :: proc(rect: Rectangle) -> []Vec2 {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	vertices := make([]Vec2, 4, context.temp_allocator)
