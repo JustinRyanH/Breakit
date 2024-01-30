@@ -53,7 +53,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
-	data, success := os.read_entire_file_from_handle(file_handle)
+	data, success := os.read_entire_file_from_handle(file_handle, context.temp_allocator)
 	if !success {
 		fmt.println("Failed to read data out of file")
 		return {}, false
