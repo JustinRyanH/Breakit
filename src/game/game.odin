@@ -98,14 +98,29 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.clear(BLACK)
 
 	platform_draw.draw_shape(game.paddle, BLUE)
-	platform_draw.draw_shape(game.ball, RED)
+	// platform_draw.draw_shape(game.ball, RED)
 
   static_rect_color := GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
   static_circle_color := GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
 
-  platform_draw.draw_shape(game.mouse_rect, PURPLE)
+  platform_draw.draw_shape(game.mouse_rect, WHITE)
   platform_draw.draw_shape(game.static_circle, static_circle_color)
   platform_draw.draw_shape(game.static_rect, static_rect_color)
+
+  platform_draw.draw_shape(Line{ game.mouse_rect.pos, game.static_circle.pos, 2.0 }, ORANGE)
+
+  origin := Vec2 { 400, 400 }
+  d := Vec2 { 20, 500 }
+  dn := shape_get_vector_normal(d - origin) + origin
+  platform_draw.draw_shape(Line{ origin, d, 3 }, RED)
+  platform_draw.draw_shape(Line{ origin, dn, 3 }, BLUE)
+
+  lines := shape_get_rect_lines_t(game.mouse_rect)
+  for i := 0; i < len(lines); i += 1 {
+      line := lines[i]
+      line.thickness = 2.0
+      platform_draw.draw_shape(line, SKYBLUE)
+  }
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)

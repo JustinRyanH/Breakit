@@ -126,9 +126,23 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	return lines
 }
 
+// Rotates the Vector 90 counter clockwise
+shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
+	v := math.normalize(vec)
+	l := math.length(vec)
+	return Vec2{-v.y, v.x} * l
+}
+
 /////////////////////////////
 // Tests
 /////////////////////////////
+
+@(test)
+test_shape_get_vector_normal :: proc(t: ^testing.T) {
+	v := Vec2{3, 4}
+	n := shape_get_vector_normal(v)
+	testing.expect(t, Vec2{-4, 3} == n, "Normal of Vector")
+}
 
 @(test)
 test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
