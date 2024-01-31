@@ -43,10 +43,10 @@ game_setup :: proc(ctx: ^Context) {
 
 // Desired Order:
 // - Input
-// - MovementConstraints
+// - Movements
 // - Collision Detection
 // - Collision Response
-// - Constraintsonse
+// - Constraints
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
@@ -70,16 +70,9 @@ game_update :: proc(ctx: ^Context) -> bool {
 	if input_is_left_arrow_down(input) {
 		paddle.pos.x -= ball_speed * dt
 	}
-	if (paddle.pos.x <= paddle.size.x / 2) {
-		paddle.pos.x = paddle.size.x / 2
-	}
-
+	paddle.pos.x = math.clamp(paddle.pos.x, paddle.size.x / 2, screen_width - paddle.size.x / 2)
 
 	game.ball.pos += game.ball_direction * game.ball_speed * dt
-
-	if (paddle.pos.x >= screen_width - paddle.size.x / 2) {
-		paddle.pos.x = screen_width - paddle.size.x / 2
-	}
 
 	if (ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
 		reset_ball()
