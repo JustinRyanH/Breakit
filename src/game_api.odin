@@ -79,7 +79,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
 	api.setup =
 	cast(proc(ctx: ^game.Context))(dynlib.symbol_address(lib, "game_setup") or_else nil)
-	api.teardown = stub_tear_down
+	api.teardown = cast(proc())(dynlib.symbol_address(lib, "game_teardown") or_else nil)
 	api.update =
 	cast(proc(ctx: ^game.Context) -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
 	api.draw =
@@ -101,7 +101,8 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	   api.draw == nil ||
 	   api.shutdown == nil ||
 	   api.memory == nil ||
-	   api.hot_reloaded == nil {
+	   api.hot_reloaded == nil ||
+	   api.teardown == nil {
 		game_api_unload(api)
 		fmt.println("Game DLL missing required procedure")
 		return {}, false

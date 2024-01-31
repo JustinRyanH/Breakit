@@ -46,7 +46,6 @@ game_setup :: proc(ctx: ^Context) {
 // - Movement/Constraints
 // - Collision Detection
 // - Collision Response
-
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
@@ -120,7 +119,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 
 @(export)
+game_teardown :: proc() {
+}
+
+@(export)
 game_shutdown :: proc() {
+	game_teardown()
 	free(g_mem)
 }
 
