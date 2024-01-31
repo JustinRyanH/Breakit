@@ -31,15 +31,16 @@ game_init :: proc() {
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
+  screen_width, screen_height := frame_query_dimensions(ctx.frame)
 	g_mem.camera.zoom = 1
 
-	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
+	paddle_position := Vec2{screen_width / 2.0, screen_height - 25}
 	paddle_size := Vec2{100, 20}
 
 	g_mem.paddle = Rectangle{paddle_position, paddle_size, 0.0}
 	g_mem.paddle_speed = 500
 
-	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
+	g_mem.ball = Circle{Vec2{screen_width / 2.0, screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
 	g_mem.ball_speed = 300
 }
@@ -60,8 +61,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 	dt := frame_query_delta(input)
 
 	mouse_pos := input_mouse_position(ctx.frame)
-	screen_width := ctx.frame.current_frame.meta.screen_width
-	screen_height := ctx.frame.current_frame.meta.screen_height
+  screen_width, screen_height := frame_query_dimensions(ctx.frame)
 	ball := &game.ball
 	paddle := &game.paddle
 

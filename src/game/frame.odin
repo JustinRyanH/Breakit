@@ -52,6 +52,11 @@ frame_query_delta :: proc(input: FrameInput) -> f32 {
 	return input.current_frame.meta.frame_delta
 }
 
+// Returns width and height of the current frame
+frame_query_dimensions :: proc(input: FrameInput) -> (width, height: f32) {
+	return input.current_frame.meta.screen_width, input.current_frame.meta.screen_height
+}
+
 // Get the mouse position this frame
 input_mouse_position :: proc(input: FrameInput) -> math.Vector2f32 {
 	return input.current_frame.mouse.pos
