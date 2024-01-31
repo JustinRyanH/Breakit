@@ -78,7 +78,7 @@ shape_are_rects_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
 	return overlap_horizontal && overlap_vertical
 }
 
-// Check collision between two circles
+// returns true if the two circles intersect
 shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 	delta := circle_a.pos - circle_b.pos
 	distance := math.vector_length(delta)
@@ -87,7 +87,7 @@ shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 }
 
 
-// Checks collision between a circle and a rectangle
+// returns true if circle intersects the rectangle
 shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> bool {
 	if (shape_is_point_inside_rect(circle.pos, rect)) {return true}
 	lines := shape_get_rect_lines_t(rect)
@@ -98,6 +98,7 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 	return false
 }
 
+// returns true if a point is inside a rect
 shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> bool {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	if (point.x < rect_min.x || point.x > rect_max.x) {return false}
@@ -105,21 +106,27 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	return true
 }
 
+
+// returns true if a line intersects a circle
 shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
 	closest_point := closest_point_on_line_to_point(line, circle.pos)
 	return (shape_is_point_inside_circle(closest_point, circle))
 }
 
+
+// returns true if a point is inside a circle
 shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
 	np_length := math.length(circle.pos - point)
 	return np_length < circle.radius
 }
 
+// returns true if two lines intersect
 shape_are_lines_colliding :: proc(a, b: Line) -> bool {
 	_, colliding := shape_get_line_intersection(a, b)
 	return colliding
 }
 
+// Returns trues if a line intersects a rect
 shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
 	lines := shape_get_rect_lines_t(rect)
 	for l in lines {
@@ -163,6 +170,8 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	return lines
 }
 
+
+// Returns the intersection point, second argument is if there is an interaction or not
 shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	an := a.end - a.start
 	bn := b.end - b.start
