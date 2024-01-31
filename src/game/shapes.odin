@@ -54,34 +54,14 @@ shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 
 
 // Checks collision between a circle and a rectangle
-// FIX: This is not consistent
-shape_is_circle_colliding_rectangle :: proc(circle: Circle, rectangle: Rectangle) -> bool {
-	return shape_is_circle_colliding_rectangle_v2(circle, rectangle)
-	// Move the Circle to the origin
-	//delta := math.abs(circle.pos - rectangle.pos)
-
-	//half_rect_size := rectangle.size * 0.5
-
-	//if (delta.x > (half_rect_size.x + circle.radius)) {return false}
-	//if (delta.y > (half_rect_size.y + circle.radius)) {return false}
-
-	//corner_distance_sq :=
-	//	(delta.x - half_rect_size.x) * (delta.x - half_rect_size.x) +
-	//	(delta.y - half_rect_size.y) * (delta.y - half_rect_size.y)
-
-
-	//return corner_distance_sq <= (circle.radius * circle.radius)
-}
-
-shape_is_circle_colliding_rectangle_v2 :: proc(
-	circle: Circle,
-	rect: Rectangle,
-) -> (
-	is_colliding: bool,
-) {
+shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> bool {
 	if (shape_is_point_inside_rect(circle.pos, rect)) {return true}
-	// Return true if circle is colliding with any of the rectangle's edges
-	return is_colliding
+	lines := shape_get_rect_lines_t(rect)
+
+	for line in lines {
+		if (shape_is_circle_colliding_line(circle, line)) {return true}
+	}
+	return false
 }
 
 shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> bool {
@@ -89,6 +69,11 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	if (point.x < rect_min.x || point.x > rect_max.x) {return false}
 	if (point.y < rect_min.y || point.y > rect_max.y) {return false}
 	return true
+}
+
+shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
+	closest_point := closest_point_on_line_to_point(line, circle.pos)
+	return (shape_is_point_inside_circle(closest_point, circle))
 }
 
 shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
@@ -148,6 +133,20 @@ shape_line_mid_point :: proc(line: Line) -> Vec2 {
 
 shape_line_normal :: proc(line: Line) -> Vec2 {
 	return shape_get_vector_normal(line.start - line.end)
+}
+
+@(private = "file")
+closest_point_on_line_to_point :: #force_inline proc(line: Line, point: Vec2) -> Vec2 {
+	se := line.end - line.start
+	se_len := math.length(se)
+	pd := point - line.start
+
+	se_n := se / se_len
+	pd_n := pd / se_len
+
+	dot := math.clamp(math.dot(se_n, pd_n), 0.0, 1.0)
+	return se_n * (dot * se_len) + line.start
+
 }
 
 /////////////////////////////
