@@ -185,7 +185,7 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	return Vec2{}, false
 }
 
-// Rotates the Vector 90 counter clockwise
+// Rotates the Vector 90 counter clockwise, normalized
 shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
 	v := math.normalize(vec)
 	l := math.length(vec)
