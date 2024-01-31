@@ -91,6 +91,11 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	return true
 }
 
+shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
+	np_length := math.length(circle.pos - point)
+	return np_length < circle.radius
+}
+
 
 /////////////////////////////////
 // Helpers
@@ -154,6 +159,25 @@ test_shape_get_vector_normal :: proc(t: ^testing.T) {
 	v := Vec2{3, 4}
 	n := shape_get_vector_normal(v)
 	testing.expect(t, math.normalize(Vec2{-4, 3}) == n, "Normal of Vector")
+}
+
+@(test)
+test_shape_point_in_circle :: proc(t: ^testing.T) {
+	circle_center := Vec2{300, 400}
+	circle_radius: f32 = 50
+	circle := Circle{circle_center, circle_radius}
+
+	testing.expect(
+		t,
+		!shape_is_point_inside_circle(Vec2{200, 305}, circle),
+		"Point should be outside of circle",
+	)
+	testing.expect(
+		t,
+		shape_is_point_inside_circle(Vec2{260, 385}, circle),
+		"Point should be inside of circle",
+	)
+
 }
 
 @(test)
