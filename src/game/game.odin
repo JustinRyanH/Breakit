@@ -69,12 +69,20 @@ game_update :: proc(ctx: ^Context) -> bool {
 		paddle.pos.x = screen_width - paddle.size.x / 2
 	}
 
-	game.ball.pos += game.ball_direction * game.ball_speed * dt
 	if (game.ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
 		reset_ball()
 	}
 
+	if (shape_check_collision(game.ball, game.paddle)) {
+		if (game.ball_direction.y > 0.0) {
+			game.ball_direction.y = -game.ball_direction.y
+		}
+		game.ball_direction.x = (game.ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
+		game.ball_direction = math.normalize(game.ball_direction)
+	}
 
+
+	game.ball.pos += game.ball_direction * game.ball_speed * dt
 	return cmds.should_close_game()
 }
 
@@ -90,6 +98,9 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
+
+	platform_draw.draw_shape(game.ball, RED)
+	platform_draw.draw_shape(game.paddle, BLUE)
 }
 
 
