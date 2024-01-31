@@ -22,6 +22,8 @@ There are the tasks I want to work on next
 [ ] Start Menu with Keyboard Selectable Options
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
+[ ] If paddle overlaps ball,
+  push the ball out, maybe adjust the velocity a bit too
 
 ## DONE
 
