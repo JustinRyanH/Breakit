@@ -43,10 +43,10 @@ game_setup :: proc(ctx: ^Context) {
 
 // Desired Order:
 // - Input
-// - MovementsConstraints
+// - Movements
 // - Collision Detection
 // - Collision Response
-// - Constraintsonse
+// - Constraints
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
