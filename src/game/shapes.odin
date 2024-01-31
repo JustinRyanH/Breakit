@@ -116,6 +116,26 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	return lines
 }
 
+shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
+	an := a.end - a.start
+	bn := b.end - b.start
+
+	an_bn_normalized := (-bn.x * an.y + an.x * bn.y)
+	s_cross := -an.y * (a.start.x - b.start.x) + an.x * (a.start.y - b.start.y)
+	t_cross := bn.x * (a.start.y - b.start.y) - bn.y * (a.start.x - b.start.x)
+	s := (s_cross) / an_bn_normalized
+	t := (t_cross) / an_bn_normalized
+
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+		x := a.start.x + (t * an.x)
+		y := a.start.y + (t * an.y)
+		return Vec2{x, y}, true
+
+	}
+
+	return Vec2{}, false
+}
+
 // Rotates the Vector 90 counter clockwise
 shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
 	v := math.normalize(vec)
