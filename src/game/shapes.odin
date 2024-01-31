@@ -252,7 +252,6 @@ test_shape_point_in_circle :: proc(t: ^testing.T) {
 		shape_is_point_inside_circle(Vec2{260, 385}, circle),
 		"Point should be inside of circle",
 	)
-
 }
 
 @(test)
@@ -265,7 +264,6 @@ test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
 	testing.expect(t, vertices[1] == Vec2{0.5, -0.5}, "Top right most vertex")
 	testing.expect(t, vertices[2] == Vec2{0.5, 0.5}, "Bottom right most vertex")
 	testing.expect(t, vertices[3] == Vec2{-0.5, 0.5}, "bottom left most vertex")
-
 }
 
 @(test)
@@ -295,7 +293,6 @@ test_shape_rect_lines_t_unrotated :: proc(t: ^testing.T) {
 		lines[3] == Line{Vec2{-0.5, 0.5}, Vec2{-0.5, -0.5}, 0.0},
 		"Forth line is the bottom line",
 	)
-
 }
 
 @(test)
