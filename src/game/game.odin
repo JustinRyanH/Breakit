@@ -140,8 +140,7 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 		return
 	}
 
-	screen_width := game.ctx.frame.current_frame.meta.screen_width
-	screen_height := game.ctx.frame.current_frame.meta.screen_height
+	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
 
 	world := Rectangle {
 		Vec2{screen_width / 2, screen_height / 2},
