@@ -32,6 +32,40 @@ Shape :: union {
 /// Collision
 /////////////////
 
+shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
+	switch a in shape_a {
+	case Circle:
+		switch b in shape_b {
+		case Circle:
+			return shape_are_circles_colliding(a, b)
+		case Rectangle:
+			return shape_is_circle_colliding_rectangle(a, b)
+		case Line:
+			return shape_is_circle_colliding_line(a, b)
+		}
+	case Rectangle:
+		switch b in shape_b {
+		case Circle:
+			return shape_is_circle_colliding_rectangle(b, a)
+		case Rectangle:
+			return shape_are_rects_colliding(a, b)
+		case Line:
+			return shape_is_line_colliding_rect(b, a)
+		}
+	case Line:
+		switch b in shape_b {
+		case Circle:
+			return shape_is_circle_colliding_line(b, a)
+		case Rectangle:
+			return shape_is_line_colliding_rect(a, b)
+		case Line:
+			return shape_are_lines_colliding(a, b)
+		}
+	}
+	return false
+}
+
+
 // Check collision between two rectangles
 // FIX: Does AABB and not OBB
 shape_are_rects_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
@@ -79,6 +113,19 @@ shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
 shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
 	np_length := math.length(circle.pos - point)
 	return np_length < circle.radius
+}
+
+shape_are_lines_colliding :: proc(a, b: Line) -> bool {
+	_, colliding := shape_get_line_intersection(a, b)
+	return colliding
+}
+
+shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
+	lines := shape_get_rect_lines_t(rect)
+	for l in lines {
+		if (shape_are_lines_colliding(line, l)) {return true}
+	}
+	return false
 }
 
 

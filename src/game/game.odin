@@ -18,6 +18,8 @@ GameMemory :: struct {
 
 	// TODO: Remove these
 	target_rect:    Rectangle,
+	target_circle:  Circle,
+	target_mode:    bool,
 	static_circle:  Circle,
 	static_rect:    Rectangle,
 }
@@ -45,6 +47,7 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_speed = 300
 
 	g_mem.target_rect = Rectangle{Vec2{0, 0}, Vec2{55, 100}, 0}
+	g_mem.target_circle = Circle{Vec2{0, 0}, 30}
 	g_mem.static_circle = Circle {
 		Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0} + Vec2{150, 100},
 		20,
@@ -65,6 +68,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 	cmds := game.ctx.cmds
 	dt := frame_query_delta(input)
 
+	mouse_pos := input_mouse_position(ctx.frame)
 	screen_width := ctx.frame.current_frame.meta.screen_width
 	screen_height := ctx.frame.current_frame.meta.screen_height
 	paddle := &game.paddle
@@ -89,7 +93,18 @@ game_update :: proc(ctx: ^Context) -> bool {
 		reset_ball()
 	}
 
-	game.target_rect.pos = input_mouse_position(input)
+
+	if (input_was_space_pressed(input)) {
+		game.target_mode = !game.target_mode
+	}
+
+	if (game.target_mode) {
+		game.target_rect.pos = mouse_pos
+		game.target_circle.pos = Vec2{-100, -100}
+	} else {
+		game.target_rect.pos = Vec2{-100, -100}
+		game.target_circle.pos = mouse_pos
+	}
 
 	return cmds.should_close_game()
 }
@@ -112,14 +127,21 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	mouse_pos := input_mouse_position(game.ctx.frame)
 	mouse_circle := Circle{mouse_pos, 10}
 
-	static_rect_color :=
-		GREEN if shape_are_rects_colliding(game.static_rect, game.target_rect) else RED
-	static_circle_color :=
-		GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.target_rect) else RED
+	static_line := Line{Vec2{100, 100}, Vec2{300, 300}, 5}
 
-	platform_draw.draw_shape(game.target_rect, ORANGE)
+	target_shape: Shape = game.target_rect if game.target_mode else game.target_circle
+
+	static_rect_color := GREEN if shape_check_collision(game.static_rect, target_shape) else RED
+	static_circle_color :=
+		GREEN if shape_check_collision(game.static_circle, target_shape) else RED
+	static_line_color := GREEN if shape_check_collision(static_line, target_shape) else RED
+
 	platform_draw.draw_shape(game.static_circle, static_circle_color)
 	platform_draw.draw_shape(game.static_rect, static_rect_color)
+	platform_draw.draw_shape(static_line, static_line_color)
+
+	platform_draw.draw_shape(target_shape, ORANGE)
+	platform_draw.draw_shape(game.target_circle, ORANGE)
 
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
