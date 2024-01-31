@@ -47,7 +47,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Circle:
 			return shape_is_circle_colliding_rectangle(b, a)
 		case Rectangle:
-			return shape_are_rects_colliding(a, b)
+			return shape_are_rects_colliding_aabb(a, b)
 		case Line:
 			return shape_is_line_colliding_rect(b, a)
 		}
@@ -64,9 +64,9 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	return false
 }
 
-// Check collision between two rectangles
-// FIX: Does AABB and not OBB
-shape_are_rects_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
+
+// Check collision between two rectangles using AABB, assumes there is no rotation
+shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 	rect_a_min, rect_a_extends := shape_get_rect_extends(rec_a)
 	rect_b_min, rect_b_extends := shape_get_rect_extends(rec_b)
 
