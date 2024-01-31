@@ -25,7 +25,6 @@ game_init :: proc() {
 	g_mem = new(GameMemory)
 }
 
-// TODO: Create a teardown so I can de-allocate if I recall setup
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
