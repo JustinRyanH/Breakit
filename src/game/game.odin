@@ -43,9 +43,10 @@ game_setup :: proc(ctx: ^Context) {
 
 // Desired Order:
 // - Input
-// - Movement/Constraints
+// - MovementConstraints
 // - Collision Detection
 // - Collision Response
+// - Constraintsonse
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
@@ -75,8 +76,6 @@ game_update :: proc(ctx: ^Context) -> bool {
 
 
 	game.ball.pos += game.ball_direction * game.ball_speed * dt
-	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
-	ball.pos.y = math.max(ball.pos.y, ball.radius)
 
 	if (paddle.pos.x >= screen_width - paddle.size.x / 2) {
 		paddle.pos.x = screen_width - paddle.size.x / 2
@@ -93,6 +92,9 @@ game_update :: proc(ctx: ^Context) -> bool {
 		game.ball_direction.x = (ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
 		game.ball_direction = math.normalize(game.ball_direction)
 	}
+
+	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
+	ball.pos.y = math.max(ball.pos.y, ball.radius)
 
 	return cmds.should_close_game()
 }
