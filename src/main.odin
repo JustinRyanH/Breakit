@@ -35,6 +35,12 @@ main :: proc() {
 
 	for {
 		defer free_all(context.temp_allocator)
+
+		if (rl.IsKeyReleased(.F5)) {
+			game_api.teardown()
+			game_api.setup(ctx)
+		}
+
 		ctx.frame = platform_update_frame(ctx.frame)
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
