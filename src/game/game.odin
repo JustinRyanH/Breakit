@@ -119,9 +119,6 @@ game_update :: proc(ctx: ^Context) -> bool {
 game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
 
-	screen_width := game.ctx.frame.current_frame.meta.screen_width
-	screen_height := game.ctx.frame.current_frame.meta.screen_height
-
 	platform_draw.begin_drawing()
 	defer platform_draw.end_drawing()
 
@@ -130,6 +127,17 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
+	game_draw_debug(platform_draw)
+}
+
+game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
+	game := g_mem
+	if (!frame_query_debug(game.ctx.frame)) {
+		return
+	}
+
+	screen_width := game.ctx.frame.current_frame.meta.screen_width
+	screen_height := game.ctx.frame.current_frame.meta.screen_height
 
 	world := Rectangle {
 		Vec2{screen_width / 2, screen_height / 2},
