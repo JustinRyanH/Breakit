@@ -17,7 +17,7 @@ GameMemory :: struct {
 	camera:         Camera2D,
 
 	// TODO: Remove these
-	mouse_rect:     Rectangle,
+	target_rect:    Rectangle,
 	static_circle:  Circle,
 	static_rect:    Rectangle,
 }
@@ -44,7 +44,7 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
 	g_mem.ball_speed = 300
 
-	g_mem.mouse_rect = Rectangle{Vec2{0, 0}, Vec2{55, 100}, 0}
+	g_mem.target_rect = Rectangle{Vec2{0, 0}, Vec2{55, 100}, 0}
 	g_mem.static_circle = Circle {
 		Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0} + Vec2{150, 100},
 		20,
@@ -89,7 +89,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 		reset_ball()
 	}
 
-	game.mouse_rect.pos = input_mouse_position(input)
+	game.target_rect.pos = input_mouse_position(input)
 
 	return cmds.should_close_game()
 }
@@ -97,56 +97,34 @@ game_update :: proc(ctx: ^Context) -> bool {
 @(export)
 game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
+
+	screen_width := game.ctx.frame.current_frame.meta.screen_width
+	screen_height := game.ctx.frame.current_frame.meta.screen_height
+
 	platform_draw.begin_drawing()
 	defer platform_draw.end_drawing()
 
 	platform_draw.clear(BLACK)
 
-	platform_draw.draw_shape(game.paddle, BLUE)
+	// platform_draw.draw_shape(game.paddle, BLUE)
 	// platform_draw.draw_shape(game.ball, RED)
 
+	mouse_pos := input_mouse_position(game.ctx.frame)
+	mouse_circle := Circle{mouse_pos, 10}
+
 	static_rect_color :=
-		GREEN if shape_are_rects_colliding(game.static_rect, game.mouse_rect) else RED
+		GREEN if shape_are_rects_colliding(game.static_rect, game.target_rect) else RED
 	static_circle_color :=
-		GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.mouse_rect) else RED
+		GREEN if shape_is_circle_colliding_rectangle(game.static_circle, game.target_rect) else RED
 
-	//platform_draw.draw_shape(game.static_circle, static_circle_color)
-	//platform_draw.draw_shape(game.static_rect, static_rect_color)
+	platform_draw.draw_shape(game.target_rect, ORANGE)
+	platform_draw.draw_shape(game.static_circle, static_circle_color)
+	platform_draw.draw_shape(game.static_rect, static_rect_color)
 
-	//platform_draw.draw_shape(Line{ game.mouse_rect.pos, game.static_circle.pos, 2.0 }, ORANGE)
-
-	origin := Vec2{400, 400}
-	d := Vec2{20, -500}
-	test_line := Line{origin, d, 3}
-	platform_draw.draw_shape(test_line, RED)
-
-	lines := shape_get_rect_lines_t(game.mouse_rect)
-	for i := 0; i < len(lines); i += 1 {
-		line := lines[i]
-		line.thickness = 2.0
-
-		ps := line.end - line.start
-
-		normalized_direction := math.length(ps)
-		platform_draw.draw_shape(Circle{normalized_direction, 10}, GREEN)
-		platform_draw.draw_shape(line, SKYBLUE)
-
-		mid_point := shape_line_mid_point(line)
-		mid_normal := shape_line_normal(line) * 50 + mid_point
-
-		platform_draw.draw_shape(Circle{mid_point, 5}, ORANGE)
-		platform_draw.draw_shape(Line{mid_point, mid_normal, 2.5}, ORANGE)
-		platform_draw.draw_text(
-			fmt.ctprintf("Vec2(%d): %v, %v", i, mid_point, mid_normal),
-			350,
-			200 + (cast(i32)(i) * 24),
-			24,
-			SKYBLUE,
-		)
-	}
 
 	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
 }
+
 
 @(export)
 game_shutdown :: proc() {
