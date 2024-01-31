@@ -25,6 +25,7 @@ game_init :: proc() {
 	g_mem = new(GameMemory)
 }
 
+// TODO: Create a teardown so I can de-allocate if I recall setup
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
@@ -40,6 +41,12 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_speed = 300
 }
 
+// Desired Order:
+// - Input
+// - Movement/Constraints
+// - Collision Detection
+// - Collision Response
+
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
@@ -52,7 +59,9 @@ game_update :: proc(ctx: ^Context) -> bool {
 	mouse_pos := input_mouse_position(ctx.frame)
 	screen_width := ctx.frame.current_frame.meta.screen_width
 	screen_height := ctx.frame.current_frame.meta.screen_height
+	ball := &game.ball
 	paddle := &game.paddle
+
 
 	ball_speed: f32 = 500
 	if input_is_right_arrow_down(input) {
@@ -65,24 +74,27 @@ game_update :: proc(ctx: ^Context) -> bool {
 		paddle.pos.x = paddle.size.x / 2
 	}
 
+
+	game.ball.pos += game.ball_direction * game.ball_speed * dt
+	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
+	ball.pos.y = math.max(ball.pos.y, ball.radius)
+
 	if (paddle.pos.x >= screen_width - paddle.size.x / 2) {
 		paddle.pos.x = screen_width - paddle.size.x / 2
 	}
 
-	if (game.ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
+	if (ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
 		reset_ball()
 	}
 
-	if (shape_check_collision(game.ball, game.paddle)) {
+	if (shape_check_collision(ball^, game.paddle)) {
 		if (game.ball_direction.y > 0.0) {
 			game.ball_direction.y = -game.ball_direction.y
 		}
-		game.ball_direction.x = (game.ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
+		game.ball_direction.x = (ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
 		game.ball_direction = math.normalize(game.ball_direction)
 	}
 
-
-	game.ball.pos += game.ball_direction * game.ball_speed * dt
 	return cmds.should_close_game()
 }
 
@@ -101,6 +113,9 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
+
+	platform_draw.draw_text(fmt.ctprintf("POS:%v", game.ball.pos), 100, 100, 20, MAROON)
+	platform_draw.draw_text(fmt.ctprintf("SCREEN:%0.2f", screen_width), 100, 140, 20, MAROON)
 }
 
 
