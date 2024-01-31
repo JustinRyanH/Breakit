@@ -68,13 +68,10 @@ game_update :: proc(ctx: ^Context) -> bool {
 		paddle.pos.x += ball_speed * dt
 	}
 	if input_is_left_arrow_down(input) {
-
+		paddle.pos.x -= ball_speed * dt
 	}
+
 	game.ball.pos += game.ball_direction * game.ball_speed * dt
-
-	if (ball.pos.y > ctx.frame.current_frame.meta.screen_height) {
-		reset_ball()
-	}
 
 	if (shape_check_collision(ball^, game.paddle)) {
 		if (game.ball_direction.y > 0.0) {
@@ -82,6 +79,33 @@ game_update :: proc(ctx: ^Context) -> bool {
 		}
 		game.ball_direction.x = (ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
 		game.ball_direction = math.normalize(game.ball_direction)
+	}
+
+	world := Rectangle {
+		Vec2{screen_width / 2, screen_height / 2},
+		Vec2{screen_width, screen_height},
+		0.0,
+	}
+	world_edges := shape_get_rect_lines_t(world)
+	for i := 0; i < len(world_edges); i += 1 {
+		edge := world_edges[i]
+		edge.thickness = 2
+
+		if (shape_check_collision(ball^, edge)) {
+			normal := -shape_line_normal(edge)
+			if (math.abs(normal.x) > 0) {
+				game.ball_direction.x = -game.ball_direction.x
+				break
+			}
+			if (normal.y > 0) {
+				game.ball_direction.y = -game.ball_direction.y
+				break
+			}
+		}
+	}
+
+	if (ball.pos.y - ball.radius * 2 > screen_height) {
+		reset_ball()
 	}
 
 	paddle.pos.x = math.clamp(paddle.pos.x, paddle.size.x / 2, screen_width - paddle.size.x / 2)
@@ -107,8 +131,32 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
 
-	platform_draw.draw_text(fmt.ctprintf("POS:%v", game.ball.pos), 100, 100, 20, MAROON)
-	platform_draw.draw_text(fmt.ctprintf("SCREEN:%0.2f", screen_width), 100, 140, 20, MAROON)
+	world := Rectangle {
+		Vec2{screen_width / 2, screen_height / 2},
+		Vec2{screen_width, screen_height},
+		0.0,
+	}
+	world_edges := shape_get_rect_lines_t(world)
+	for i := 0; i < len(world_edges); i += 1 {
+		edge := world_edges[i]
+		edge.thickness = 2
+
+		projection_point := shape_point_projected_to_line(game.ball.pos, edge)
+		normal := shape_line_normal(edge)
+		offset := projection_point - (normal * 100)
+		platform_draw.draw_shape(
+			Line{projection_point, projection_point - (normal * 20), 2},
+			GREEN,
+		)
+		platform_draw.draw_text(
+			fmt.ctprintf("N(%v)", -normal),
+			cast(i32)(offset.x),
+			cast(i32)(offset.y),
+			20,
+			MAROON,
+		)
+		platform_draw.draw_shape(edge, GREEN)
+	}
 }
 
 

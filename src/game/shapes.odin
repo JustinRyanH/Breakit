@@ -105,7 +105,7 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 
 // returns true if a line intersects a circle
 shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
-	closest_point := closest_point_on_line_to_point(line, circle.pos)
+	closest_point := shape_point_projected_to_line(circle.pos, line)
 	return (shape_is_point_inside_circle(closest_point, circle))
 }
 
@@ -204,8 +204,7 @@ shape_line_normal :: proc(line: Line) -> Vec2 {
 	return shape_get_vector_normal(line.start - line.end)
 }
 
-@(private = "file")
-closest_point_on_line_to_point :: #force_inline proc(line: Line, point: Vec2) -> Vec2 {
+shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> Vec2 {
 	se := line.end - line.start
 	se_len := math.length(se)
 	pd := point - line.start
