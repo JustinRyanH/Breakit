@@ -7,14 +7,17 @@ import rl "vendor:raylib"
 Vec2 :: math.Vector2f32
 
 GameMemory :: struct {
-	ctx:            ^Context,
-	paddle:         Rectangle,
-	ball:           Circle,
-	ball_direction: Vec2,
-	ball_speed:     f32,
+	ctx:              ^Context,
+	paddle:           Rectangle,
+	paddle_direction: Vec2,
+	paddle_speed:     f32,
+	ball:             Circle,
+	paddle_velocity:  Vec2,
+	ball_direction:   Vec2,
+	ball_speed:       f32,
 
 	// World Stuff
-	camera:         Camera2D,
+	camera:           Camera2D,
 }
 
 
@@ -34,6 +37,7 @@ game_setup :: proc(ctx: ^Context) {
 	paddle_size := Vec2{100, 20}
 
 	g_mem.paddle = Rectangle{paddle_position, paddle_size, 0.0}
+	g_mem.paddle_speed = 500
 
 	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
@@ -62,15 +66,16 @@ game_update :: proc(ctx: ^Context) -> bool {
 	paddle := &game.paddle
 
 
-	ball_speed: f32 = 500
 	if input_is_right_arrow_down(input) {
-		paddle.pos.x += ball_speed * dt
-	}
-	if input_is_left_arrow_down(input) {
-		paddle.pos.x -= ball_speed * dt
+		game.paddle_velocity.x = 1
+	} else if input_is_left_arrow_down(input) {
+		game.paddle_velocity.x = -1
+	} else {
+		game.paddle_velocity.x = 0
 	}
 
 	game.ball.pos += game.ball_direction * game.ball_speed * dt
+	game.paddle.pos += game.paddle_velocity * game.paddle_speed * dt
 
 	if (shape_check_collision(ball^, game.paddle)) {
 		if (game.ball_direction.y > 0.0) {
@@ -199,4 +204,6 @@ reset_ball :: proc() {
 	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
 	g_mem.ball_speed = 300
+	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
+	g_mem.paddle.pos = paddle_position
 }
