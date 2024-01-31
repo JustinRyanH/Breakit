@@ -75,6 +75,11 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
+	all_functions_loaded := true
+	defer if !all_functions_loaded {
+		game_api_unload(api)
+	}
+
 	// Method Definitions
 	api.init = cast(proc())(dynlib.symbol_address(lib, "game_init") or_else nil)
 	api.setup =
@@ -105,6 +110,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	   api.teardown == nil {
 		game_api_unload(api)
 		fmt.println("Game DLL missing required procedure")
+		all_functions_loaded = false
 		return {}, false
 	}
 
