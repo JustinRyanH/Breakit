@@ -27,7 +27,6 @@ Shape :: union {
 	Line,
 }
 
-
 /////////////////
 /// Collision
 /////////////////
@@ -65,7 +64,6 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	return false
 }
 
-
 // Check collision between two rectangles
 // FIX: Does AABB and not OBB
 shape_are_rects_colliding :: proc(rec_a, rec_b: Rectangle) -> bool {
@@ -86,7 +84,6 @@ shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 	return false
 }
 
-
 // returns true if circle intersects the rectangle
 shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> bool {
 	if (shape_is_point_inside_rect(circle.pos, rect)) {return true}
@@ -106,13 +103,11 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	return true
 }
 
-
 // returns true if a line intersects a circle
 shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
 	closest_point := closest_point_on_line_to_point(line, circle.pos)
 	return (shape_is_point_inside_circle(closest_point, circle))
 }
-
 
 // returns true if a point is inside a circle
 shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
@@ -134,7 +129,6 @@ shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
 	}
 	return false
 }
-
 
 /////////////////////////////////
 // Helpers
@@ -169,7 +163,6 @@ shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	lines[3] = Line{Vec2{rect_min.x, rect_max.y}, rect_min, 0.0}
 	return lines
 }
-
 
 // Returns the intersection point, second argument is if there is an interaction or not
 shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
@@ -222,7 +215,6 @@ closest_point_on_line_to_point :: #force_inline proc(line: Line, point: Vec2) ->
 
 	dot := math.clamp(math.dot(se_n, pd_n), 0.0, 1.0)
 	return se_n * (dot * se_len) + line.start
-
 }
 
 /////////////////////////////
