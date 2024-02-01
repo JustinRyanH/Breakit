@@ -112,22 +112,21 @@ shape_is_circle_colliding_rectangle_v2 :: proc(
 	circle_event, rect_event: CollisionEvent,
 	did_collide: bool,
 ) {
-	point_evt, rect_evt, is_inside := shape_is_point_inside_rect(circle.pos, rect)
-	if (is_inside) {
-		did_collide = true
-		rect_event = rect_evt
-		circle_event = CollisionEvent {
-			circle.pos + point_evt.normal * circle.radius,
-			point_evt.normal,
-		}
+	closest_line := shape_get_closest_line(circle.pos, rect)
+	line_point := shape_point_projected_to_line(circle.pos, closest_line)
+	line_normal := shape_line_normal(closest_line)
+
+	circle_point := circle.pos + -line_normal * circle.radius
+	dir := math.normalize(circle_point - line_point)
+
+	if (dir == line_normal) {
 		return
 	}
-	lines := shape_get_rect_lines_t(rect)
 
-	for line in lines {
-		_, is_colliding := shape_is_circle_colliding_line(circle, line)
-		if (is_colliding) {return circle_event, rect_event, false}
-	}
+	rect_event = CollisionEvent{line_point, line_normal}
+	// The point normal likely should be rotated towards collision point, inversed, and normalized
+	circle_event = CollisionEvent{circle_point, -line_normal}
+	did_collide = true
 	return
 }
 
@@ -138,19 +137,20 @@ shape_is_point_inside_rect :: proc(
 	rect: Rectangle,
 ) -> (
 	point_event: CollisionEvent,
-	line_event: CollisionEvent,
+	rect_event: CollisionEvent,
 	did_collide: bool,
 ) {
 	closest_line := shape_get_closest_line(point, rect)
 	line_point := shape_point_projected_to_line(point, closest_line)
 	line_normal := shape_line_normal(closest_line)
+
 	dir := math.normalize(point - line_point)
 
 	if (dir == line_normal) {
 		return
 	}
 
-	line_event = CollisionEvent{line_point, line_normal}
+	rect_event = CollisionEvent{line_point, line_normal}
 	// The point normal likely should be rotated towards collision point, inversed, and normalized
 	point_event = CollisionEvent{point, -line_normal}
 	did_collide = true
