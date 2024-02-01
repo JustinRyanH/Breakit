@@ -122,7 +122,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		return
 	}
 
-	circle_evt, rect_evt, did_collide := shape_is_circle_colliding_rectangle_v2(
+	circle_evt, rect_evt, did_collide := shape_is_circle_colliding_rectangle(
 		mouse_circle,
 		test_rect,
 	)
