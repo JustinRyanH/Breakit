@@ -108,15 +108,23 @@ shape_is_circle_colliding_rectangle :: proc(
 	circle_edge_point := circle.pos + center_to_point_dir * circle.radius
 	circle_edge_line_point_dir := math.normalize(line_point - circle_edge_point)
 
-	if (math.sign(center_to_point_dir) == math.sign(circle_edge_line_point_dir)) {
+	line_normal := shape_line_normal(closest_line)
+
+	circle_overlap_edge := math.sign(center_to_point_dir) != math.sign(circle_edge_line_point_dir)
+	circle_center_outside := math.sign(center_to_point_dir) != math.sign(line_normal)
+	if (!circle_overlap_edge && circle_center_outside) {
 		return
 	}
 
-	line_normal := shape_line_normal(closest_line)
-	circle_normal := center_to_point_dir
+	if (line_normal != center_to_point_dir) {
+		circle_event = CollisionEvent{circle_edge_point, center_to_point_dir}
+	} else {
+		new_normal := -line_normal
+		new_edge := circle.pos + new_normal * circle.radius
+		circle_event = CollisionEvent{new_edge, new_normal}
+	}
 
 	rect_event = CollisionEvent{line_point, line_normal}
-	circle_event = CollisionEvent{circle_edge_point, circle_normal}
 	did_collide = true
 
 	return
