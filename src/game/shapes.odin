@@ -28,8 +28,8 @@ Shape :: union {
 }
 
 CollisionEvent :: struct {
-	position: Vec2,
-	normal:   Vec2,
+	pos:    Vec2,
+	normal: Vec2,
 }
 
 /////////////////
@@ -102,6 +102,33 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 		if (is_colliding) {return true}
 	}
 	return false
+
+}
+// returns true if circle intersects the rectangle
+shape_is_circle_colliding_rectangle_v2 :: proc(
+	circle: Circle,
+	rect: Rectangle,
+) -> (
+	circle_event, rect_event: CollisionEvent,
+	did_collide: bool,
+) {
+	point_evt, rect_evt, is_inside := shape_is_point_inside_rect(circle.pos, rect)
+	if (is_inside) {
+		did_collide = true
+		rect_event = rect_evt
+		circle_event = CollisionEvent {
+			circle.pos + point_evt.normal * circle.radius,
+			point_evt.normal,
+		}
+		return
+	}
+	lines := shape_get_rect_lines_t(rect)
+
+	for line in lines {
+		_, is_colliding := shape_is_circle_colliding_line(circle, line)
+		if (is_colliding) {return circle_event, rect_event, false}
+	}
+	return
 }
 
 // Returns the collision event for a point, and the closest line to the point, 
@@ -124,9 +151,10 @@ shape_is_point_inside_rect :: proc(
 	}
 
 	line_event = CollisionEvent{line_point, line_normal}
+	// The point normal likely should be rotated towards collision point, inversed, and normalized
 	point_event = CollisionEvent{point, -line_normal}
-
-	return line_event, point_event, true
+	did_collide = true
+	return
 }
 
 

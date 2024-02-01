@@ -44,6 +44,15 @@ Camera2D :: struct {
 	zoom:     f32, // Camera zoom (scaling), should be 1.0f by default
 }
 
+platform_debug_draw_collision :: proc(
+	cmds: ^PlatformDrawCommands,
+	ce: CollisionEvent,
+	color: Color,
+) {
+	line := Line{ce.pos, ce.pos + ce.normal * 10, 2}
+	cmds.draw_shape(line, color)
+}
+
 //////////////////////////
 // Platform Abstraction //
 //////////////////////////

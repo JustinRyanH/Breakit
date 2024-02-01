@@ -109,16 +109,32 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
-	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 5}
+	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 12.5}
 	test_rect := Rectangle{Vec2{100, 100}, Vec2{100, 100}, 0}
-
 
 	closest_line := shape_get_closest_line(mouse_circle.pos, test_rect)
 	closest_line.thickness = 5
 	platform_draw.draw_shape(closest_line, ORANGE)
 
+	if (mouse_circle.pos == Vec2{}) {
+		platform_draw.draw_shape(test_rect, YELLOW)
+		platform_draw.draw_shape(mouse_circle, PURPLE)
+		return
+	}
+
+	circle_evt, rect_evt, did_collide := shape_is_circle_colliding_rectangle_v2(
+		mouse_circle,
+		test_rect,
+	)
 	platform_draw.draw_shape(test_rect, YELLOW)
 	platform_draw.draw_shape(mouse_circle, PURPLE)
+	if (did_collide) {
+		platform_draw.draw_shape(Circle{rect_evt.pos, 2}, GREEN)
+		platform_draw.draw_shape(Circle{circle_evt.pos, 2}, VIOLET)
+
+		platform_debug_draw_collision(platform_draw, rect_evt, GREEN)
+		platform_debug_draw_collision(platform_draw, circle_evt, VIOLET)
+	}
 
 
 	// draw_game_normal(platform_draw)
