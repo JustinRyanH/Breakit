@@ -113,8 +113,10 @@ shape_is_circle_colliding_rectangle :: proc(
 	}
 
 	line_normal := shape_line_normal(closest_line)
+	circle_normal := center_to_point_dir
+
 	rect_event = CollisionEvent{line_point, line_normal}
-	circle_event = CollisionEvent{circle_edge_point, center_to_point_dir}
+	circle_event = CollisionEvent{circle_edge_point, circle_normal}
 	did_collide = true
 
 	return
