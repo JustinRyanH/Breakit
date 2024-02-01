@@ -45,7 +45,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Rectangle:
 			return shape_is_circle_colliding_rectangle(a, b)
 		case Line:
-			return shape_is_circle_colliding_line(a, b)
+			_, is_colliding := shape_is_circle_colliding_line(a, b)
+			return is_colliding
 		}
 	case Rectangle:
 		switch b in shape_b {
@@ -59,7 +60,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Line:
 		switch b in shape_b {
 		case Circle:
-			return shape_is_circle_colliding_line(b, a)
+			_, is_colliding := shape_is_circle_colliding_line(b, a)
+			return is_colliding
 		case Rectangle:
 			return shape_is_line_colliding_rect(a, b)
 		case Line:
@@ -95,7 +97,8 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 	lines := shape_get_rect_lines_t(rect)
 
 	for line in lines {
-		if (shape_is_circle_colliding_line(circle, line)) {return true}
+		_, is_colliding := shape_is_circle_colliding_line(circle, line)
+		if (is_colliding) {return true}
 	}
 	return false
 }
@@ -109,10 +112,11 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 }
 
 // returns true if a line intersects a circle
-shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
+shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> (CollisionEvent, bool) {
 	closest_point := shape_point_projected_to_line(circle.pos, line)
 	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
-	return is_point_inside_circle
+
+	return CollisionEvent{}, is_point_inside_circle
 }
 
 // returns true if a point is inside a circle
