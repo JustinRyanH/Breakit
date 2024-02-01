@@ -122,36 +122,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		return
 	}
 
-	line_point := shape_point_projected_to_line(mouse_circle.pos, closest_line)
-	line_normal := shape_line_normal(closest_line)
-
 	platform_draw.draw_shape(test_rect, YELLOW)
 	platform_draw.draw_shape(mouse_circle, PURPLE)
-
-	if closest_line.start == line_point || closest_line.end == line_point {
-		circle_dir := math.normalize(line_point - mouse_circle.pos)
-		closest_point_to_line_on_circle := mouse_circle.pos + circle_dir * mouse_circle.radius
-		closest_point_center_difference := math.normalize(
-			line_point - closest_point_to_line_on_circle,
-		)
-
-		platform_draw.draw_shape(
-			Line {
-				closest_point_to_line_on_circle,
-				closest_point_to_line_on_circle + circle_dir * 20,
-				2,
-			},
-			ORANGE,
-		)
-
-		platform_draw.draw_text(
-			fmt.ctprintf("A(%v), B(%v)", circle_dir, closest_point_center_difference),
-			10,
-			10,
-			20,
-			MAROON,
-		)
-	}
 
 	circle_evt, rect_evt, did_collide := shape_is_circle_colliding_rectangle(
 		mouse_circle,
