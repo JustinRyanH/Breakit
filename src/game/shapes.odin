@@ -104,35 +104,19 @@ shape_is_circle_colliding_rectangle :: proc(
 	closest_line := shape_get_closest_line(circle.pos, rect)
 	line_point := shape_point_projected_to_line(circle.pos, closest_line)
 
-	if closest_line.start == line_point || closest_line.end == line_point {
-		center_to_point_dir := math.normalize(line_point - circle.pos)
-		circle_edge_point := circle.pos + center_to_point_dir * circle.radius
-		circle_edge_line_point_dir := math.normalize(line_point - circle_edge_point)
+	center_to_point_dir := math.normalize(line_point - circle.pos)
+	circle_edge_point := circle.pos + center_to_point_dir * circle.radius
+	circle_edge_line_point_dir := math.normalize(line_point - circle_edge_point)
 
-		if (math.sign(center_to_point_dir) == math.sign(circle_edge_line_point_dir)) {
-			return
-		}
-
-		line_normal := shape_line_normal(closest_line)
-		rect_event = CollisionEvent{line_point, line_normal}
-		circle_event = CollisionEvent{circle_edge_point, center_to_point_dir}
-		did_collide = true
-
+	if (math.sign(center_to_point_dir) == math.sign(circle_edge_line_point_dir)) {
 		return
 	}
 
 	line_normal := shape_line_normal(closest_line)
-	circle_point := circle.pos + -line_normal * circle.radius
-	dir := math.normalize(circle_point - line_point)
-
-	if (dir == line_normal) {
-		return
-	}
-
 	rect_event = CollisionEvent{line_point, line_normal}
-	// The point normal likely should be rotated towards collision point, inversed, and normalized
-	circle_event = CollisionEvent{circle_point, -line_normal}
+	circle_event = CollisionEvent{circle_edge_point, center_to_point_dir}
 	did_collide = true
+
 	return
 }
 
