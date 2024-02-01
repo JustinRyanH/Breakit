@@ -109,6 +109,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
+	draw_game_normal(platform_draw)
+	game_draw_debug(platform_draw)
+}
+
+draw_game_normal :: proc(platform_draw: ^PlatformDrawCommands) {
+	game := g_mem
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
 	for brick in game.bricks {
@@ -117,7 +123,6 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		}
 		platform_draw.draw_shape(brick.rect, ORANGE)
 	}
-	game_draw_debug(platform_draw)
 }
 
 game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
