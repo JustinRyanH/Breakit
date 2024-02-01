@@ -14,7 +14,7 @@ import "game"
 
 main :: proc() {
 	rl.InitWindow(800, 600, "Breakit")
-	rl.SetTargetFPS(30.0)
+	rl.SetTargetFPS(60.0)
 	defer rl.CloseWindow()
 
 	ctx := platform_new_context()

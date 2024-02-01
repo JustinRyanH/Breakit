@@ -6,8 +6,18 @@ import rl "vendor:raylib"
 
 Vec2 :: math.Vector2f32
 
+Brick :: struct {
+	alive: bool,
+	rect:  Rectangle,
+}
+
+LineOfBricks :: 3
+BricksPerLine :: 5
+InitialDownOffset :: 50.0
+
 GameMemory :: struct {
 	ctx:              ^Context,
+	// Entities
 	paddle:           Rectangle,
 	paddle_direction: Vec2,
 	paddle_speed:     f32,
@@ -15,6 +25,9 @@ GameMemory :: struct {
 	paddle_velocity:  Vec2,
 	ball_direction:   Vec2,
 	ball_speed:       f32,
+
+	// World
+	bricks:           []Brick,
 
 	// World Stuff
 	camera:           Camera2D,
@@ -30,10 +43,14 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc(ctx: ^Context) {
+
 	meta := ctx.frame.current_frame.meta
-  screen_width, screen_height := frame_query_dimensions(ctx.frame)
+	screen_width, screen_height := frame_query_dimensions(ctx.frame)
+
+
 	g_mem.camera.zoom = 1
 
+	brick_size := Vec2{screen_width / BricksPerLine, 40}
 	paddle_position := Vec2{screen_width / 2.0, screen_height - 25}
 	paddle_size := Vec2{100, 20}
 
@@ -43,6 +60,21 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball = Circle{Vec2{screen_width / 2.0, screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
 	g_mem.ball_speed = 300
+	g_mem.bricks = make([]Brick, LineOfBricks * BricksPerLine)
+
+	for y := 0; y < LineOfBricks; y += 1 {
+		for x := 0; x < BricksPerLine; x += 1 {
+			pos := Vec2 {
+				cast(f32)(x) * brick_size.x + brick_size.x / 2.0,
+				cast(f32)(y) * brick_size.y + InitialDownOffset,
+			}
+
+			brick := Brick{true, Rectangle{pos, brick_size - Vec2{8, 8}, 0.0}}
+			insert_index := BricksPerLine * y + x
+			g_mem.bricks[insert_index] = brick
+
+		}
+	}
 }
 
 // Desired Order:
@@ -61,7 +93,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 	dt := frame_query_delta(input)
 
 	mouse_pos := input_mouse_position(ctx.frame)
-  screen_width, screen_height := frame_query_dimensions(ctx.frame)
+	screen_width, screen_height := frame_query_dimensions(ctx.frame)
 	ball := &game.ball
 	paddle := &game.paddle
 
@@ -127,10 +159,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 
 	platform_draw.clear(BLACK)
-	platform_draw.draw_text("Breakit", 10, 56 / 3, 56, RED)
 
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
+	for brick in game.bricks {
+		platform_draw.draw_shape(brick.rect, ORANGE)
+	}
 	game_draw_debug(platform_draw)
 }
 
@@ -173,11 +207,13 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 
 @(export)
 game_teardown :: proc() {
+	delete(g_mem.bricks)
 }
 
 @(export)
 game_shutdown :: proc() {
 	game_teardown()
+	delete(g_mem.bricks)
 	free(g_mem)
 }
 
