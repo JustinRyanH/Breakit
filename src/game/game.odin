@@ -140,6 +140,31 @@ game_update :: proc(ctx: ^Context) -> bool {
 		}
 	}
 
+	for i := 0; i < len(game.bricks); i += 1 {
+		brick := &game.bricks[i]
+		if (!brick.alive) {
+			continue
+		}
+		if (shape_check_collision(ball^, brick.rect)) {
+			brick.alive = false
+			edges := shape_get_rect_lines_t(brick.rect)
+			for j := 0; j < len(edges); j += 1 {
+				edge := edges[j]
+				normal := -shape_line_normal(edge)
+				if (math.abs(normal.x) > 0) {
+					game.ball_direction.x = -game.ball_direction.x
+					break
+				}
+				if (math.abs(normal.y) > 0) {
+					game.ball_direction.y = -game.ball_direction.y
+					break
+				}
+			}
+
+		}
+	}
+
+
 	if (ball.pos.y - ball.radius * 2 > screen_height) {
 		reset_ball()
 	}
@@ -163,6 +188,9 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
 	for brick in game.bricks {
+		if (!brick.alive) {
+			continue
+		}
 		platform_draw.draw_shape(brick.rect, ORANGE)
 	}
 	game_draw_debug(platform_draw)

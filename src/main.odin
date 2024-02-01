@@ -55,7 +55,6 @@ main :: proc() {
 		if reload {
 			game_api = game_api_hot_load(game_api)
 		}
-
 	}
 
 	game_api.shutdown()
