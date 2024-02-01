@@ -94,12 +94,6 @@ shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 }
 
 // returns true if circle intersects the rectangle
-shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> bool {
-	_, _, did_collide := shape_is_circle_colliding_rectangle_v2(circle, rect)
-	return did_collide
-
-}
-// returns true if circle intersects the rectangle
 shape_is_circle_colliding_rectangle_v2 :: proc(
 	circle: Circle,
 	rect: Rectangle,
