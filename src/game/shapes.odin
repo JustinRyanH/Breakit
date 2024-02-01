@@ -104,6 +104,8 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 	return false
 }
 
+// Returns the collision event for a point, and the closest line to the point, 
+// returns true if line inside the rect, otherwise returns false
 shape_is_point_inside_rect :: proc(
 	point: math.Vector2f32,
 	rect: Rectangle,
