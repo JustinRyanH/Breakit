@@ -95,7 +95,7 @@ game_setup :: proc(ctx: ^Context) {
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
 	game := g_mem
-	update_game_normal()
+	// update_game_normal()
 
 	return ctx.cmds.should_close_game()
 }
@@ -109,7 +109,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
-	draw_game_normal(platform_draw)
+	// draw_game_normal(platform_draw)
 	game_draw_debug(platform_draw)
 }
 
