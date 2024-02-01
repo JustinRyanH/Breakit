@@ -28,6 +28,7 @@ GameMemory :: struct {
 
 	// World
 	bricks:           []Brick,
+	active_bricks:    int,
 
 	// World Stuff
 	camera:           Camera2D,
@@ -269,4 +270,7 @@ reset_ball :: proc() {
 	g_mem.ball_speed = 300
 	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
 	g_mem.paddle.pos = paddle_position
+	for _, i in g_mem.bricks {
+		g_mem.bricks[i].alive = true
+	}
 }
