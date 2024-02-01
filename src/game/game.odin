@@ -6,12 +6,17 @@ import rl "vendor:raylib"
 
 Vec2 :: math.Vector2f32
 
+BallState :: enum {
+	OnPaddle,
+	Moving,
+}
+
 Brick :: struct {
 	alive: bool,
 	rect:  Rectangle,
 }
 
-LineOfBricks :: 3
+LineOfBricks :: 5
 BricksPerLine :: 5
 InitialDownOffset :: 50.0
 
@@ -25,6 +30,7 @@ GameMemory :: struct {
 	paddle_velocity:  Vec2,
 	ball_direction:   Vec2,
 	ball_speed:       f32,
+	ball_state:       BallState,
 
 	// World
 	bricks:           []Brick,
@@ -61,6 +67,7 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball = Circle{Vec2{screen_width / 2.0, screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})
 	g_mem.ball_speed = 300
+	g_mem.ball_state = BallState.OnPaddle
 	g_mem.bricks = make([]Brick, LineOfBricks * BricksPerLine)
 
 	for y := 0; y < LineOfBricks; y += 1 {
@@ -107,8 +114,14 @@ game_update :: proc(ctx: ^Context) -> bool {
 		game.paddle_velocity.x = 0
 	}
 
-	game.ball.pos += game.ball_direction * game.ball_speed * dt
 	game.paddle.pos += game.paddle_velocity * game.paddle_speed * dt
+	switch game.ball_state {
+	case .OnPaddle:
+		ball.pos.x = paddle.pos.x
+		ball.pos.y = paddle.pos.y - paddle.size.y / 2 - ball.radius
+	case .Moving:
+		game.ball.pos += game.ball_direction * game.ball_speed * dt
+	}
 
 	if (shape_check_collision(ball^, game.paddle)) {
 		if (game.ball_direction.y > 0.0) {
@@ -161,7 +174,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 					break
 				}
 			}
-
+			break
 		}
 	}
 
