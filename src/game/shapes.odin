@@ -28,8 +28,8 @@ Shape :: union {
 }
 
 CollisionEvent :: struct {
-	normal:   Vec2,
 	position: Vec2,
+	normal:   Vec2,
 }
 
 /////////////////
@@ -105,23 +105,31 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 
 // returns true if a point is inside a rect
 shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> bool {
-	rect_min, rect_max := shape_get_rect_extends(rect)
-	if (point.x < rect_min.x || point.x > rect_max.x) {return false}
-	if (point.y < rect_min.y || point.y > rect_max.y) {return false}
-	return true
+	_, _, did_collide := shape_is_point_inside_rect_v2(point, rect)
+	return did_collide
 }
 
 shape_is_point_inside_rect_v2 :: proc(
 	point: math.Vector2f32,
 	rect: Rectangle,
 ) -> (
-	events: [2]CollisionEvent,
+	point_event: CollisionEvent,
+	line_event: CollisionEvent,
 	did_collide: bool,
 ) {
-	rect_min, rect_max := shape_get_rect_extends(rect)
-	if (point.x < rect_min.x || point.x > rect_max.x) {return}
-	if (point.y < rect_min.y || point.y > rect_max.y) {return}
-	return events, true
+	closest_line := shape_get_closest_line(point, rect)
+	line_point := shape_point_projected_to_line(point, closest_line)
+	line_normal := shape_line_normal(closest_line)
+	dir := math.normalize(point - line_point)
+
+	if (dir == line_normal) {
+		return
+	}
+
+	line_event = CollisionEvent{line_point, line_normal}
+	point_event = CollisionEvent{point, -line_normal}
+
+	return line_event, point_event, true
 }
 
 
@@ -161,6 +169,21 @@ shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
 /////////////////////////////////
 // Helpers
 /////////////////////////////////
+
+shape_get_closest_line :: proc(point: Vec2, rectangle: Rectangle) -> (closest_line: Line) {
+	rect_lines := shape_get_rect_lines_t(rectangle)
+	chosen_line_distance := max(f32)
+	for rect_line in rect_lines {
+		projected_point := shape_point_projected_to_line(point, rect_line)
+		length := math.length2(projected_point - point)
+		if (length < chosen_line_distance) {
+			chosen_line_distance = length
+			closest_line = rect_line
+		}
+	}
+
+	return
+}
 
 // Get the min and max vectors of a rectangles
 shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector2f32) {
