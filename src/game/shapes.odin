@@ -93,7 +93,7 @@ shape_are_circles_colliding :: proc(circle_a, circle_b: Circle) -> bool {
 
 // returns true if circle intersects the rectangle
 shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> bool {
-	_, _, is_inside := shape_is_point_inside_rect_v2(circle.pos, rect)
+	_, _, is_inside := shape_is_point_inside_rect(circle.pos, rect)
 	if (is_inside) {return true}
 	lines := shape_get_rect_lines_t(rect)
 
@@ -104,7 +104,7 @@ shape_is_circle_colliding_rectangle :: proc(circle: Circle, rect: Rectangle) -> 
 	return false
 }
 
-shape_is_point_inside_rect_v2 :: proc(
+shape_is_point_inside_rect :: proc(
 	point: math.Vector2f32,
 	rect: Rectangle,
 ) -> (
