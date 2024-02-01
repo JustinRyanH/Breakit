@@ -116,7 +116,11 @@ shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> (Collision
 	closest_point := shape_point_projected_to_line(circle.pos, line)
 	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
 
-	return CollisionEvent{}, is_point_inside_circle
+	if (is_point_inside_circle) {
+		return CollisionEvent{closest_point, shape_line_normal(line)}, true
+	}
+
+	return CollisionEvent{}, false
 }
 
 // returns true if a point is inside a circle
