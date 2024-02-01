@@ -172,6 +172,7 @@ shape_are_lines_colliding :: proc(a, b: Line) -> bool {
 }
 
 // Returns trues if a line intersects a rect
+// TODO: next
 shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
 	lines := shape_get_rect_lines_t(rect)
 	for l in lines {
