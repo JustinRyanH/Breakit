@@ -43,15 +43,17 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Circle:
 			return shape_are_circles_colliding(a, b)
 		case Rectangle:
-			return shape_is_circle_colliding_rectangle(a, b)
+			_, _, did_collide := shape_is_circle_colliding_rectangle_v2(a, b)
+			return did_collide
 		case Line:
-			_, is_colliding := shape_is_circle_colliding_line(a, b)
-			return is_colliding
+			_, did_collide := shape_is_circle_colliding_line(a, b)
+			return did_collide
 		}
 	case Rectangle:
 		switch b in shape_b {
 		case Circle:
-			return shape_is_circle_colliding_rectangle(b, a)
+			_, _, did_collide := shape_is_circle_colliding_rectangle_v2(b, a)
+			return did_collide
 		case Rectangle:
 			return shape_are_rects_colliding_aabb(a, b)
 		case Line:
@@ -60,8 +62,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Line:
 		switch b in shape_b {
 		case Circle:
-			_, is_colliding := shape_is_circle_colliding_line(b, a)
-			return is_colliding
+			_, did_collide := shape_is_circle_colliding_line(b, a)
+			return did_collide
 		case Rectangle:
 			return shape_is_line_colliding_rect(a, b)
 		case Line:
