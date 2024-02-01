@@ -27,6 +27,11 @@ Shape :: union {
 	Line,
 }
 
+CollisionEvent :: struct {
+	normal:   Vec2,
+	position: Vec2,
+}
+
 /////////////////
 /// Collision
 /////////////////
