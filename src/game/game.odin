@@ -114,6 +114,11 @@ game_update :: proc(ctx: ^Context) -> bool {
 		game.paddle_velocity.x = 0
 	}
 
+	if input_was_space_pressed(input) && game.ball_state == .OnPaddle {
+		game.ball_direction = math.normalize(Vec2{0, 0.9})
+		game.ball_state = BallState.Moving
+	}
+
 	game.paddle.pos += game.paddle_velocity * game.paddle_speed * dt
 	switch game.ball_state {
 	case .OnPaddle:
@@ -164,7 +169,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 			edges := shape_get_rect_lines_t(brick.rect)
 			for j := 0; j < len(edges); j += 1 {
 				edge := edges[j]
-				normal := -shape_line_normal(edge)
+				normal := shape_line_normal(edge)
 				if (math.abs(normal.x) > 0) {
 					game.ball_direction.x = -game.ball_direction.x
 					break
@@ -174,7 +179,6 @@ game_update :: proc(ctx: ^Context) -> bool {
 					break
 				}
 			}
-			break
 		}
 	}
 
@@ -283,6 +287,8 @@ reset_ball :: proc() {
 	g_mem.ball_speed = 300
 	paddle_position := Vec2{meta.screen_width / 2.0, meta.screen_height - 25}
 	g_mem.paddle.pos = paddle_position
+	g_mem.ball_state = .OnPaddle
+
 	for _, i in g_mem.bricks {
 		g_mem.bricks[i].alive = true
 	}
