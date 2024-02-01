@@ -44,13 +44,6 @@ Camera2D :: struct {
 	zoom:     f32, // Camera zoom (scaling), should be 1.0f by default
 }
 
-
-DrawShape :: enum {
-	Rectangle,
-	Circle,
-	Line,
-}
-
 //////////////////////////
 // Platform Abstraction //
 //////////////////////////
