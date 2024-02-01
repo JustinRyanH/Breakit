@@ -45,6 +45,12 @@ Camera2D :: struct {
 }
 
 
+DrawShape :: enum {
+	Rectangle,
+	Circle,
+	Line,
+}
+
 //////////////////////////
 // Platform Abstraction //
 //////////////////////////

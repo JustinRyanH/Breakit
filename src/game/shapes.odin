@@ -111,6 +111,20 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 	return true
 }
 
+shape_is_point_inside_rect_v2 :: proc(
+	point: math.Vector2f32,
+	rect: Rectangle,
+) -> (
+	events: [2]CollisionEvent,
+	did_collide: bool,
+) {
+	rect_min, rect_max := shape_get_rect_extends(rect)
+	if (point.x < rect_min.x || point.x > rect_max.x) {return}
+	if (point.y < rect_min.y || point.y > rect_max.y) {return}
+	return events, true
+}
+
+
 // returns true if a line intersects a circle
 shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> (CollisionEvent, bool) {
 	closest_point := shape_point_projected_to_line(circle.pos, line)

@@ -109,6 +109,20 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
+	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 10}
+	test_rect := Rectangle{Vec2{100, 100}, Vec2{100, 100}, 0}
+
+	platform_draw.draw_shape(test_rect, YELLOW)
+	platform_draw.draw_shape(mouse_circle, PURPLE)
+
+	collisions, has_collided := shape_is_point_inside_rect_v2(mouse_circle.pos, test_rect)
+	if has_collided {
+		platform_draw.draw_text("Colliding", 100, 400, 20, RED)
+	} else {
+		platform_draw.draw_text("Not Colliding", 100, 400, 20, RED)
+	}
+
+
 	// draw_game_normal(platform_draw)
 	game_draw_debug(platform_draw)
 }
