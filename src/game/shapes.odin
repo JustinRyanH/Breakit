@@ -111,7 +111,8 @@ shape_is_point_inside_rect :: proc(point: math.Vector2f32, rect: Rectangle) -> b
 // returns true if a line intersects a circle
 shape_is_circle_colliding_line :: proc(circle: Circle, line: Line) -> bool {
 	closest_point := shape_point_projected_to_line(circle.pos, line)
-	return (shape_is_point_inside_circle(closest_point, circle))
+	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
+	return is_point_inside_circle
 }
 
 // returns true if a point is inside a circle
