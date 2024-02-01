@@ -95,7 +95,100 @@ game_setup :: proc(ctx: ^Context) {
 game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
 	game := g_mem
+	update_game_normal()
 
+	return ctx.cmds.should_close_game()
+}
+
+@(export)
+game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
+	game := g_mem
+
+	platform_draw.begin_drawing()
+	defer platform_draw.end_drawing()
+
+	platform_draw.clear(BLACK)
+
+	platform_draw.draw_shape(game.ball, RED)
+	platform_draw.draw_shape(game.paddle, BLUE)
+	for brick in game.bricks {
+		if (!brick.alive) {
+			continue
+		}
+		platform_draw.draw_shape(brick.rect, ORANGE)
+	}
+	game_draw_debug(platform_draw)
+}
+
+game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
+	game := g_mem
+	if (!frame_query_debug(game.ctx.frame)) {
+		return
+	}
+
+	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
+
+	world := Rectangle {
+		Vec2{screen_width / 2, screen_height / 2},
+		Vec2{screen_width, screen_height},
+		0.0,
+	}
+	world_edges := shape_get_rect_lines_t(world)
+	for i := 0; i < len(world_edges); i += 1 {
+		edge := world_edges[i]
+		edge.thickness = 2
+
+		projection_point := shape_point_projected_to_line(game.ball.pos, edge)
+		normal := shape_line_normal(edge)
+		offset := projection_point - (normal * 100)
+		platform_draw.draw_shape(
+			Line{projection_point, projection_point - (normal * 20), 2},
+			GREEN,
+		)
+		platform_draw.draw_text(
+			fmt.ctprintf("N(%v)", -normal),
+			cast(i32)(offset.x),
+			cast(i32)(offset.y),
+			20,
+			MAROON,
+		)
+		platform_draw.draw_shape(edge, GREEN)
+	}
+}
+
+
+@(export)
+game_teardown :: proc() {
+	delete(g_mem.bricks)
+}
+
+@(export)
+game_shutdown :: proc() {
+	game_teardown()
+	delete(g_mem.bricks)
+	free(g_mem)
+}
+
+@(export)
+game_memory :: proc() -> rawptr {
+	return g_mem
+}
+
+@(export)
+game_hot_reloaded :: proc(mem: ^GameMemory) {
+	g_mem = mem
+}
+
+
+//////////////////////////////////////////
+// Game Functions
+//////////////////////////////////////////
+
+
+update_game_normal :: proc() {
+	game := g_mem
+
+	ctx := game.ctx
 	input := ctx.frame
 	cmds := game.ctx.cmds
 	dt := frame_query_delta(input)
@@ -191,93 +284,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
 	ball.pos.y = math.max(ball.pos.y, ball.radius)
 
-	return cmds.should_close_game()
 }
-
-@(export)
-game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
-	game := g_mem
-
-	platform_draw.begin_drawing()
-	defer platform_draw.end_drawing()
-
-	platform_draw.clear(BLACK)
-
-	platform_draw.draw_shape(game.ball, RED)
-	platform_draw.draw_shape(game.paddle, BLUE)
-	for brick in game.bricks {
-		if (!brick.alive) {
-			continue
-		}
-		platform_draw.draw_shape(brick.rect, ORANGE)
-	}
-	game_draw_debug(platform_draw)
-}
-
-game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
-	game := g_mem
-	if (!frame_query_debug(game.ctx.frame)) {
-		return
-	}
-
-	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
-
-	world := Rectangle {
-		Vec2{screen_width / 2, screen_height / 2},
-		Vec2{screen_width, screen_height},
-		0.0,
-	}
-	world_edges := shape_get_rect_lines_t(world)
-	for i := 0; i < len(world_edges); i += 1 {
-		edge := world_edges[i]
-		edge.thickness = 2
-
-		projection_point := shape_point_projected_to_line(game.ball.pos, edge)
-		normal := shape_line_normal(edge)
-		offset := projection_point - (normal * 100)
-		platform_draw.draw_shape(
-			Line{projection_point, projection_point - (normal * 20), 2},
-			GREEN,
-		)
-		platform_draw.draw_text(
-			fmt.ctprintf("N(%v)", -normal),
-			cast(i32)(offset.x),
-			cast(i32)(offset.y),
-			20,
-			MAROON,
-		)
-		platform_draw.draw_shape(edge, GREEN)
-	}
-}
-
-
-@(export)
-game_teardown :: proc() {
-	delete(g_mem.bricks)
-}
-
-@(export)
-game_shutdown :: proc() {
-	game_teardown()
-	delete(g_mem.bricks)
-	free(g_mem)
-}
-
-@(export)
-game_memory :: proc() -> rawptr {
-	return g_mem
-}
-
-@(export)
-game_hot_reloaded :: proc(mem: ^GameMemory) {
-	g_mem = mem
-}
-
-
-//////////////////////////////////////////
-// Game Functions
-//////////////////////////////////////////
-
 
 reset_ball :: proc() {
 	meta := g_mem.ctx.frame.current_frame.meta
