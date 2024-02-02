@@ -2,6 +2,7 @@ package game
 
 import "core:fmt"
 import math "core:math/linalg"
+
 import rl "vendor:raylib"
 
 Vec2 :: math.Vector2f32
