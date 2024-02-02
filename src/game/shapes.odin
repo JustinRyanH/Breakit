@@ -261,7 +261,7 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 }
 
 // Get the vertices around a rectangle, clockwise
-shape_get_rect_vertices_t :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
+shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	vertices[0] = rect_min
 	vertices[1] = Vec2{rect_max.x, rect_min.y}
@@ -272,10 +272,8 @@ shape_get_rect_vertices_t :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
 }
 
 // Returns the lines of a rectangle at zero width, using the temp_allocator
-shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
+shape_get_rect_lines_t :: proc(rect: Rectangle) -> (lines: [4]Line) {
 	rect_min, rect_max := shape_get_rect_extends(rect)
-	lines := make([]Line, 4, context.temp_allocator)
-
 	lines[0] = Line{rect_min, Vec2{rect_max.x, rect_min.y}, 0.0}
 	lines[1] = Line{Vec2{rect_max.x, rect_min.y}, rect_max, 0.0}
 	lines[2] = Line{rect_max, Vec2{rect_min.x, rect_max.y}, 0.0}
@@ -371,7 +369,7 @@ test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
 	// Return Vertices of the Rectangle in a counter clockwise pattern
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
 
-	vertices := shape_get_rect_vertices_t(rect)
+	vertices := shape_get_rect_vertices(rect)
 	testing.expect(t, vertices[0] == Vec2{-0.5, -0.5}, "Top left most vertex")
 	testing.expect(t, vertices[1] == Vec2{0.5, -0.5}, "Top right most vertex")
 	testing.expect(t, vertices[2] == Vec2{0.5, 0.5}, "Bottom right most vertex")
