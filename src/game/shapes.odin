@@ -41,19 +41,19 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Circle:
 		switch b in shape_b {
 		case Circle:
-			_, _, did_collide := shape_are_circles_colliding(a, b)
+			_, _, is_colliding := shape_are_circles_colliding(a, b)
 		case Rectangle:
-			_, _, did_collide := shape_is_circle_colliding_rectangle(a, b)
-			return did_collide
+			_, _, is_colliding := shape_is_circle_colliding_rectangle(a, b)
+			return is_colliding
 		case Line:
-			_, did_collide := shape_is_circle_colliding_line(a, b)
-			return did_collide
+			_, is_colliding := shape_is_circle_colliding_line(a, b)
+			return is_colliding
 		}
 	case Rectangle:
 		switch b in shape_b {
 		case Circle:
-			_, _, did_collide := shape_is_circle_colliding_rectangle(b, a)
-			return did_collide
+			_, _, is_colliding := shape_is_circle_colliding_rectangle(b, a)
+			return is_colliding
 		case Rectangle:
 			return shape_are_rects_colliding_aabb(a, b)
 		case Line:
@@ -63,8 +63,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Line:
 		switch b in shape_b {
 		case Circle:
-			_, did_collide := shape_is_circle_colliding_line(b, a)
-			return did_collide
+			_, is_colliding := shape_is_circle_colliding_line(b, a)
+			return is_colliding
 		case Rectangle:
 			_, _, is_colliding := shape_is_line_colliding_rect(a, b)
 			return is_colliding
@@ -95,9 +95,12 @@ shape_are_circles_colliding :: proc(
 	a_evt, b_evt: CollisionEvent,
 	is_colliding: bool,
 ) {
-	delta := circle_a.pos - circle_b.pos
+	delta := circle_b.pos - circle_a.pos
 	distance := math.vector_length(delta)
 	if (distance <= (circle_a.radius + circle_b.radius)) {
+		normal := math.normalize(delta)
+		a_evt = CollisionEvent{circle_a.pos + normal * circle_a.radius, normal}
+		b_evt = CollisionEvent{circle_b.pos - normal * circle_b.radius, -normal}
 		is_colliding = true
 		return
 	}
@@ -110,7 +113,7 @@ shape_is_circle_colliding_rectangle :: proc(
 	rect: Rectangle,
 ) -> (
 	circle_event, rect_event: CollisionEvent,
-	did_collide: bool,
+	is_colliding: bool,
 ) {
 	closest_line := shape_get_closest_line(circle.pos, rect)
 	line_point := shape_point_projected_to_line(circle.pos, closest_line)
@@ -136,7 +139,7 @@ shape_is_circle_colliding_rectangle :: proc(
 	}
 
 	rect_event = CollisionEvent{line_point, line_normal}
-	did_collide = true
+	is_colliding = true
 
 	return
 }
@@ -149,7 +152,7 @@ shape_is_point_inside_rect :: proc(
 ) -> (
 	point_event: CollisionEvent,
 	rect_event: CollisionEvent,
-	did_collide: bool,
+	is_colliding: bool,
 ) {
 	closest_line := shape_get_closest_line(point, rect)
 	line_point := shape_point_projected_to_line(point, closest_line)
@@ -164,7 +167,7 @@ shape_is_point_inside_rect :: proc(
 	rect_event = CollisionEvent{line_point, line_normal}
 	// The point normal likely should be rotated towards collision point, inversed, and normalized
 	point_event = CollisionEvent{point, -line_normal}
-	did_collide = true
+	is_colliding = true
 	return
 }
 
