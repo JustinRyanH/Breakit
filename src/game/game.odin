@@ -145,7 +145,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		platform_draw.draw_shape(Circle{mouse_rect.pos + nm_2 * len, 4}, PURPLE)
 	}
 
-	// mouse_rect_lines := shape_get_rect_lines_t(mouse_rect)
+	// mouse_rect_lines := shape_get_rect_lines(mouse_rect)
 	// for line in mouse_rect_lines {
 	// 	line_copy := line
 	// 	line_copy.thickness = 2
@@ -191,7 +191,7 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 		Vec2{screen_width, screen_height},
 		0.0,
 	}
-	world_edges := shape_get_rect_lines_t(world)
+	world_edges := shape_get_rect_lines(world)
 	for i := 0; i < len(world_edges); i += 1 {
 		edge := world_edges[i]
 		edge.thickness = 2
@@ -292,7 +292,7 @@ update_game_normal :: proc() {
 		Vec2{screen_width, screen_height},
 		0.0,
 	}
-	world_edges := shape_get_rect_lines_t(world)
+	world_edges := shape_get_rect_lines(world)
 	for i := 0; i < len(world_edges); i += 1 {
 		edge := world_edges[i]
 		edge.thickness = 2
@@ -317,7 +317,7 @@ update_game_normal :: proc() {
 		}
 		if (shape_check_collision(ball^, brick.rect)) {
 			brick.alive = false
-			edges := shape_get_rect_lines_t(brick.rect)
+			edges := shape_get_rect_lines(brick.rect)
 			for j := 0; j < len(edges); j += 1 {
 				edge := edges[j]
 				normal := shape_line_normal(edge)

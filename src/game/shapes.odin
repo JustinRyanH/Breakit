@@ -224,7 +224,7 @@ shape_is_line_colliding_rect :: proc(
 	line_evt, rect_evt: CollisionEvent,
 	is_colliding: bool,
 ) {
-	lines := shape_get_rect_lines_t(rect)
+	lines := shape_get_rect_lines(rect)
 	for l in lines {
 		point, is_colliding := shape_get_line_intersection(line, l)
 
@@ -239,7 +239,7 @@ shape_is_line_colliding_rect :: proc(
 /////////////////////////////////
 
 shape_get_closest_line :: proc(point: Vec2, rectangle: Rectangle) -> (closest_line: Line) {
-	rect_lines := shape_get_rect_lines_t(rectangle)
+	rect_lines := shape_get_rect_lines(rectangle)
 	chosen_line_distance := max(f32)
 	for rect_line in rect_lines {
 		projected_point := shape_point_projected_to_line(point, rect_line)
@@ -272,7 +272,7 @@ shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
 }
 
 // Returns the lines of a rectangle at zero width, using the temp_allocator
-shape_get_rect_lines_t :: proc(rect: Rectangle) -> (lines: [4]Line) {
+shape_get_rect_lines :: proc(rect: Rectangle) -> (lines: [4]Line) {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	lines[0] = Line{rect_min, Vec2{rect_max.x, rect_min.y}, 0.0}
 	lines[1] = Line{Vec2{rect_max.x, rect_min.y}, rect_max, 0.0}
@@ -381,7 +381,7 @@ test_shape_rect_lines_t_unrotated :: proc(t: ^testing.T) {
 	// Return Lines of the Rectangle in a counter clockwise pattern
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
 
-	lines := shape_get_rect_lines_t(rect)
+	lines := shape_get_rect_lines(rect)
 
 	testing.expect(
 		t,
