@@ -116,7 +116,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
-	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{25, 25}, game.rotation}
+	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{50, 75}, game.rotation}
 	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, 0}
 
 	if (mouse_rect.pos == Vec2{}) {
@@ -130,20 +130,15 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	len := math.length(mouse_rect.size) / 2
 	nm := math.normalize(mouse_rect.size)
 
-	points := [4]Vec2{nm, Vec2{nm.x, -nm.y}, Vec2{-nm.x, nm.y}, Vec2{-nm.x, -nm.y}}
-
-	rad := math.to_radians(f32(game.rotation))
-
-	platform_draw.draw_shape(mouse_rect, Color{118, 131, 48, 200})
-
-
-	for _, i in points {
-		point := points[i]
-		nm_2 := point
-		nm_2.x = point.x * math.cos(rad) - point.y * math.sin(rad)
-		nm_2.y = point.x * math.sin(rad) + point.y * math.cos(rad)
-		platform_draw.draw_shape(Circle{mouse_rect.pos + nm_2 * len, 4}, PURPLE)
+	lines := shape_get_rect_lines(mouse_rect)
+	for line in lines {
+		lc := line
+		lc.thickness = 2
+		platform_draw.draw_shape(lc, RED)
 	}
+
+	platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, 220})
+
 
 	// mouse_rect_lines := shape_get_rect_lines(mouse_rect)
 	// for line in mouse_rect_lines {

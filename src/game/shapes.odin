@@ -290,10 +290,10 @@ shape_get_rect_lines :: proc(rect: Rectangle) -> (lines: [4]Line) {
 	c := vertices[2]
 	d := vertices[3]
 	rect_min, rect_max := shape_get_rect_extends(rect)
-	lines[0] = Line{a, b, 0.0}
-	lines[1] = Line{b, c, 0.0}
-	lines[2] = Line{c, d, 0.0}
-	lines[3] = Line{d, a, 0.0}
+	lines[0] = Line{a, b, 1.0}
+	lines[1] = Line{b, c, 1.0}
+	lines[2] = Line{c, d, 1.0}
+	lines[3] = Line{d, a, 1.0}
 	return lines
 }
 
