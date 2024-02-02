@@ -77,6 +77,26 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 }
 
 
+// Check collision between rectangles
+shape_are_rects_colliding :: proc(
+	rect_a, rect_b: Rectangle,
+) -> (
+	evt_a, evt_b: CollisionEvent,
+	is_colliding: bool,
+) {
+	b_line_closest_to_a := shape_get_closest_line(rect_a.pos, rect_b)
+	a_line_closest_to_b := shape_get_closest_line(rect_b.pos, rect_a)
+	line_projection_a := shape_point_projected_to_line(rect_a.pos, b_line_closest_to_a)
+	line_projection_b := shape_point_projected_to_line(rect_b.pos, a_line_closest_to_b)
+
+
+	evt_a.pos = line_projection_a
+	evt_b.pos = line_projection_b
+	is_colliding = true
+	return
+}
+
+
 // Check collision between two rectangles using AABB, assumes there is no rotation
 shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 	rect_a_min, rect_a_extends := shape_get_rect_extends(rec_a)
@@ -256,6 +276,7 @@ shape_get_rect_vertices_t :: proc(rect: Rectangle) -> []Vec2 {
 shape_get_rect_lines_t :: proc(rect: Rectangle) -> []Line {
 	rect_min, rect_max := shape_get_rect_extends(rect)
 	lines := make([]Line, 4, context.temp_allocator)
+
 	lines[0] = Line{rect_min, Vec2{rect_max.x, rect_min.y}, 0.0}
 	lines[1] = Line{Vec2{rect_max.x, rect_min.y}, rect_max, 0.0}
 	lines[2] = Line{rect_max, Vec2{rect_min.x, rect_max.y}, 0.0}
