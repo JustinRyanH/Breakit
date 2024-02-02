@@ -290,16 +290,18 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	an := a.end - a.start
 	bn := b.end - b.start
 
-	an_bn_normalized := (-bn.x * an.y + an.x * bn.y)
-	if (an_bn_normalized == 0) {
+	bn_flip := Vec2{bn.y, -bn.x}
+	an_bn_dot := math.dot(bn_flip, an)
+
+	if (an_bn_dot == 0) {
 		return Vec2{}, false
 	}
 
 	s_cross := -an.y * (a.start.x - b.start.x) + an.x * (a.start.y - b.start.y)
 	t_cross := bn.x * (a.start.y - b.start.y) - bn.y * (a.start.x - b.start.x)
 
-	s := (s_cross) / an_bn_normalized
-	t := (t_cross) / an_bn_normalized
+	s := (s_cross) / an_bn_dot
+	t := (t_cross) / an_bn_dot
 
 	if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
 		x := a.start.x + (t * an.x)
@@ -433,7 +435,13 @@ test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
 test_shape_get_line_intersection :: proc(t: ^testing.T) {
 	line_a := Line{Vec2{-1, 0}, Vec2{1, 0}, 0.0}
 	line_b := Line{Vec2{-1, 1}, Vec2{1, 1}, 0.0}
+	line_c := Line{Vec2{-1, 0}, Vec2{1, 0}, 0.0}
+	line_d := Line{Vec2{0, -1}, Vec2{0, 1}, 0.0}
 
 	point, did_intersect := shape_get_line_intersection(line_a, line_b)
 	testing.expect(t, !did_intersect, "Parallel lines do not intersect")
+
+	point, did_intersect = shape_get_line_intersection(line_c, line_d)
+	testing.expect(t, did_intersect, "Overlapping Lines intersect")
+	testing.expect(t, point == Vec2{}, "This case intersects at origin")
 }
