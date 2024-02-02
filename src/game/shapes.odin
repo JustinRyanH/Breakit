@@ -76,7 +76,6 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	return false
 }
 
-
 // Check collision between rectangles
 shape_are_rects_colliding :: proc(
 	rect_a, rect_b: Rectangle,
@@ -292,6 +291,9 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	bn := b.end - b.start
 
 	an_bn_normalized := (-bn.x * an.y + an.x * bn.y)
+	if (an_bn_normalized == 0) {
+		return Vec2{}, false
+	}
 
 	s_cross := -an.y * (a.start.x - b.start.x) + an.x * (a.start.y - b.start.y)
 	t_cross := bn.x * (a.start.y - b.start.y) - bn.y * (a.start.x - b.start.x)
@@ -425,4 +427,13 @@ test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
 		max == Vec2{0.5, 0.5},
 		"origin is at zero so maximum extends is half width, right of origin",
 	)
+}
+
+@(test)
+test_shape_get_line_intersection :: proc(t: ^testing.T) {
+	line_a := Line{Vec2{-1, 0}, Vec2{1, 0}, 0.0}
+	line_b := Line{Vec2{-1, 1}, Vec2{1, 1}, 0.0}
+
+	point, did_intersect := shape_get_line_intersection(line_a, line_b)
+	testing.expect(t, !did_intersect, "Parallel lines do not intersect")
 }
