@@ -35,6 +35,7 @@ GameMemory :: struct {
 	// World
 	bricks:           []Brick,
 	active_bricks:    int,
+	rotation:         f32,
 
 	// World Stuff
 	camera:           Camera2D,
@@ -97,6 +98,12 @@ game_update :: proc(ctx: ^Context) -> bool {
 	game := g_mem
 	// update_game_normal()
 
+	if (input_is_left_arrow_down(ctx.frame)) {
+		game.rotation -= 1
+	} else if (input_is_right_arrow_down(ctx.frame)) {
+		game.rotation += 1
+	}
+
 	return ctx.cmds.should_close_game()
 }
 
@@ -119,14 +126,32 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	}
 
 	platform_draw.draw_shape(static_rect, YELLOW)
-	// platform_draw.draw_shape(mouse_rect, PURPLE)
 
-	mouse_rect_lines := shape_get_rect_lines_t(mouse_rect)
-	for line in mouse_rect_lines {
-		line_copy := line
-		line_copy.thickness = 2
-		platform_draw.draw_shape(line_copy, PURPLE)
+	rect_min := mouse_rect.pos - (mouse_rect.size * 0.5)
+	rect_max := mouse_rect.pos + (mouse_rect.size * 0.5)
+
+	len := math.length(mouse_rect.size) / 2
+	nm := math.normalize(mouse_rect.size)
+
+	points := [4]Vec2{nm, Vec2{nm.x, -nm.y}, Vec2{-nm.x, nm.y}, Vec2{-nm.x, -nm.y}}
+
+	rad := math.to_radians(f32(game.rotation))
+
+
+	for _, i in points {
+		point := points[i]
+		nm_2 := point
+		nm_2.x = point.x * math.cos(rad) - point.y * math.sin(rad)
+		nm_2.y = point.x * math.sin(rad) + point.y * math.cos(rad)
+		platform_draw.draw_shape(Circle{mouse_rect.pos + nm_2 * len, 4}, PURPLE)
 	}
+
+	// mouse_rect_lines := shape_get_rect_lines_t(mouse_rect)
+	// for line in mouse_rect_lines {
+	// 	line_copy := line
+	// 	line_copy.thickness = 2
+	// 	platform_draw.draw_shape(line_copy, PURPLE)
+	// }
 
 	// evt_a, evt_b, did_collide := shape_are_rects_colliding(mouse_rect, static_rect)
 	// if (did_collide) {
