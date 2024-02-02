@@ -273,11 +273,16 @@ shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
 
 // Returns the lines of a rectangle at zero width, using the temp_allocator
 shape_get_rect_lines :: proc(rect: Rectangle) -> (lines: [4]Line) {
+	vertices := shape_get_rect_vertices(rect)
+	a := vertices[0]
+	b := vertices[1]
+	c := vertices[2]
+	d := vertices[3]
 	rect_min, rect_max := shape_get_rect_extends(rect)
-	lines[0] = Line{rect_min, Vec2{rect_max.x, rect_min.y}, 0.0}
-	lines[1] = Line{Vec2{rect_max.x, rect_min.y}, rect_max, 0.0}
-	lines[2] = Line{rect_max, Vec2{rect_min.x, rect_max.y}, 0.0}
-	lines[3] = Line{Vec2{rect_min.x, rect_max.y}, rect_min, 0.0}
+	lines[0] = Line{a, b, 0.0}
+	lines[1] = Line{b, c, 0.0}
+	lines[2] = Line{c, d, 0.0}
+	lines[3] = Line{d, a, 0.0}
 	return lines
 }
 
@@ -365,7 +370,7 @@ test_shape_point_in_circle :: proc(t: ^testing.T) {
 }
 
 @(test)
-test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
+test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 	// Return Vertices of the Rectangle in a counter clockwise pattern
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
 
@@ -377,7 +382,7 @@ test_shape_rect_vertices_t_unrotated :: proc(t: ^testing.T) {
 }
 
 @(test)
-test_shape_rect_lines_t_unrotated :: proc(t: ^testing.T) {
+test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 	// Return Lines of the Rectangle in a counter clockwise pattern
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
 
