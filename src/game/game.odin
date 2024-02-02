@@ -127,9 +127,6 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.draw_shape(static_rect, YELLOW)
 
-	rect_min := mouse_rect.pos - (mouse_rect.size * 0.5)
-	rect_max := mouse_rect.pos + (mouse_rect.size * 0.5)
-
 	len := math.length(mouse_rect.size) / 2
 	nm := math.normalize(mouse_rect.size)
 
