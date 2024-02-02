@@ -67,7 +67,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Rectangle:
 			return shape_is_line_colliding_rect(a, b)
 		case Line:
-			return shape_are_lines_colliding(a, b)
+			_, is_colliding := shape_are_lines_colliding(a, b)
+			return is_colliding
 		}
 	}
 	return false
@@ -177,9 +178,8 @@ shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> 
 }
 
 // returns true if two lines intersect
-shape_are_lines_colliding :: proc(a, b: Line) -> bool {
-	_, colliding := shape_get_line_intersection(a, b)
-	return colliding
+shape_are_lines_colliding :: proc(a, b: Line) -> (Vec2, bool) {
+	return shape_get_line_intersection(a, b)
 }
 
 // Returns trues if a line intersects a rect
@@ -187,7 +187,8 @@ shape_are_lines_colliding :: proc(a, b: Line) -> bool {
 shape_is_line_colliding_rect :: proc(line: Line, rect: Rectangle) -> bool {
 	lines := shape_get_rect_lines_t(rect)
 	for l in lines {
-		if (shape_are_lines_colliding(line, l)) {return true}
+		point, is_colliding := shape_get_line_intersection(line, l)
+		if (is_colliding) {return true}
 	}
 	return false
 }
@@ -247,8 +248,10 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	bn := b.end - b.start
 
 	an_bn_normalized := (-bn.x * an.y + an.x * bn.y)
+
 	s_cross := -an.y * (a.start.x - b.start.x) + an.x * (a.start.y - b.start.y)
 	t_cross := bn.x * (a.start.y - b.start.y) - bn.y * (a.start.x - b.start.x)
+
 	s := (s_cross) / an_bn_normalized
 	t := (t_cross) / an_bn_normalized
 
