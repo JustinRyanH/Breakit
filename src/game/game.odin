@@ -109,26 +109,26 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
-	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 12.5}
-	test_circle := Circle{Vec2{100, 100}, 200}
+	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{25, 25}, math.PI / 3}
+	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, 0.0}
 
-	if (mouse_circle.pos == Vec2{}) {
-		platform_draw.draw_shape(test_circle, YELLOW)
-		platform_draw.draw_shape(mouse_circle, PURPLE)
+	if (mouse_rect.pos == Vec2{}) {
+		platform_draw.draw_shape(static_rect, YELLOW)
+		platform_draw.draw_shape(mouse_rect, PURPLE)
 		return
 	}
 
-	platform_draw.draw_shape(test_circle, YELLOW)
-	platform_draw.draw_shape(mouse_circle, PURPLE)
+	platform_draw.draw_shape(static_rect, YELLOW)
+	platform_draw.draw_shape(mouse_rect, PURPLE)
 
-	evt_a, evt_b, did_collide := shape_are_circles_colliding(mouse_circle, test_circle)
-	if (did_collide) {
-		platform_draw.draw_shape(Circle{evt_a.pos, 2}, GREEN)
-		platform_draw.draw_shape(Circle{evt_b.pos, 2}, VIOLET)
+	//evt_a, evt_b, did_collide := shape_are_circles_colliding(mouse_rect, static_rect)
+	//if (did_collide) {
+	//	platform_draw.draw_shape(Circle{evt_a.pos, 2}, GREEN)
+	//	platform_draw.draw_shape(Circle{evt_b.pos, 2}, VIOLET)
 
-		platform_debug_draw_collision(platform_draw, evt_a, GREEN)
-		platform_debug_draw_collision(platform_draw, evt_b, VIOLET)
-	}
+	//	platform_debug_draw_collision(platform_draw, evt_a, GREEN)
+	//	platform_debug_draw_collision(platform_draw, evt_b, VIOLET)
+	//}
 
 
 	// draw_game_normal(platform_draw)
