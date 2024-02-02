@@ -261,11 +261,23 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 
 // Get the vertices around a rectangle, clockwise
 shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
-	rect_min, rect_max := shape_get_rect_extends(rect)
-	vertices[0] = rect_min
-	vertices[1] = Vec2{rect_max.x, rect_min.y}
-	vertices[2] = rect_max
-	vertices[3] = Vec2{rect_min.x, rect_max.y}
+	len := math.length(rect.size) / 2
+	nm_v := math.normalize(rect.size)
+	normalized_points := [4]Vec2 {
+		-nm_v,
+		Vec2{nm_v.x, -nm_v.y},
+		Vec2{nm_v.x, nm_v.y},
+		Vec2{-nm_v.x, nm_v.y},
+	}
+
+	rad := math.to_radians(rect.rotation)
+	for vertex, i in normalized_points {
+		rotated_point := vertex
+		rotated_point.x = vertex.x * math.cos(rad) - vertex.y * math.sin(rad)
+		rotated_point.y = vertex.x * math.sin(rad) + vertex.y * math.cos(rad)
+		vertices[i] = rect.pos + rotated_point * len
+	}
+
 
 	return vertices
 }
@@ -379,10 +391,23 @@ test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
 
 	vertices := shape_get_rect_vertices(rect)
-	testing.expect(t, vertices[0] == Vec2{-0.5, -0.5}, "Top left most vertex")
-	testing.expect(t, vertices[1] == Vec2{0.5, -0.5}, "Top right most vertex")
-	testing.expect(t, vertices[2] == Vec2{0.5, 0.5}, "Bottom right most vertex")
-	testing.expect(t, vertices[3] == Vec2{-0.5, 0.5}, "bottom left most vertex")
+
+	expected_vertices := [4]Vec2 {
+		Vec2{-0.5, -0.5},
+		Vec2{0.5, -0.5},
+		Vec2{0.5, 0.5},
+		Vec2{-0.5, 0.5},
+	}
+
+	tolerance: f32 = 0.001
+	for expected_vetrex, i in expected_vertices {
+		compare := math.abs(vertices[i] - expected_vetrex)
+		testing.expect(
+			t,
+			compare.x < tolerance && compare.y < tolerance,
+			fmt.tprintf("\nExpected: %v\nGot:\t  %v", expected_vetrex, vertices[i])
+		)
+	}
 }
 
 @(test)
@@ -392,26 +417,37 @@ test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 
 	lines := shape_get_rect_lines(rect)
 
-	testing.expect(
-		t,
-		lines[0] == Line{Vec2{-0.5, -0.5}, Vec2{0.5, -0.5}, 0.0},
-		"First line is the top line",
-	)
-	testing.expect(
-		t,
-		lines[1] == Line{Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, 0.0},
-		"Second line is the right line",
-	)
-	testing.expect(
-		t,
-		lines[2] == Line{Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}, 0.0},
-		"Third line is the bottom line",
-	)
-	testing.expect(
-		t,
-		lines[3] == Line{Vec2{-0.5, 0.5}, Vec2{-0.5, -0.5}, 0.0},
-		"Forth line is the bottom line",
-	)
+	expected_starts := [4]Vec2 {
+		Vec2{-0.5, -0.5},
+		Vec2{0.5, -0.5},
+		Vec2{0.5, 0.5},
+		Vec2{-0.5, 0.5},
+	}
+	expected_ends := [4]Vec2 {
+		Vec2{0.5, -0.5},
+		Vec2{0.5, 0.5},
+		Vec2{-0.5, 0.5},
+		Vec2{-0.5, -0.5},
+	}
+
+	tolerance: f32 = 0.001
+  for _, i in lines {
+    line := lines[i]
+
+		compare_line_start := math.abs(line.start - expected_starts[i])
+    compare_line_end := math.abs(line.end - expected_ends[i])
+
+    is_good := compare_line_start.x < tolerance &&
+      compare_line_start.y < tolerance &&
+      compare_line_end.x < tolerance &&
+      compare_line_end.y < tolerance
+
+    testing.expect(
+      t,
+      is_good,
+      fmt.tprintf("\nExpected: %v\nGot:\t%v\n", Line{ expected_starts[i], expected_ends[i], 0.0 }, line)
+    )
+  }
 }
 
 @(test)
