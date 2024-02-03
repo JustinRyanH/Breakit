@@ -477,8 +477,8 @@ shape_get_corner_vertices :: proc(c: Circle, l: Line) -> (Vec2, Vec2, bool) {
 	if (dot < 0) {return v1, v2, true}
 	v1 = c.pos - l.end
 	v2 = l.start - l.end
+	dot = math.dot(v1, v2)
 	if (dot < 0) {return v1, v2, true}
-
 
 	return Vec2{}, Vec2{}, false
 }
