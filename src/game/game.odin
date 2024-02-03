@@ -134,7 +134,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	is_colliding_color: u8
 
 	// closest_line := shape_get_closest_line(mouse_circle.pos, static_rect)
-	collision_evt, is_colliding := shape_is_circle_colliding_rectangle_v2(
+	collision_evt, is_colliding := shape_is_circle_colliding_rectangle(
 		mouse_circle,
 		static_rect,
 	)

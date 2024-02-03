@@ -52,7 +52,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Circle:
 			_, _, is_colliding := shape_are_circles_colliding(a, b)
 		case Rectangle:
-			_, _, is_colliding := shape_is_circle_colliding_rectangle(a, b)
+			_, is_colliding := shape_is_circle_colliding_rectangle(a, b)
 			return is_colliding
 		case Line:
 			_, is_colliding := shape_is_circle_colliding_line(a, b)
@@ -61,7 +61,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Rectangle:
 		switch b in shape_b {
 		case Circle:
-			_, _, is_colliding := shape_is_circle_colliding_rectangle(b, a)
+			_, is_colliding := shape_is_circle_colliding_rectangle(b, a)
 			return is_colliding
 		case Rectangle:
       _,  is_colliding := shape_are_rects_colliding_obb(a, b)
@@ -162,44 +162,7 @@ shape_are_circles_colliding :: proc(
 	return
 }
 
-// returns true if circle intersects the rectangle
 shape_is_circle_colliding_rectangle :: proc(
-	circle: Circle,
-	rect: Rectangle,
-) -> (
-	circle_event, rect_event: CollisionEvent,
-	is_colliding: bool,
-) {
-	closest_line := shape_get_closest_line(circle.pos, rect)
-	line_point := shape_point_projected_to_line(circle.pos, closest_line)
-
-	center_to_point_dir := math.normalize(line_point - circle.pos)
-	circle_edge_point := circle.pos + center_to_point_dir * circle.radius
-	circle_edge_line_point_dir := math.normalize(line_point - circle_edge_point)
-
-	line_normal := shape_line_normal(closest_line)
-
-	circle_overlap_edge := math.sign(center_to_point_dir) != math.sign(circle_edge_line_point_dir)
-	circle_center_outside := math.sign(center_to_point_dir) != math.sign(line_normal)
-	if (!circle_overlap_edge && circle_center_outside) {
-		return
-	}
-
-	if (line_normal != center_to_point_dir) {
-		circle_event = CollisionEvent{circle_edge_point, center_to_point_dir}
-	} else {
-		new_normal := -line_normal
-		new_edge := circle.pos + new_normal * circle.radius
-		circle_event = CollisionEvent{new_edge, new_normal}
-	}
-
-	rect_event = CollisionEvent{line_point, line_normal}
-	is_colliding = true
-
-	return
-}
-
-shape_is_circle_colliding_rectangle_v2 :: proc(
 	circle: Circle,
 	rect: Rectangle,
 ) -> (
