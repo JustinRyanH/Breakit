@@ -109,11 +109,11 @@ shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 
 // Check collision between two rectangles using AABB, assumes there is no rotation
 shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> bool {
-  seperation := shape_rectangle_seperation(rect_a, rect_b)
+  seperation, _, _ := shape_rectangle_seperation(rect_a, rect_b)
   if (seperation >= 0) {
     return false
   }
-  seperation = shape_rectangle_seperation(rect_b, rect_a)
+  seperation,_ ,_ = shape_rectangle_seperation(rect_b, rect_a)
   if (seperation >= 0) {
     return false
   }
@@ -251,26 +251,35 @@ shape_is_line_colliding_rect :: proc(
 // Helpers
 /////////////////////////////////
 
-shape_rectangle_seperation :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (f32) {
+shape_rectangle_seperation :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (seperation: f32, axis: Line, pen_point: Vec2) {
+	seperation = min(f32)
 	rect_a_lines := shape_get_rect_lines(rect_a)
 	rect_b_lines := shape_get_rect_lines(rect_b)
 
-	seperation := min(f32)
 
 	for line_a in rect_a_lines {
 		line_n := shape_line_normal(line_a)
 
 		smallest_sep := max(f32)
+    min_vertex: Vec2
 
 		for line_b in rect_b_lines {
-			smallest_sep = min(smallest_sep, math.dot(line_b.start - line_a.start, line_n))
+      projected_point := math.dot(line_b.start - line_a.start, line_n)
+      if (projected_point < smallest_sep) {
+        smallest_sep = projected_point
+        min_vertex = line_b.start
+
+      }
+			smallest_sep = min(smallest_sep, projected_point)
 		}
 		if (smallest_sep > seperation) {
 			seperation = smallest_sep
+      pen_point = min_vertex
+      axis = line_a
 		}
 	}
 
-	return seperation
+	return
 }
 
 shape_get_closest_line :: proc(point: Vec2, rectangle: Rectangle) -> (closest_line: Line) {
