@@ -469,12 +469,12 @@ shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> 
 }
 
 @(private = "file")
-shape_get_corner_vertices :: proc(c: Circle, l: Line) -> (Vec2, Vec2, bool) {
-	v1 := c.pos - l.start
+shape_get_corner_vertices :: proc(p: Vec2, l: Line) -> (Vec2, Vec2, bool) {
+	v1 := p - l.start
 	v2 := l.end - l.start
 	dot := math.dot(v1, v2)
 	if (dot < 0) {return v1, v2, true}
-	v1 = c.pos - l.end
+	v1 = p - l.end
 	v2 = l.start - l.end
 	dot = math.dot(v1, v2)
 	if (dot < 0) {return v1, v2, true}
