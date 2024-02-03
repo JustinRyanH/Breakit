@@ -36,10 +36,13 @@ GameMemory :: struct {
 	// World
 	bricks:           []Brick,
 	active_bricks:    int,
-	rotation:         f32,
 
 	// World Stuff
 	camera:           Camera2D,
+
+	// Debug
+	rotation:         f32,
+	mouse_line:       Line,
 }
 
 
@@ -71,6 +74,7 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_speed = 300
 	g_mem.ball_state = BallState.OnPaddle
 	g_mem.bricks = make([]Brick, LineOfBricks * BricksPerLine)
+	g_mem.mouse_line.thickness = 3
 
 	for y := 0; y < LineOfBricks; y += 1 {
 		for x := 0; x < BricksPerLine; x += 1 {
@@ -104,6 +108,12 @@ game_update :: proc(ctx: ^Context) -> bool {
 	} else if (input_is_right_arrow_down(ctx.frame)) {
 		game.rotation += 1
 	}
+	if (input_was_right_mouse_pressed(ctx.frame)) {
+		game.mouse_line.start = input_mouse_position(ctx.frame)
+	}
+	if (input_was_left_mouse_pressed(ctx.frame)) {
+		game.mouse_line.end = input_mouse_position(ctx.frame)
+	}
 
 	return ctx.cmds.should_close_game()
 }
@@ -134,10 +144,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	is_colliding_color: u8
 
 	// closest_line := shape_get_closest_line(mouse_circle.pos, static_rect)
-	collision_evt, is_colliding := shape_is_circle_colliding_rectangle(
-		mouse_circle,
-		static_rect,
-	)
+	collision_evt, is_colliding := shape_is_circle_colliding_rectangle(mouse_circle, static_rect)
 	if is_colliding {
 		is_colliding_color = is_colliding_alpha
 		platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)

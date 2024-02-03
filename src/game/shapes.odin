@@ -265,7 +265,6 @@ shape_are_lines_colliding :: proc(a, b: Line) -> (Vec2, bool) {
 }
 
 // Returns trues if a line intersects a rect
-// TODO: next
 shape_is_line_colliding_rect :: proc(
 	line: Line,
 	rect: Rectangle,
@@ -280,6 +279,32 @@ shape_is_line_colliding_rect :: proc(
 		is_colliding = true
 		return
 	}
+	return
+}
+
+// Returns trues if a line intersects a rect
+shape_is_line_colliding_rect_v2 :: proc(
+	line: Line,
+	rect: Rectangle,
+) -> (
+	evt: ContactEvent,
+	is_colliding: bool,
+) {
+	i: int = 0
+	c_points: [2]Vec2
+	c_lines: [2]Line
+	lines := shape_get_rect_lines(rect)
+	for l in lines {
+		point, is_colliding := shape_get_line_intersection(line, l)
+		if is_colliding {
+
+			c_points[i] = point
+			c_lines[i] = line
+			i += 1
+		}
+		if i == 2 {break}
+	}
+	fmt.printf("c_points: %v\n", c_lines)
 	return
 }
 
