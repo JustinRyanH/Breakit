@@ -29,11 +29,10 @@ Shape :: union {
 
 
 ContactEvent :: struct {
-  start: Vec2,
-  end: Vec2,
-
-  normal: Vec2,
-  depth: f32,
+	start:  Vec2,
+	end:    Vec2,
+	normal: Vec2,
+	depth:  f32,
 }
 
 CollisionEvent :: struct {
@@ -64,7 +63,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 			_, is_colliding := shape_is_circle_colliding_rectangle(b, a)
 			return is_colliding
 		case Rectangle:
-      _,  is_colliding := shape_are_rects_colliding_obb(a, b)
+			_, is_colliding := shape_are_rects_colliding_obb(a, b)
 			return is_colliding
 		case Line:
 			_, _, is_colliding := shape_is_line_colliding_rect(b, a)
@@ -118,29 +117,34 @@ shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 }
 
 // Check collision between two rectangles using AABB, assumes there is no rotation
-shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> (event: ContactEvent, is_colliding: bool) {
-  seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
-  if (seperation_a >= 0) {
-    return
-  }
-  seperation_b, axis_b ,pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
-  if (seperation_b >= 0) {
-    return
-  }
+shape_are_rects_colliding_obb :: proc(
+	rect_a, rect_b: Rectangle,
+) -> (
+	event: ContactEvent,
+	is_colliding: bool,
+) {
+	seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
+	if (seperation_a >= 0) {
+		return
+	}
+	seperation_b, axis_b, pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
+	if (seperation_b >= 0) {
+		return
+	}
 
-  if (seperation_a > seperation_b) {
-    event.depth = -seperation_a
-    event.normal = shape_line_normal(axis_a)
-    event.start = pen_point_a
-    event.end = pen_point_a + event.normal * event.depth
-  } else {
-    event.depth = -seperation_b
-    event.normal = shape_line_normal(axis_b)
-    event.start = pen_point_b
-    event.end = pen_point_b + event.normal * event.depth
-  }
+	if (seperation_a > seperation_b) {
+		event.depth = -seperation_a
+		event.normal = shape_line_normal(axis_a)
+		event.start = pen_point_a
+		event.end = pen_point_a + event.normal * event.depth
+	} else {
+		event.depth = -seperation_b
+		event.normal = shape_line_normal(axis_b)
+		event.start = pen_point_b
+		event.end = pen_point_b + event.normal * event.depth
+	}
 
-  return event, true
+	return event, true
 }
 
 // returns true if the two circles intersect
@@ -171,39 +175,39 @@ shape_is_circle_colliding_rectangle :: proc(
 ) {
 	closest_line := shape_get_closest_line(circle.pos, rect)
 	line_point := shape_point_projected_to_line(circle.pos, closest_line)
-  normal := shape_line_normal(closest_line)
+	normal := shape_line_normal(closest_line)
 
 	circle_edge_point := circle.pos + -normal * circle.radius
-  center_seperation := math.dot(circle.pos - closest_line.start , normal)
+	center_seperation := math.dot(circle.pos - closest_line.start, normal)
 
-  circle_center_outside := center_seperation >= 0
-  if (circle_center_outside) {
-    v1, v2, at_corner := shape_get_corner_vertices(circle, closest_line)
-    if (at_corner) {
-      if (math.length(v1) > circle.radius) { return }
-      event.normal = math.normalize(v1)
-      event.depth = circle.radius - math.length(v1)
-      event.start = circle.pos
-      event.end = event.start + event.normal * -event.depth
-      return event, true
-    }
-    if (center_seperation > circle.radius) { return }
-    // At Edge
-    event.normal = -normal
-    event.depth = circle.radius - center_seperation
-    event.start = circle.pos + (normal * -circle.radius)
-    event.end = event.start + (normal * event.depth)
+	circle_center_outside := center_seperation >= 0
+	if (circle_center_outside) {
+		v1, v2, at_corner := shape_get_corner_vertices(circle, closest_line)
+		if (at_corner) {
+			if (math.length(v1) > circle.radius) {return}
+			event.normal = math.normalize(v1)
+			event.depth = circle.radius - math.length(v1)
+			event.start = circle.pos
+			event.end = event.start + event.normal * -event.depth
+			return event, true
+		}
+		if (center_seperation > circle.radius) {return}
+		// At Edge
+		event.normal = -normal
+		event.depth = circle.radius - center_seperation
+		event.start = circle.pos + (normal * -circle.radius)
+		event.end = event.start + (normal * event.depth)
 
-    return event, true
-    
-  } else {
-    // Inside
-    event.normal = shape_line_normal(closest_line)
-    event.depth = circle.radius
-    event.start = line_point
-    event.end = circle.pos + event.normal * -event.depth
-    return event, true
-  }
+		return event, true
+
+	} else {
+		// Inside
+		event.normal = shape_line_normal(closest_line)
+		event.depth = circle.radius
+		event.start = line_point
+		event.end = circle.pos + event.normal * -event.depth
+		return event, true
+	}
 
 	return
 }
@@ -283,7 +287,14 @@ shape_is_line_colliding_rect :: proc(
 // Helpers
 /////////////////////////////////
 
-shape_rectangle_seperation :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (seperation: f32, axis: Line, pen_point: Vec2) {
+shape_rectangle_seperation :: proc(
+	rect_a: Rectangle,
+	rect_b: Rectangle,
+) -> (
+	seperation: f32,
+	axis: Line,
+	pen_point: Vec2,
+) {
 	seperation = min(f32)
 	rect_a_lines := shape_get_rect_lines(rect_a)
 	rect_b_lines := shape_get_rect_lines(rect_b)
@@ -293,21 +304,21 @@ shape_rectangle_seperation :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (sep
 		line_n := shape_line_normal(line_a)
 
 		smallest_sep := max(f32)
-    min_vertex: Vec2
+		min_vertex: Vec2
 
 		for line_b in rect_b_lines {
-      projected_point := math.dot(line_b.start - line_a.start, line_n)
-      if (projected_point < smallest_sep) {
-        smallest_sep = projected_point
-        min_vertex = line_b.start
+			projected_point := math.dot(line_b.start - line_a.start, line_n)
+			if (projected_point < smallest_sep) {
+				smallest_sep = projected_point
+				min_vertex = line_b.start
 
-      }
+			}
 			smallest_sep = min(smallest_sep, projected_point)
 		}
 		if (smallest_sep > seperation) {
 			seperation = smallest_sep
-      pen_point = min_vertex
-      axis = line_a
+			pen_point = min_vertex
+			axis = line_a
 		}
 	}
 
@@ -433,18 +444,18 @@ shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> 
 	return se_n * (dot * se_len) + line.start
 }
 
-@(private="file")
+@(private = "file")
 shape_get_corner_vertices :: proc(c: Circle, l: Line) -> (Vec2, Vec2, bool) {
-  v1 := c.pos - l.start
-  v2 := l.end - l.start
-  dot := math.dot(v1, v2)
-  if (dot < 0) { return v1, v2, true }
-  v1 = c.pos - l.end
-  v2 = l.start - l.end
-  if (dot < 0) { return v1, v2, true }
-  
+	v1 := c.pos - l.start
+	v2 := l.end - l.start
+	dot := math.dot(v1, v2)
+	if (dot < 0) {return v1, v2, true}
+	v1 = c.pos - l.end
+	v2 = l.start - l.end
+	if (dot < 0) {return v1, v2, true}
 
-  return Vec2{}, Vec2{}, false
+
+	return Vec2{}, Vec2{}, false
 }
 
 /////////////////////////////
@@ -496,7 +507,7 @@ test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 		testing.expect(
 			t,
 			compare.x < tolerance && compare.y < tolerance,
-			fmt.tprintf("\nExpected: %v\nGot:\t  %v", expected_vetrex, vertices[i])
+			fmt.tprintf("\nExpected: %v\nGot:\t  %v", expected_vetrex, vertices[i]),
 		)
 	}
 }
@@ -508,37 +519,32 @@ test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 
 	lines := shape_get_rect_lines(rect)
 
-	expected_starts := [4]Vec2 {
-		Vec2{-0.5, -0.5},
-		Vec2{0.5, -0.5},
-		Vec2{0.5, 0.5},
-		Vec2{-0.5, 0.5},
-	}
-	expected_ends := [4]Vec2 {
-		Vec2{0.5, -0.5},
-		Vec2{0.5, 0.5},
-		Vec2{-0.5, 0.5},
-		Vec2{-0.5, -0.5},
-	}
+	expected_starts := [4]Vec2{Vec2{-0.5, -0.5}, Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}}
+	expected_ends := [4]Vec2{Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}, Vec2{-0.5, -0.5}}
 
 	tolerance: f32 = 0.001
-  for _, i in lines {
-    line := lines[i]
+	for _, i in lines {
+		line := lines[i]
 
 		compare_line_start := math.abs(line.start - expected_starts[i])
-    compare_line_end := math.abs(line.end - expected_ends[i])
+		compare_line_end := math.abs(line.end - expected_ends[i])
 
-    is_good := compare_line_start.x < tolerance &&
-      compare_line_start.y < tolerance &&
-      compare_line_end.x < tolerance &&
-      compare_line_end.y < tolerance
+		is_good :=
+			compare_line_start.x < tolerance &&
+			compare_line_start.y < tolerance &&
+			compare_line_end.x < tolerance &&
+			compare_line_end.y < tolerance
 
-    testing.expect(
-      t,
-      is_good,
-      fmt.tprintf("\nExpected: %v\nGot:\t%v\n", Line{ expected_starts[i], expected_ends[i], 0.0 }, line)
-    )
-  }
+		testing.expect(
+			t,
+			is_good,
+			fmt.tprintf(
+				"\nExpected: %v\nGot:\t%v\n",
+				Line{expected_starts[i], expected_ends[i], 0.0},
+				line,
+			),
+		)
+	}
 }
 
 @(test)
