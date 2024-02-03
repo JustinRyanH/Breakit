@@ -55,7 +55,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 			_, _, is_colliding := shape_is_circle_colliding_rectangle(b, a)
 			return is_colliding
 		case Rectangle:
-			return shape_are_rects_colliding_aabb(a, b)
+			return shape_are_rects_colliding_obb(a, b)
 		case Line:
 			_, _, is_colliding := shape_is_line_colliding_rect(b, a)
 			return is_colliding
@@ -105,6 +105,20 @@ shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 	overlap_vertical := (rect_a_min.y < rect_b_extends.y) && (rect_a_extends.y > rect_b_min.y)
 
 	return overlap_horizontal && overlap_vertical
+}
+
+// Check collision between two rectangles using AABB, assumes there is no rotation
+shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> bool {
+  seperation := shape_rectangle_seperation(rect_a, rect_b)
+  if (seperation >= 0) {
+    return false
+  }
+  seperation = shape_rectangle_seperation(rect_b, rect_a)
+  if (seperation >= 0) {
+    return false
+  }
+
+  return true
 }
 
 // returns true if the two circles intersect
