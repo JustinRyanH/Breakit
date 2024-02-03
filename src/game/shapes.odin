@@ -210,41 +210,22 @@ shape_is_circle_colliding_rectangle_v2 :: proc(
 	line_point := shape_point_projected_to_line(circle.pos, closest_line)
   normal := shape_line_normal(closest_line)
 
-
 	circle_edge_point := circle.pos + -normal * circle.radius
   center_seperation := math.dot(circle.pos - closest_line.start , normal)
 
-  if (center_seperation >= 0) {
-    v1 := circle.pos - closest_line.start
-    v2 := closest_line.end - closest_line.start
-    dot := math.dot(v1, v2)
-    if (dot < 0) {
-      if (math.length(v1) > circle.radius) {
-        return
-      }
+  circle_center_outside := center_seperation >= 0
+  if (circle_center_outside) {
+    v1, v2, at_corner := shape_get_corner_vertices(circle, closest_line)
+    if (at_corner) {
+      if (math.length(v1) > circle.radius) { return }
       event.normal = math.normalize(v1)
       event.depth = circle.radius - math.length(v1)
       event.start = circle.pos
       event.end = event.start + event.normal * -event.depth
       return event, true
-    } else {
-        v1 = circle.pos - closest_line.end
-        v2 = closest_line.start - closest_line.end
-        dot = math.dot(v1, v2)
-        if (dot < 0) {
-          if (math.length(v1) > circle.radius) {
-              return
-          }
-          event.normal = math.normalize(v1)
-          event.depth = circle.radius - math.length(v1)
-          event.start = circle.pos
-          event.end = event.start + event.normal * -event.depth
-          return event, true
-        }
     }
-    if (center_seperation > circle.radius) {
-      return
-    }
+    if (center_seperation > circle.radius) { return }
+    // At Edge
     event.normal = -normal
     event.depth = circle.radius - center_seperation
     event.start = circle.pos + (normal * -circle.radius)
@@ -253,6 +234,7 @@ shape_is_circle_colliding_rectangle_v2 :: proc(
     return event, true
     
   } else {
+    // Inside
     event.normal = shape_line_normal(closest_line)
     event.depth = circle.radius
     event.start = line_point
@@ -486,6 +468,20 @@ shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> 
 
 	dot := math.clamp(math.dot(se_n, pd_n), 0.0, 1.0)
 	return se_n * (dot * se_len) + line.start
+}
+
+@(private="file")
+shape_get_corner_vertices :: proc(c: Circle, l: Line) -> (Vec2, Vec2, bool) {
+  v1 := c.pos - l.start
+  v2 := l.end - l.start
+  dot := math.dot(v1, v2)
+  if (dot < 0) { return v1, v2, true }
+  v1 = c.pos - l.end
+  v2 = l.start - l.end
+  if (dot < 0) { return v1, v2, true }
+  
+
+  return Vec2{}, Vec2{}, false
 }
 
 /////////////////////////////
