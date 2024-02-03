@@ -117,6 +117,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
+	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
+
 	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{50, 75}, game.rotation}
 	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, 0}
 
@@ -131,12 +133,16 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	len := math.length(mouse_rect.size) / 2
 	nm := math.normalize(mouse_rect.size)
 
-	lines := shape_get_rect_lines(mouse_rect)
-	for line in lines {
-		lc := line
-		lc.thickness = 2
-		platform_draw.draw_shape(lc, RED)
-	}
+
+	a_seperation, b_seperation := shape_rectangle_seperations(mouse_rect, static_rect)
+	platform_draw.draw_text(
+		fmt.ctprintf("Seperation: a(%v), b(%v)", a_seperation, b_seperation),
+		10,
+		10,
+		20,
+		WHITE,
+	)
+
 
 	platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, 220})
 
