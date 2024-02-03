@@ -29,13 +29,11 @@ Shape :: union {
 
 
 ContactEvent :: struct {
-  shape_a: ^Shape,
-  shape_b: ^Shape,
-
   start: Vec2,
   end: Vec2,
+
   normal: Vec2,
-  penetration: f32,
+  depth: f32,
 }
 
 CollisionEvent :: struct {
@@ -66,7 +64,8 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 			_, _, is_colliding := shape_is_circle_colliding_rectangle(b, a)
 			return is_colliding
 		case Rectangle:
-			return shape_are_rects_colliding_obb(a, b)
+      _,  is_colliding := shape_are_rects_colliding_obb(a, b)
+			return is_colliding
 		case Line:
 			_, _, is_colliding := shape_is_line_colliding_rect(b, a)
 			return is_colliding
@@ -119,17 +118,29 @@ shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 }
 
 // Check collision between two rectangles using AABB, assumes there is no rotation
-shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> bool {
-  seperation_a, _, _ := shape_rectangle_seperation(rect_a, rect_b)
+shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> (event: ContactEvent, is_colliding: bool) {
+  seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
   if (seperation_a >= 0) {
-    return false
+    return
   }
-  seperation_b,_ ,_ := shape_rectangle_seperation(rect_b, rect_a)
+  seperation_b, axis_b ,pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
   if (seperation_b >= 0) {
-    return false
+    return
   }
 
-  return true
+  if (seperation_a > seperation_b) {
+    event.depth = -seperation_a
+    event.normal = shape_line_normal(axis_a)
+    event.start = pen_point_a
+    event.end = pen_point_a + event.normal * event.depth
+  } else {
+    event.depth = -seperation_b
+    event.normal = shape_line_normal(axis_b)
+    event.start = pen_point_b
+    event.end = pen_point_b + event.normal * event.depth
+  }
+
+  return event, true
 }
 
 // returns true if the two circles intersect
