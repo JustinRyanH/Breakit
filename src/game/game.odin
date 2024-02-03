@@ -119,8 +119,13 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
 
-	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{50, 75}, game.rotation}
-	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, 0}
+	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 20}
+	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{30, 75}, 0}
+	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, game.rotation}
+
+	platform_draw.draw_shape(static_rect, Color{255, 203, 0, 255})
+	//platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, 255})
+	platform_draw.draw_shape(mouse_circle, Color{135, 60, 190, 255})
 
 
 	is_colliding_alpha: u8 = 255
@@ -128,33 +133,26 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	is_colliding_color: u8
 
-	collision_evt, is_colliding := shape_are_rects_colliding_obb(mouse_rect, static_rect)
+	// closest_line := shape_get_closest_line(mouse_circle.pos, static_rect)
+	collision_evt, is_colliding := shape_is_circle_colliding_rectangle_v2(
+		mouse_circle,
+		static_rect,
+	)
 	if is_colliding {
 		is_colliding_color = is_colliding_alpha
-	} else {
-		is_colliding_color = not_colliding_alpha
+		platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)
 	}
 
 
-	platform_draw.draw_shape(static_rect, Color{255, 203, 0, is_colliding_color})
-	platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, is_colliding_color})
-	platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)
+	// if is_colliding {platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)}
+	// platform_draw.draw_shape(closest_line, RED)
+	//
 
-	// mouse_rect_lines := shape_get_rect_lines(mouse_rect)
-	// for line in mouse_rect_lines {
-	// 	line_copy := line
-	// 	line_copy.thickness = 2
-	// 	platform_draw.draw_shape(line_copy, PURPLE)
-	// }
 
-	// evt_a, evt_b, did_collide := shape_are_rects_colliding(mouse_rect, static_rect)
-	// if (did_collide) {
-	// 	platform_draw.draw_shape(Circle{evt_a.pos, 4}, GREEN)
-	// 	platform_draw.draw_shape(Circle{evt_b.pos, 4}, VIOLET)
-
-	// 	platform_debug_draw_collision(platform_draw, evt_a, GREEN)
-	// 	platform_debug_draw_collision(platform_draw, evt_b, VIOLET)
-	// }
+	//rect_evt, did_rect_collide := shape_are_rects_colliding_obb(mouse_rect, static_rect)
+	//if did_rect_collide {
+	//	platform_draw.draw_shape(Line{rect_evt.start, rect_evt.end, 2}, GREEN)
+	//}
 
 
 	// draw_game_normal(platform_draw)

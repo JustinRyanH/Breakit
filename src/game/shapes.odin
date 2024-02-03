@@ -199,6 +199,71 @@ shape_is_circle_colliding_rectangle :: proc(
 	return
 }
 
+shape_is_circle_colliding_rectangle_v2 :: proc(
+	circle: Circle,
+	rect: Rectangle,
+) -> (
+	event: ContactEvent,
+	is_colliding: bool,
+) {
+	closest_line := shape_get_closest_line(circle.pos, rect)
+	line_point := shape_point_projected_to_line(circle.pos, closest_line)
+  normal := shape_line_normal(closest_line)
+
+
+	circle_edge_point := circle.pos + -normal * circle.radius
+  center_seperation := math.dot(circle.pos - closest_line.start , normal)
+
+  if (center_seperation >= 0) {
+    v1 := circle.pos - closest_line.start
+    v2 := closest_line.end - closest_line.start
+    dot := math.dot(v1, v2)
+    if (dot < 0) {
+      if (math.length(v1) > circle.radius) {
+        return
+      }
+      event.normal = math.normalize(v1)
+      event.depth = circle.radius - math.length(v1)
+      event.start = circle.pos
+      event.end = event.start + event.normal * -event.depth
+      return event, true
+    } else {
+        v1 = circle.pos - closest_line.end
+        v2 = closest_line.start - closest_line.end
+        dot = math.dot(v1, v2)
+        if (dot < 0) {
+          if (math.length(v1) > circle.radius) {
+              return
+          }
+          event.normal = math.normalize(v1)
+          event.depth = circle.radius - math.length(v1)
+          event.start = circle.pos
+          event.end = event.start + event.normal * -event.depth
+          return event, true
+        }
+    }
+    if (center_seperation > circle.radius) {
+      return
+    }
+    event.normal = -normal
+    event.depth = circle.radius - center_seperation
+    event.start = circle.pos + (normal * -circle.radius)
+    event.end = event.start + (normal * event.depth)
+
+    return event, true
+    
+  } else {
+    event.normal = shape_line_normal(closest_line)
+    event.depth = circle.radius
+    event.start = line_point
+    event.end = circle.pos + event.normal * -event.depth
+    return event, true
+  }
+
+	return
+}
+
+
 // Returns the collision event for a point, and the closest line to the point, 
 // returns true if line inside the rect, otherwise returns false
 shape_is_point_inside_rect :: proc(
