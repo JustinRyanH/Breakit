@@ -27,6 +27,17 @@ Shape :: union {
 	Line,
 }
 
+
+ContactEvent :: struct {
+  shape_a: ^Shape,
+  shape_b: ^Shape,
+
+  start: Vec2,
+  end: Vec2,
+  normal: Vec2,
+  penetration: f32,
+}
+
 CollisionEvent :: struct {
 	pos:    Vec2,
 	normal: Vec2,
