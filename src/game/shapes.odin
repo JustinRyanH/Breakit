@@ -109,12 +109,12 @@ shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 
 // Check collision between two rectangles using AABB, assumes there is no rotation
 shape_are_rects_colliding_obb :: proc(rect_a, rect_b: Rectangle) -> bool {
-  seperation, _, _ := shape_rectangle_seperation(rect_a, rect_b)
-  if (seperation >= 0) {
+  seperation_a, _, _ := shape_rectangle_seperation(rect_a, rect_b)
+  if (seperation_a >= 0) {
     return false
   }
-  seperation,_ ,_ = shape_rectangle_seperation(rect_b, rect_a)
-  if (seperation >= 0) {
+  seperation_b,_ ,_ := shape_rectangle_seperation(rect_b, rect_a)
+  if (seperation_b >= 0) {
     return false
   }
 
