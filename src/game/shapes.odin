@@ -237,12 +237,11 @@ shape_is_line_colliding_rect :: proc(
 // Helpers
 /////////////////////////////////
 
-shape_rectangle_seperations :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (f32, f32) {
+shape_rectangle_seperation :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (f32) {
 	rect_a_lines := shape_get_rect_lines(rect_a)
 	rect_b_lines := shape_get_rect_lines(rect_b)
 
-	seperation_a := min(f32)
-	seperation_b := min(f32)
+	seperation := min(f32)
 
 	for line_a in rect_a_lines {
 		line_n := shape_line_normal(line_a)
@@ -252,25 +251,12 @@ shape_rectangle_seperations :: proc(rect_a: Rectangle, rect_b: Rectangle) -> (f3
 		for line_b in rect_b_lines {
 			smallest_sep = min(smallest_sep, math.dot(line_b.start - line_a.start, line_n))
 		}
-		if (smallest_sep > seperation_a) {
-			seperation_a = smallest_sep
+		if (smallest_sep > seperation) {
+			seperation = smallest_sep
 		}
 	}
 
-	for line_b in rect_b_lines {
-		line_n := shape_line_normal(line_b)
-
-		smallest_sep := max(f32)
-
-		for line_a in rect_a_lines {
-			smallest_sep = min(smallest_sep, math.dot(line_a.start - line_b.start, line_n))
-		}
-		if (smallest_sep > seperation_b) {
-			seperation_b = smallest_sep
-		}
-	}
-
-	return seperation_a, seperation_b
+	return seperation
 }
 
 shape_get_closest_line :: proc(point: Vec2, rectangle: Rectangle) -> (closest_line: Line) {
@@ -441,7 +427,7 @@ test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 		testing.expect(
 			t,
 			compare.x < tolerance && compare.y < tolerance,
-			fmt.tprintf("\nExpected: %v\nGot:\t  %v", expected_vetrex, vertices[i]),
+			fmt.tprintf("\nExpected: %v\nGot:\t  %v", expected_vetrex, vertices[i])
 		)
 	}
 }
@@ -453,32 +439,37 @@ test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 
 	lines := shape_get_rect_lines(rect)
 
-	expected_starts := [4]Vec2{Vec2{-0.5, -0.5}, Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}}
-	expected_ends := [4]Vec2{Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}, Vec2{-0.5, -0.5}}
+	expected_starts := [4]Vec2 {
+		Vec2{-0.5, -0.5},
+		Vec2{0.5, -0.5},
+		Vec2{0.5, 0.5},
+		Vec2{-0.5, 0.5},
+	}
+	expected_ends := [4]Vec2 {
+		Vec2{0.5, -0.5},
+		Vec2{0.5, 0.5},
+		Vec2{-0.5, 0.5},
+		Vec2{-0.5, -0.5},
+	}
 
 	tolerance: f32 = 0.001
-	for _, i in lines {
-		line := lines[i]
+  for _, i in lines {
+    line := lines[i]
 
 		compare_line_start := math.abs(line.start - expected_starts[i])
-		compare_line_end := math.abs(line.end - expected_ends[i])
+    compare_line_end := math.abs(line.end - expected_ends[i])
 
-		is_good :=
-			compare_line_start.x < tolerance &&
-			compare_line_start.y < tolerance &&
-			compare_line_end.x < tolerance &&
-			compare_line_end.y < tolerance
+    is_good := compare_line_start.x < tolerance &&
+      compare_line_start.y < tolerance &&
+      compare_line_end.x < tolerance &&
+      compare_line_end.y < tolerance
 
-		testing.expect(
-			t,
-			is_good,
-			fmt.tprintf(
-				"\nExpected: %v\nGot:\t%v\n",
-				Line{expected_starts[i], expected_ends[i], 0.0},
-				line,
-			),
-		)
-	}
+    testing.expect(
+      t,
+      is_good,
+      fmt.tprintf("\nExpected: %v\nGot:\t%v\n", Line{ expected_starts[i], expected_ends[i], 0.0 }, line)
+    )
+  }
 }
 
 @(test)

@@ -122,16 +122,13 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{50, 75}, game.rotation}
 	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, 0}
 
-	if (mouse_rect.pos == Vec2{}) {
-		platform_draw.draw_shape(static_rect, YELLOW)
-		platform_draw.draw_shape(mouse_rect, PURPLE)
-		return
-	}
+	close_mouse_rect_line_to_static_rect := shape_get_closest_line(static_rect.pos, mouse_rect)
+	close_mouse_rect_line_to_static_rect.thickness = 5
+	closest_static_rect_line := shape_get_closest_line(mouse_rect.pos, static_rect)
+	closest_static_rect_line.thickness = 5
 
-	platform_draw.draw_shape(static_rect, YELLOW)
-
-	len := math.length(mouse_rect.size) / 2
-	nm := math.normalize(mouse_rect.size)
+	platform_draw.draw_shape(close_mouse_rect_line_to_static_rect, RED)
+	platform_draw.draw_shape(closest_static_rect_line, BLUE)
 
 
 	a_seperation, b_seperation := shape_rectangle_seperations(mouse_rect, static_rect)
@@ -145,6 +142,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 
 	platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, 220})
+	platform_draw.draw_shape(static_rect, Color{0, 117, 44, 220})
 
 
 	// mouse_rect_lines := shape_get_rect_lines(mouse_rect)
