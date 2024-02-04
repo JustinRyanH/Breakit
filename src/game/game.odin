@@ -137,8 +137,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	evt, is_colliding := shape_is_line_colliding_rect_v2(game.mouse_line, static_rect)
 
 	if (is_colliding) {
-		// platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
-		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 20, RED)
+		platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
+		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 14, RED)
 	}
 
 	is_colliding_alpha: u8 = 255
