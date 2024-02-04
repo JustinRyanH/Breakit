@@ -20,9 +20,6 @@ main :: proc() {
 	ctx := platform_new_context()
 	defer deinit_game_context(ctx)
 
-	platform_draw := build_raylib_platform_draw()
-	defer cleanup_raylib_platform_draw(platform_draw)
-
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
 	if !game_api_ok {
@@ -47,7 +44,7 @@ main :: proc() {
 			break
 		}
 
-		game_api.draw(platform_draw)
+		game_api.draw(&ctx.draw_cmds)
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time

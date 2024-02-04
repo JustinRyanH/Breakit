@@ -11,6 +11,7 @@ platform_new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
 	ctx.frame = platform_update_frame(ctx.frame)
 	setup_raylib_platform(&ctx.cmds)
+	setup_raylib_draw_cmds(&ctx.draw_cmds)
 	return ctx
 }
 
@@ -32,15 +33,20 @@ setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 	cmds.should_close_game = cast(proc() -> bool)(rl.WindowShouldClose)
 }
 
+setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
+	draw.begin_drawing = cast(proc())(rl.BeginDrawing)
+	draw.begin_drawing_2d = raylib_begin_drawing_2d
+	draw.end_drawing = cast(proc())(rl.EndDrawing)
+	draw.end_drawing_2d = raylib_end_drawing_2d
+	draw.clear = raylib_clear_background
+	draw.draw_text = raylib_draw_text
+	draw.draw_shape = raylib_draw_shape
+
+}
+
 build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
 	cmd := new(game.PlatformDrawCommands)
-	cmd.begin_drawing = cast(proc())(rl.BeginDrawing)
-	cmd.begin_drawing_2d = raylib_begin_drawing_2d
-	cmd.end_drawing = cast(proc())(rl.EndDrawing)
-	cmd.end_drawing_2d = raylib_end_drawing_2d
-	cmd.clear = raylib_clear_background
-	cmd.draw_text = raylib_draw_text
-	cmd.draw_shape = raylib_draw_shape
+	setup_raylib_draw_cmds(cmd)
 
 	return cmd
 }
