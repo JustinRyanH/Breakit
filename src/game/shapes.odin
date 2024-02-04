@@ -182,7 +182,7 @@ shape_is_circle_colliding_rectangle :: proc(
 
 	circle_center_outside := center_seperation >= 0
 	if (circle_center_outside) {
-		v1, v2, at_corner := shape_get_corner_vertices(circle, closest_line)
+		v1, v2, at_corner := shape_get_corner_vertices(circle.pos, closest_line)
 		if (at_corner) {
 			if (math.length(v1) > circle.radius) {return}
 			event.normal = math.normalize(v1)
