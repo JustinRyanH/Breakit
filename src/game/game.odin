@@ -74,7 +74,7 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_speed = 300
 	g_mem.ball_state = BallState.OnPaddle
 	g_mem.bricks = make([]Brick, LineOfBricks * BricksPerLine)
-	g_mem.mouse_line.thickness = 3
+	g_mem.mouse_line.thickness = 5
 
 	for y := 0; y < LineOfBricks; y += 1 {
 		for x := 0; x < BricksPerLine; x += 1 {
@@ -129,37 +129,22 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
 
-	mouse_circle := Circle{input_mouse_position(game.ctx.frame), 20}
-	mouse_rect := Rectangle{input_mouse_position(game.ctx.frame), Vec2{30, 75}, 0}
 	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, game.rotation}
 
 	platform_draw.draw_shape(static_rect, Color{255, 203, 0, 255})
-	//platform_draw.draw_shape(mouse_rect, Color{135, 60, 190, 255})
-	platform_draw.draw_shape(mouse_circle, Color{135, 60, 190, 255})
+	platform_draw.draw_shape(game.mouse_line, PINK)
 
+	evt, is_colliding := shape_is_line_colliding_rect_v2(game.mouse_line, static_rect)
+
+	if (is_colliding) {
+		// platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
+		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 20, RED)
+	}
 
 	is_colliding_alpha: u8 = 255
 	not_colliding_alpha: u8 = 100
 
 	is_colliding_color: u8
-
-	// closest_line := shape_get_closest_line(mouse_circle.pos, static_rect)
-	collision_evt, is_colliding := shape_is_circle_colliding_rectangle(mouse_circle, static_rect)
-	if is_colliding {
-		is_colliding_color = is_colliding_alpha
-		platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)
-	}
-
-
-	// if is_colliding {platform_draw.draw_shape(Line{collision_evt.start, collision_evt.end, 2}, GREEN)}
-	// platform_draw.draw_shape(closest_line, RED)
-	//
-
-
-	//rect_evt, did_rect_collide := shape_are_rects_colliding_obb(mouse_rect, static_rect)
-	//if did_rect_collide {
-	//	platform_draw.draw_shape(Line{rect_evt.start, rect_evt.end, 2}, GREEN)
-	//}
 
 
 	// draw_game_normal(platform_draw)

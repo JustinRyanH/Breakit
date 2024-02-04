@@ -290,6 +290,7 @@ shape_is_line_colliding_rect_v2 :: proc(
 	evt: ContactEvent,
 	is_colliding: bool,
 ) {
+	draw := g_mem.ctx.draw_cmds
 	i: int = 0
 	c_points: [2]Vec2
 	c_lines: [2]Line
@@ -299,12 +300,34 @@ shape_is_line_colliding_rect_v2 :: proc(
 		if is_colliding {
 
 			c_points[i] = point
-			c_lines[i] = line
+			c_lines[i] = l
 			i += 1
 		}
 		if i == 2 {break}
 	}
-	fmt.printf("c_points: %v\n", c_lines)
+	switch i {
+	case 0:
+		return
+	case 1:
+		l_n := shape_line_normal(c_lines[0])
+		v1 := line.start - c_points[0]
+		v2 := line.end - c_points[0]
+		dot_1 := math.dot(v1, l_n)
+		dot_2 := math.dot(v2, l_n)
+
+		draw.draw_shape(Circle{line.start, 10}, BLUE if dot_1 < 0 else MAROON)
+		draw.draw_shape(Circle{line.end, 10}, BLUE if dot_2 < 0 else MAROON)
+		draw.draw_shape(line, PURPLE)
+		draw.draw_shape(Line{c_points[0], c_points[0] + l_n * 30, 2}, PINK)
+
+		draw.draw_text(fmt.ctprintf("start: %v, end: %v", dot_1), 10, 30, 20, RED)
+
+		return evt, true
+	case 2:
+		fmt.println("Two Points hit")
+		return
+	}
+
 	return
 }
 
