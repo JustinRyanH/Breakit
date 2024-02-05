@@ -81,7 +81,6 @@ game_setup :: proc(ctx: ^Context) {
 			brick := Brick{true, Rectangle{pos, brick_size - Vec2{8, 8}, 0.0}}
 			insert_index := BricksPerLine * y + x
 			g_mem.bricks[insert_index] = brick
-
 		}
 	}
 }
@@ -170,21 +169,20 @@ game_update :: proc(ctx: ^Context) -> bool {
 		if (!brick.alive) {
 			continue
 		}
-		_, did_collide := shape_check_collision(ball^, brick.rect)
+		rect_evt, did_collide := shape_check_collision(ball^, brick.rect)
 		if (did_collide) {
+			// TODO: Remove me, debug code
+			platform_debug_draw_collision(rect_evt)
 			brick.alive = false
-			edges := shape_get_rect_lines(brick.rect)
-			for j := 0; j < len(edges); j += 1 {
-				edge := edges[j]
-				normal := shape_line_normal(edge)
-				if (math.abs(normal.x) > 0) {
-					game.ball_direction.x = -game.ball_direction.x
-					break
-				}
-				if (math.abs(normal.y) > 0) {
-					game.ball_direction.y = -game.ball_direction.y
-					break
-				}
+			normal := rect_evt.normal
+			game.ball.pos += normal * rect_evt.depth
+			if (math.abs(normal.x) > 0) {
+				game.ball_direction.x = -game.ball_direction.x
+				break
+			}
+			if (math.abs(normal.y) > 0) {
+				game.ball_direction.y = -game.ball_direction.y
+				break
 			}
 		}
 	}
