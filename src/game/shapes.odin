@@ -85,25 +85,6 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	return false
 }
 
-// Check collision between rectangles
-shape_are_rects_colliding :: proc(
-	rect_a, rect_b: Rectangle,
-) -> (
-	evt_a, evt_b: CollisionEvent,
-	is_colliding: bool,
-) {
-	b_line_closest_to_a := shape_get_closest_line(rect_a.pos, rect_b)
-	a_line_closest_to_b := shape_get_closest_line(rect_b.pos, rect_a)
-	line_projection_a := shape_point_projected_to_line(rect_a.pos, b_line_closest_to_a)
-	line_projection_b := shape_point_projected_to_line(rect_b.pos, a_line_closest_to_b)
-
-
-	evt_a.pos = line_projection_a
-	evt_b.pos = line_projection_b
-	is_colliding = true
-	return
-}
-
 
 // Check collision between two rectangles using AABB, assumes there is no rotation
 shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
