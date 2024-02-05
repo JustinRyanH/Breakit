@@ -8,6 +8,17 @@ import game "../game"
 import rl_platform "../raylib_platform"
 import rl "vendor:raylib"
 
+
+// We are going to write out the frames into a file, the zeroth iteration will
+// follow bad form, and not even write in a header with a version, however, after
+// this we will immediately resovle this problem before bringing it to the game
+// [x] Write the inputs to a file 
+// [ ] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
+// [ ] Generate a new file every time the apps starts up
+// [ ] Create a raygui list of files in the logs directory
+// [ ] Allow selecting a file to play back
+// [ ] Display the same keys being hit on the playback side
+
 main :: proc() {
 	rl.InitWindow(800, 450, "Input Debugger")
 	rl.SetTargetFPS(30.0)
@@ -65,6 +76,7 @@ main :: proc() {
 		rl.ClearBackground(rl.RAYWHITE)
 
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
+
 
 		grid_rect := rl.Rectangle {
 			panel_rect.x + panel_scroll.x,
