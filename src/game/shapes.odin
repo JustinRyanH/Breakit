@@ -51,7 +51,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 		case Circle:
 			_, _, is_colliding := shape_are_circles_colliding(a, b)
 		case Rectangle:
-			_, is_colliding := shape_is_circle_colliding_rectangle(a, b)
+			_, is_colliding := shape_is_circle_colliding_rect(a, b)
 			return is_colliding
 		case Line:
 			_, is_colliding := shape_is_circle_colliding_line(a, b)
@@ -60,13 +60,13 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	case Rectangle:
 		switch b in shape_b {
 		case Circle:
-			_, is_colliding := shape_is_circle_colliding_rectangle(b, a)
+			_, is_colliding := shape_is_circle_colliding_rect(b, a)
 			return is_colliding
 		case Rectangle:
 			_, is_colliding := shape_are_rects_colliding_obb(a, b)
 			return is_colliding
 		case Line:
-			_, _, is_colliding := shape_is_line_colliding_rect(b, a)
+			_, is_colliding := shape_is_line_colliding_rect(b, a)
 			return is_colliding
 		}
 	case Line:
@@ -75,7 +75,7 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 			_, is_colliding := shape_is_circle_colliding_line(b, a)
 			return is_colliding
 		case Rectangle:
-			_, _, is_colliding := shape_is_line_colliding_rect(a, b)
+			_, is_colliding := shape_is_line_colliding_rect(a, b)
 			return is_colliding
 		case Line:
 			_, is_colliding := shape_are_lines_colliding(a, b)
@@ -166,7 +166,7 @@ shape_are_circles_colliding :: proc(
 	return
 }
 
-shape_is_circle_colliding_rectangle :: proc(
+shape_is_circle_colliding_rect :: proc(
 	circle: Circle,
 	rect: Rectangle,
 ) -> (
@@ -266,24 +266,6 @@ shape_are_lines_colliding :: proc(a, b: Line) -> (Vec2, bool) {
 
 // Returns trues if a line intersects a rect
 shape_is_line_colliding_rect :: proc(
-	line: Line,
-	rect: Rectangle,
-) -> (
-	line_evt, rect_evt: CollisionEvent,
-	is_colliding: bool,
-) {
-	lines := shape_get_rect_lines(rect)
-	for l in lines {
-		point, is_colliding := shape_get_line_intersection(line, l)
-
-		is_colliding = true
-		return
-	}
-	return
-}
-
-// Returns trues if a line intersects a rect
-shape_is_line_colliding_rect_v2 :: proc(
 	line: Line,
 	rect: Rectangle,
 ) -> (
