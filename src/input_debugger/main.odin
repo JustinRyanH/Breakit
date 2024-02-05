@@ -2,6 +2,8 @@ package input
 
 import "core:fmt"
 
+import game "../game"
+import rl_platform "../raylib_platform"
 import rl "vendor:raylib"
 
 main :: proc() {
@@ -11,11 +13,13 @@ main :: proc() {
 
 	panel_rect := rl.Rectangle{0, 0, 400, 450}
 	panel_rect.x = 800 - panel_rect.width
-	panel_content_rect := rl.Rectangle{20, 40, 500, 10_000}
+	panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
 	panel_view := rl.Rectangle{}
 	panel_scroll := rl.Vector2{99, -20}
 
+	frame := game.FrameInput{}
 	for {
+		frame = rl_platform.update_frame(frame)
 		if rl.WindowShouldClose() {
 			break
 		}
@@ -42,11 +46,16 @@ main :: proc() {
 			)
 			defer rl.EndScissorMode()
 			rl.GuiGrid(grid_rect, nil, 16, 3, nil)
+			text := fmt.ctprintf("Frame: %v", frame.current_frame)
+			text_width := cast(f32)(rl.MeasureText(text, 16)) + 20
+			if text_width > panel_content_rect.width {
+				panel_content_rect.width = text_width
+			}
 			rl.DrawText(
-				fmt.ctprintf("Some Example Debug Text"),
-				cast(i32)(grid_rect.x + 20),
+				text,
+				cast(i32)(grid_rect.x + 5),
 				cast(i32)(grid_rect.y + 20),
-				20,
+				12,
 				rl.MAROON,
 			)
 		}
