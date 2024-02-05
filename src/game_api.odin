@@ -20,7 +20,6 @@ GameAPI :: struct {
 	// Accessible Procs
 	init:         proc(),
 	setup:        proc(_: ^game.Context),
-	teardown:     proc(),
 	update:       proc(_: ^game.Context) -> bool,
 	draw:         proc(_: ^game.PlatformDrawCommands),
 	shutdown:     proc(),
@@ -90,12 +89,6 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	cast(proc(ctx: ^game.Context))(dynlib.symbol_address(lib, "game_setup") or_else nil)
 	if api.init == nil {
 		fmt.println("game_setup not found in dll")
-		return {}, false
-	}
-
-	api.teardown = cast(proc())(dynlib.symbol_address(lib, "game_teardown") or_else nil)
-	if api.init == nil {
-		fmt.println("game_teardown not found in dll")
 		return {}, false
 	}
 

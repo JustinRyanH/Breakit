@@ -13,6 +13,11 @@ import "game"
 
 
 main :: proc() {
+	default_allocator := context.allocator
+	tracking_allocator: Tracking_Allocator
+	tracking_allocator_init(&tracking_allocator, default_allocator)
+	context.allocator = allocator_from_tracking_allocator(&tracking_allocator)
+
 	rl.InitWindow(800, 600, "Breakit")
 	rl.SetTargetFPS(60.0)
 	defer rl.CloseWindow()
@@ -31,10 +36,12 @@ main :: proc() {
 	game_api.setup(ctx)
 
 	for {
+
 		defer free_all(context.temp_allocator)
 
 		if (rl.IsKeyReleased(.F5)) {
-			game_api.teardown()
+			game_api.shutdown()
+			game_api.init()
 			game_api.setup(ctx)
 		}
 
@@ -56,4 +63,5 @@ main :: proc() {
 
 	game_api.shutdown()
 	game_api_unload(game_api)
+	tracking_allocator_destroy(&tracking_allocator)
 }

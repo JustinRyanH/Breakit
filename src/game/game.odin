@@ -296,15 +296,9 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 	}
 }
 
-
-@(export)
-game_teardown :: proc() {
-	delete(g_mem.bricks)
-}
-
 @(export)
 game_shutdown :: proc() {
-	game_teardown()
+	delete(g_mem.bricks)
 	free(g_mem)
 }
 
