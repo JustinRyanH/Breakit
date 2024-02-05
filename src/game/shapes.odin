@@ -182,6 +182,7 @@ shape_is_circle_colliding_rect :: proc(
 		return event, true
 
 	} else {
+		// FIX: let's just guard clause this instead. 
 		// Inside
 		event.normal = shape_line_normal(closest_line)
 		event.depth = circle.radius
