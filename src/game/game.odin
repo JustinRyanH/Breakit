@@ -39,10 +39,6 @@ GameMemory :: struct {
 
 	// World Stuff
 	camera:           Camera2D,
-
-	// Debug
-	rotation:         f32,
-	mouse_line:       Line,
 }
 
 
@@ -74,7 +70,6 @@ game_setup :: proc(ctx: ^Context) {
 	g_mem.ball_speed = 300
 	g_mem.ball_state = BallState.OnPaddle
 	g_mem.bricks = make([]Brick, LineOfBricks * BricksPerLine)
-	g_mem.mouse_line.thickness = 5
 
 	for y := 0; y < LineOfBricks; y += 1 {
 		for x := 0; x < BricksPerLine; x += 1 {
@@ -103,18 +98,6 @@ game_update :: proc(ctx: ^Context) -> bool {
 	game := g_mem
 	// update_game_normal()
 
-	if (input_is_left_arrow_down(ctx.frame)) {
-		game.rotation -= 1
-	} else if (input_is_right_arrow_down(ctx.frame)) {
-		game.rotation += 1
-	}
-	if (input_was_right_mouse_pressed(ctx.frame)) {
-		game.mouse_line.start = input_mouse_position(ctx.frame)
-	}
-	if (input_was_left_mouse_pressed(ctx.frame)) {
-		game.mouse_line.end = input_mouse_position(ctx.frame)
-	}
-
 	return ctx.cmds.should_close_game()
 }
 
@@ -127,6 +110,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	platform_draw.clear(BLACK)
 
+	mouse_pos := input_mouse_position(game.ctx.frame)
+
+
+	mouse_circle := Circle{mouse_pos, 10}
+
+	platform_draw.draw_shape(mouse_circle, WHITE)
 
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
@@ -136,6 +125,42 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		}
 		platform_draw.draw_shape(brick.rect, ORANGE)
 	}
+	evt, did_collide := shape_check_collision(mouse_circle, game.ball)
+	if did_collide {
+		platform_debug_draw_collision(evt)
+	}
+	evt, did_collide = shape_check_collision(mouse_circle, game.paddle)
+	if did_collide {
+		platform_debug_draw_collision(evt)
+	}
+	for brick in game.bricks {
+		evt, did_collide = shape_check_collision(mouse_circle, brick.rect)
+		if did_collide {
+			platform_debug_draw_collision(evt)
+		}
+	}
+	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
+	world_edges := shape_get_rect_lines(
+		Rectangle{Vec2{screen_width / 2, screen_height / 2}, Vec2{screen_width, screen_height}, 0},
+	)
+	for i := 0; i < len(world_edges); i += 1 {
+		edge_normal := shape_line_normal(world_edges[i])
+		edge := world_edges[i]
+		edge.start, edge.end = edge.end, edge.start
+
+
+		edge.start = edge.start - (edge_normal * 20)
+		edge.end = edge.end - (edge_normal * 20)
+
+		platform_draw.draw_shape(edge, GREEN)
+
+		evt, did_collide := shape_check_collision(mouse_circle, edge)
+		if did_collide {
+			platform_debug_draw_collision(evt)
+		}
+	}
+
+
 	game_draw_debug(platform_draw)
 }
 
