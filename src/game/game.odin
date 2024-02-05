@@ -304,7 +304,6 @@ game_teardown :: proc() {
 @(export)
 game_shutdown :: proc() {
 	game_teardown()
-	delete(g_mem.bricks)
 	free(g_mem)
 }
 
