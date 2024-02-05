@@ -10,14 +10,15 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
+import ta "../tracking_alloc"
 
 
 main :: proc() {
 	default_allocator := context.allocator
-	tracking_allocator: Tracking_Allocator
-	tracking_allocator_init(&tracking_allocator, default_allocator)
-	context.allocator = allocator_from_tracking_allocator(&tracking_allocator)
-	defer tracking_allocator_destroy(&tracking_allocator)
+	tracking_allocator: ta.Tracking_Allocator
+	ta.tracking_allocator_init(&tracking_allocator, default_allocator)
+	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
+	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
 
 	rl.InitWindow(800, 600, "Breakit")

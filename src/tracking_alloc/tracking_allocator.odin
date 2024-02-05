@@ -1,9 +1,9 @@
-package main
+package tracking_alloc
 
-import "core:runtime"
-import "core:mem"
-import "core:sync"
 import "core:fmt"
+import "core:mem"
+import "core:runtime"
+import "core:sync"
 
 Tracking_Allocator_Entry :: struct {
 	memory:    rawptr,
@@ -21,7 +21,11 @@ Tracking_Allocator :: struct {
 	clear_on_free_all: bool,
 }
 
-tracking_allocator_init :: proc(t: ^Tracking_Allocator, backing_allocator: mem.Allocator, internals_allocator := context.allocator) {
+tracking_allocator_init :: proc(
+	t: ^Tracking_Allocator,
+	backing_allocator: mem.Allocator,
+	internals_allocator := context.allocator,
+) {
 	t.backing = backing_allocator
 	t.allocation_map.allocator = internals_allocator
 
@@ -44,15 +48,20 @@ tracking_allocator_clear :: proc(t: ^Tracking_Allocator) {
 
 @(require_results)
 allocator_from_tracking_allocator :: proc(data: ^Tracking_Allocator) -> mem.Allocator {
-	return mem.Allocator{
-		data = data,
-		procedure = tracking_allocator_proc,
-	}
+	return mem.Allocator{data = data, procedure = tracking_allocator_proc}
 }
 
-tracking_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode,
-                                size, alignment: int,
-                                old_memory: rawptr, old_size: int, loc := #caller_location) -> (result: []byte, err: mem.Allocator_Error) {
+tracking_allocator_proc :: proc(
+	allocator_data: rawptr,
+	mode: mem.Allocator_Mode,
+	size, alignment: int,
+	old_memory: rawptr,
+	old_size: int,
+	loc := #caller_location,
+) -> (
+	result: []byte,
+	err: mem.Allocator_Error,
+) {
 	data := (^Tracking_Allocator)(allocator_data)
 
 	sync.mutex_guard(&data.mutex)
@@ -73,7 +82,15 @@ tracking_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode
 	if mode == .Free && old_memory != nil && old_memory not_in data.allocation_map {
 		fmt.panicf("At %v: Bad free!", loc)
 	} else {
-		result = data.backing.procedure(data.backing.data, mode, size, alignment, old_memory, old_size, loc) or_return
+		result = data.backing.procedure(
+			data.backing.data,
+			mode,
+			size,
+			alignment,
+			old_memory,
+			old_size,
+			loc,
+		) or_return
 	}
 	result_ptr := raw_data(result)
 
@@ -83,37 +100,45 @@ tracking_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode
 
 	switch mode {
 	case .Alloc, .Alloc_Non_Zeroed:
-		data.allocation_map[result_ptr] = Tracking_Allocator_Entry{
-			memory = result_ptr,
-			size = size,
-			mode = mode,
+		data.allocation_map[result_ptr] = Tracking_Allocator_Entry {
+			memory    = result_ptr,
+			size      = size,
+			mode      = mode,
 			alignment = alignment,
-			err = err,
-			location = loc,
+			err       = err,
+			location  = loc,
 		}
 	case .Free:
 		delete_key(&data.allocation_map, old_memory)
 	case .Free_All:
 		if data.clear_on_free_all {
 			clear_map(&data.allocation_map)
-		}	
+		}
 	case .Resize, .Resize_Non_Zeroed:
 		if old_memory != result_ptr {
 			delete_key(&data.allocation_map, old_memory)
 		}
-		data.allocation_map[result_ptr] = Tracking_Allocator_Entry{
-			memory = result_ptr,
-			size = size,
-			mode = mode,
+		data.allocation_map[result_ptr] = Tracking_Allocator_Entry {
+			memory    = result_ptr,
+			size      = size,
+			mode      = mode,
 			alignment = alignment,
-			err = err,
-			location = loc,
+			err       = err,
+			location  = loc,
 		}
 
 	case .Query_Features:
 		set := (^mem.Allocator_Mode_Set)(old_memory)
 		if set != nil {
-			set^ = {.Alloc, .Alloc_Non_Zeroed, .Free, .Free_All, .Resize, .Query_Features, .Query_Info}
+			set^ =  {
+				.Alloc,
+				.Alloc_Non_Zeroed,
+				.Free,
+				.Free_All,
+				.Resize,
+				.Query_Features,
+				.Query_Info,
+			}
 		}
 		return nil, nil
 
@@ -123,4 +148,3 @@ tracking_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode
 
 	return
 }
-
