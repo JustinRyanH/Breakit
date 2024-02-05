@@ -138,10 +138,10 @@ shape_are_circles_colliding :: proc(
 	distance := math.vector_length(delta)
 	if (distance <= (circle_a.radius + circle_b.radius)) {
 		normal := math.normalize(delta)
-    evt.start = circle_a.pos + math.normalize(delta) * circle_a.radius
-    evt.end = circle_b.pos - math.normalize(delta) * circle_b.radius
-    evt.depth = math.length(evt.start - evt.end)
-      evt.normal = normal
+		evt.start = circle_a.pos + math.normalize(delta) * circle_a.radius
+		evt.end = circle_b.pos - math.normalize(delta) * circle_b.radius
+		evt.depth = math.length(evt.start - evt.end)
+		evt.normal = normal
 
 		is_colliding = true
 		return
@@ -202,8 +202,7 @@ shape_is_point_inside_rect :: proc(
 	point: math.Vector2f32,
 	rect: Rectangle,
 ) -> (
-	point_event: CollisionEvent,
-	rect_event: CollisionEvent,
+	evt: ContactEvent,
 	is_colliding: bool,
 ) {
 	closest_line := shape_get_closest_line(point, rect)
@@ -216,9 +215,10 @@ shape_is_point_inside_rect :: proc(
 		return
 	}
 
-	rect_event = CollisionEvent{line_point, line_normal}
-	// The point normal likely should be rotated towards collision point, inversed, and normalized
-	point_event = CollisionEvent{point, -line_normal}
+	evt.start = line_point
+	evt.end = point
+	evt.normal = line_normal
+	evt.depth = math.length(point - line_point)
 	is_colliding = true
 	return
 }
