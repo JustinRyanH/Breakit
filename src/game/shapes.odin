@@ -73,10 +73,10 @@ shape_check_collision :: proc(
 			return shape_is_line_colliding_rect(a, b)
 		case Line:
 			point, is_colliding := shape_are_lines_colliding(a, b)
-      evt.start = point
-        evt.end = point
-        evt.normal = shape_line_normal(a)
-        evt.depth = 0
+			evt.start = point
+			evt.end = point
+			evt.normal = shape_line_normal(a)
+			evt.depth = 0
 			return evt, is_colliding
 		}
 	}
@@ -463,6 +463,11 @@ shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> 
 
 	dot := math.clamp(math.dot(se_n, pd_n), 0.0, 1.0)
 	return se_n * (dot * se_len) + line.start
+}
+
+shape_invert_line :: #force_inline proc(line: Line) -> (new_line: Line) {
+	new_line.start, new_line.end = line.end, line.start
+	return
 }
 
 @(private = "file")

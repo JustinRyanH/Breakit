@@ -146,7 +146,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	for i := 0; i < len(world_edges); i += 1 {
 		edge_normal := shape_line_normal(world_edges[i])
 		edge := world_edges[i]
-		edge.start, edge.end = edge.end, edge.start
+		edge = shape_invert_line(edge)
+		edge.thickness = 2
 
 
 		edge.start = edge.start - (edge_normal * 20)
