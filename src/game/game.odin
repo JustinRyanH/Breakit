@@ -17,8 +17,8 @@ Brick :: struct {
 	rect:  Rectangle,
 }
 
-LineOfBricks :: 2
-BricksPerLine :: 3
+LineOfBricks :: 7
+BricksPerLine :: 5
 InitialDownOffset :: 50.0
 
 GameMemory :: struct {
@@ -147,17 +147,18 @@ game_update :: proc(ctx: ^Context) -> bool {
 	world_edges := shape_get_rect_lines(world)
 	for i := 0; i < len(world_edges); i += 1 {
 		edge := world_edges[i]
+		edge = shape_invert_line(edge)
 		edge.thickness = 2
 
 		contact_evt, did_collide := shape_check_collision(ball^, edge)
 		if (did_collide) {
+			platform_debug_draw_collision(contact_evt)
 			normal := contact_evt.normal
 			if (math.abs(normal.x) > 0) {
 				game.ball_direction.x = -game.ball_direction.x
 				break
 			}
-			fmt.printf("Normal: %v\n", normal)
-			if (normal.y < 0) {
+			if (normal.y > 0) {
 				game.ball_direction.y = -game.ball_direction.y
 				break
 			}
