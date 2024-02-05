@@ -10,9 +10,6 @@ import rl "vendor:raylib"
 
 import "../game"
 
-stub_tear_down :: proc() {}
-
-
 GameAPI :: struct {
 	name:         string,
 	path:         string,
