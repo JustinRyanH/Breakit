@@ -1,6 +1,8 @@
 package input
 
 import "core:fmt"
+import "core:math"
+import "core:os"
 
 import game "../game"
 import rl_platform "../raylib_platform"
@@ -17,12 +19,25 @@ main :: proc() {
 	panel_view := rl.Rectangle{}
 	panel_scroll := rl.Vector2{99, -20}
 
+
 	frame := game.FrameInput{}
 	for {
 		frame = rl_platform.update_frame(frame)
 		if rl.WindowShouldClose() {
 			break
 		}
+
+		file_handle, err := os.open(
+			"./logs/input.log",
+			os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
+			0o644,
+		)
+		if err != os.ERROR_NONE {
+			fmt.printf("Error: %v\n", err)
+			return
+		}
+		defer os.close(file_handle)
+
 
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
@@ -47,10 +62,9 @@ main :: proc() {
 			defer rl.EndScissorMode()
 			rl.GuiGrid(grid_rect, nil, 16, 3, nil)
 			text := fmt.ctprintf("Frame: %v", frame.current_frame)
-			text_width := cast(f32)(rl.MeasureText(text, 16)) + 20
-			if text_width > panel_content_rect.width {
-				panel_content_rect.width = text_width
-			}
+			text_width := cast(f32)(rl.MeasureText(text, 12)) + 20
+			panel_content_rect.width = math.max(text_width, panel_content_rect.width)
+
 			rl.DrawText(
 				text,
 				cast(i32)(grid_rect.x + 5),
