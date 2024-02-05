@@ -44,17 +44,6 @@ setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 
 }
 
-build_raylib_platform_draw :: proc() -> ^game.PlatformDrawCommands {
-	cmd := new(game.PlatformDrawCommands)
-	setup_raylib_draw_cmds(cmd)
-
-	return cmd
-}
-
-cleanup_raylib_platform_draw :: proc(cmd: ^game.PlatformDrawCommands) {
-	free(cmd)
-}
-
 raylib_clear_background :: proc(color: game.Color) {
 	rl.ClearBackground(rl.Color(color))
 }
