@@ -136,7 +136,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	platform_draw.draw_shape(static_circle, Color{255, 203, 0, 255})
 	platform_draw.draw_shape(mouse_circle, PINK)
 
-	evt, is_colliding := shape_are_circles_colliding_v2(static_circle, mouse_circle)
+	evt, is_colliding := shape_are_circles_colliding(static_circle, mouse_circle)
 
 	if (is_colliding) {
 		platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
