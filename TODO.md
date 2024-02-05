@@ -4,13 +4,12 @@ There are the tasks I want to work on next
 
 ## Active
 
-[] MVP
+[ ] Input Recording
+[ ] Input Playback
 
 ## Core
 
-[ ] Input Recording
 [ ] Input Recording Test File
-[ ] Input Playback
 [ ] Steal Zylinski's Leak Detector
 [ ] MicroUI over Raygui
 
@@ -27,6 +26,7 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] MVP
 [x] Hot Reloading
 
 ## THOUGHTS
