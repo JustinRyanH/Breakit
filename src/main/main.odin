@@ -9,7 +9,7 @@ import "core:path/filepath"
 
 import rl "vendor:raylib"
 
-import "game"
+import "../game"
 
 
 main :: proc() {

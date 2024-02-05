@@ -14,7 +14,7 @@ tasks:
   platform:
     deps: [game]
     cmds:
-      - odin build src -out:bin/Breakit.exe -debug
+      - odin build src/main -out:bin/Breakit.exe -debug
     aliases:
       - p
     silent: true
@@ -38,7 +38,7 @@ tasks:
   test:
     cmds:
       - odin test src/game -out:bin/game_test.exe
-      - odin test src -out:bin/platform_test.exe
+      - odin test src/main -out:bin/platform_test.exe
     aliases:
       - t
     method: none

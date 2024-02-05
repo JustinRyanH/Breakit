@@ -5,7 +5,7 @@ import math "core:math/linalg"
 
 import rl "vendor:raylib"
 
-import "game"
+import "../game"
 
 platform_new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)

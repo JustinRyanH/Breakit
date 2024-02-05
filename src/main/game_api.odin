@@ -8,7 +8,7 @@ import "core:path/filepath"
 
 import rl "vendor:raylib"
 
-import "game"
+import "../game"
 
 stub_tear_down :: proc() {}
 
