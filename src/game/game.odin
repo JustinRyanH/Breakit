@@ -126,36 +126,8 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 
 	platform_draw.clear(BLACK)
-	mouse_pos := input_mouse_position(game.ctx.frame)
-
-	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
-
-	mouse_circle := Circle{mouse_pos, 25}
-	static_line := Line{Vec2{400, 400}, Vec2{100, 100}, 1}
-
-	platform_draw.draw_shape(static_line, Color{255, 203, 0, 255})
-	platform_draw.draw_shape(mouse_circle, PINK)
-
-	evt, is_colliding := shape_is_circle_colliding_line(mouse_circle, static_line)
-
-	if (is_colliding) {
-		platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
-		platform_draw.draw_shape(Line{evt.start, evt.start + evt.normal * 100, 1}, GREEN)
-		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 14, RED)
-	}
-
-	is_colliding_alpha: u8 = 255
-	not_colliding_alpha: u8 = 100
-
-	is_colliding_color: u8
 
 
-	// draw_game_normal(platform_draw)
-	game_draw_debug(platform_draw)
-}
-
-draw_game_normal :: proc(platform_draw: ^PlatformDrawCommands) {
-	game := g_mem
 	platform_draw.draw_shape(game.ball, RED)
 	platform_draw.draw_shape(game.paddle, BLUE)
 	for brick in game.bricks {
@@ -164,6 +136,7 @@ draw_game_normal :: proc(platform_draw: ^PlatformDrawCommands) {
 		}
 		platform_draw.draw_shape(brick.rect, ORANGE)
 	}
+	game_draw_debug(platform_draw)
 }
 
 game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
