@@ -35,11 +35,6 @@ ContactEvent :: struct {
 	depth:  f32,
 }
 
-CollisionEvent :: struct {
-	pos:    Vec2,
-	normal: Vec2,
-}
-
 /////////////////
 /// Collision
 /////////////////
@@ -237,7 +232,6 @@ shape_is_circle_colliding_line :: proc(
 	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
 
 	if (is_point_inside_circle) {
-		//CollisionEvent{closest_point, shape_line_normal(line)}
 		evt.normal = shape_line_normal(line)
 		evt.start = closest_point
 		evt.end = circle.pos - evt.normal * circle.radius
