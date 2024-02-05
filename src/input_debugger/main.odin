@@ -23,6 +23,31 @@ panel_scroll := rl.Vector2{99, -20}
 // [ ] Allow selecting a file to play back
 // [ ] Display the same keys being hit on the playback side
 
+draw_gui :: proc(frame: game.FrameInput) {
+	grid_rect := rl.Rectangle {
+		panel_rect.x + panel_scroll.x,
+		panel_rect.y + panel_scroll.y,
+		panel_content_rect.width + 12,
+		panel_content_rect.height + 12,
+	}
+	rl.GuiScrollPanel(panel_rect, nil, panel_content_rect, &panel_scroll, &panel_view)
+	{
+		rl.BeginScissorMode(
+			cast(i32)(panel_rect.x),
+			cast(i32)(panel_rect.y),
+			cast(i32)(panel_rect.width - 12),
+			cast(i32)(panel_rect.height - 12),
+		)
+		defer rl.EndScissorMode()
+		rl.GuiGrid(grid_rect, nil, 16, 3, nil)
+		text := fmt.ctprintf("Frame: %v", frame.current_frame)
+		text_width := cast(f32)(rl.MeasureText(text, 12)) + 20
+		panel_content_rect.width = math.max(text_width, panel_content_rect.width)
+
+		rl.DrawText(text, cast(i32)(grid_rect.x + 5), cast(i32)(grid_rect.y + 20), 12, rl.MAROON)
+	}
+}
+
 main :: proc() {
 	rl.InitWindow(800, 450, "Input Debugger")
 	rl.SetTargetFPS(30.0)
@@ -74,36 +99,7 @@ main :: proc() {
 		defer rl.EndDrawing()
 		rl.ClearBackground(rl.RAYWHITE)
 
+		draw_gui(frame)
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
-
-
-		grid_rect := rl.Rectangle {
-			panel_rect.x + panel_scroll.x,
-			panel_rect.y + panel_scroll.y,
-			panel_content_rect.width + 12,
-			panel_content_rect.height + 12,
-		}
-		rl.GuiScrollPanel(panel_rect, nil, panel_content_rect, &panel_scroll, &panel_view)
-		{
-			rl.BeginScissorMode(
-				cast(i32)(panel_rect.x),
-				cast(i32)(panel_rect.y),
-				cast(i32)(panel_rect.width - 12),
-				cast(i32)(panel_rect.height - 12),
-			)
-			defer rl.EndScissorMode()
-			rl.GuiGrid(grid_rect, nil, 16, 3, nil)
-			text := fmt.ctprintf("Frame: %v", frame.current_frame)
-			text_width := cast(f32)(rl.MeasureText(text, 12)) + 20
-			panel_content_rect.width = math.max(text_width, panel_content_rect.width)
-
-			rl.DrawText(
-				text,
-				cast(i32)(grid_rect.x + 5),
-				cast(i32)(grid_rect.y + 20),
-				12,
-				rl.MAROON,
-			)
-		}
 	}
 }
