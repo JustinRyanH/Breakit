@@ -23,6 +23,18 @@ tasks:
     sources:
       - ./src/main/**/*.odin
 
+  input:
+    deps: [game]
+    cmds:
+      - odin build src/input_debugger -out:bin/input -debug
+    aliases:
+      - i
+    silent: true
+    generates:
+      - bin/input
+    sources:
+      - ./src/input_debugger/**/*.odin
+
   game:
     deps: [test]
     cmds:
