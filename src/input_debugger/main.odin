@@ -34,7 +34,6 @@ main :: proc() {
 	file_handle, err := os.open(
 		"./logs/input.log",
 		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
-		0o644,
 	)
 	if err != os.ERROR_NONE {
 		fmt.printf("Error: %v\n", err)
