@@ -9,6 +9,10 @@ import rl_platform "../raylib_platform"
 import rl "vendor:raylib"
 
 
+panel_rect := rl.Rectangle{0, 0, 400, 450}
+panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
+panel_view := rl.Rectangle{}
+panel_scroll := rl.Vector2{99, -20}
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
 // this we will immediately resovle this problem before bringing it to the game
@@ -24,11 +28,7 @@ main :: proc() {
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
 
-	panel_rect := rl.Rectangle{0, 0, 400, 450}
 	panel_rect.x = 800 - panel_rect.width
-	panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
-	panel_view := rl.Rectangle{}
-	panel_scroll := rl.Vector2{99, -20}
 
 
 	file_handle, err := os.open(
