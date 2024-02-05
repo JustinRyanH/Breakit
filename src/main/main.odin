@@ -10,6 +10,7 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
+import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 
 
@@ -25,8 +26,8 @@ main :: proc() {
 	rl.SetTargetFPS(60.0)
 	defer rl.CloseWindow()
 
-	ctx := platform_new_context()
-	defer deinit_game_context(ctx)
+	ctx := rl_platform.platform_new_context()
+	defer rl_platform.deinit_game_context(ctx)
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
@@ -47,7 +48,7 @@ main :: proc() {
 			game_api.setup(ctx)
 		}
 
-		ctx.frame = platform_update_frame(ctx.frame)
+		ctx.frame = rl_platform.platform_update_frame(ctx.frame)
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break

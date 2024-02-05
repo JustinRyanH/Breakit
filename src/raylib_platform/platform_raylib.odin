@@ -1,4 +1,4 @@
-package main
+package platform_raylib
 
 import "core:fmt"
 import math "core:math/linalg"
