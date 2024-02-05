@@ -39,45 +39,48 @@ ContactEvent :: struct {
 /// Collision
 /////////////////
 
-shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
+shape_check_collision :: proc(
+	shape_a: Shape,
+	shape_b: Shape,
+) -> (
+	evt: ContactEvent,
+	is_colliding: bool,
+) {
 	switch a in shape_a {
 	case Circle:
 		switch b in shape_b {
 		case Circle:
-			_, is_colliding := shape_are_circles_colliding(a, b)
+			return shape_are_circles_colliding(a, b)
 		case Rectangle:
-			_, is_colliding := shape_is_circle_colliding_rect(a, b)
-			return is_colliding
+			return shape_is_circle_colliding_rect(a, b)
 		case Line:
-			_, is_colliding := shape_is_circle_colliding_line(a, b)
-			return is_colliding
+			return shape_is_circle_colliding_line(a, b)
 		}
 	case Rectangle:
 		switch b in shape_b {
 		case Circle:
-			_, is_colliding := shape_is_circle_colliding_rect(b, a)
-			return is_colliding
+			return shape_is_circle_colliding_rect(b, a)
 		case Rectangle:
-			_, is_colliding := shape_are_rects_colliding_obb(a, b)
-			return is_colliding
+			return shape_are_rects_colliding_obb(a, b)
 		case Line:
-			_, is_colliding := shape_is_line_colliding_rect(b, a)
-			return is_colliding
+			return shape_is_line_colliding_rect(b, a)
 		}
 	case Line:
 		switch b in shape_b {
 		case Circle:
-			_, is_colliding := shape_is_circle_colliding_line(b, a)
-			return is_colliding
+			return shape_is_circle_colliding_line(b, a)
 		case Rectangle:
-			_, is_colliding := shape_is_line_colliding_rect(a, b)
-			return is_colliding
+			return shape_is_line_colliding_rect(a, b)
 		case Line:
-			_, is_colliding := shape_are_lines_colliding(a, b)
-			return is_colliding
+			point, is_colliding := shape_are_lines_colliding(a, b)
+      evt.start = point
+        evt.end = point
+        evt.normal = shape_line_normal(a)
+        evt.depth = 0
+			return evt, is_colliding
 		}
 	}
-	return false
+	return
 }
 
 // Check collision between two rectangles using AABB, assumes there is no rotation

@@ -46,11 +46,11 @@ Camera2D :: struct {
 
 platform_debug_draw_collision :: proc(
 	cmds: ^PlatformDrawCommands,
-	ce: CollisionEvent,
+	ce: ContactEvent,
 	color: Color,
 ) {
-	line := Line{ce.pos, ce.pos + ce.normal * 10, 2}
-	cmds.draw_shape(line, color)
+	line := Line{ce.start, ce.end, 2}
+	cmds.draw_shape(line, BLUE)
 }
 
 //////////////////////////

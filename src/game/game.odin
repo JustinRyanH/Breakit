@@ -140,7 +140,7 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	if (is_colliding) {
 		platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
-		 platform_draw.draw_shape(Line{evt.start, evt.start + evt.normal * 100, 1}, GREEN)
+		platform_draw.draw_shape(Line{evt.start, evt.start + evt.normal * 100, 1}, GREEN)
 		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 14, RED)
 	}
 
@@ -267,7 +267,8 @@ update_game_normal :: proc() {
 		game.ball.pos += game.ball_direction * game.ball_speed * dt
 	}
 
-	if (shape_check_collision(ball^, game.paddle)) {
+	_, did_collide := shape_check_collision(ball^, game.paddle)
+	if (did_collide) {
 		if (game.ball_direction.y > 0.0) {
 			game.ball_direction.y = -game.ball_direction.y
 		}
@@ -285,7 +286,8 @@ update_game_normal :: proc() {
 		edge := world_edges[i]
 		edge.thickness = 2
 
-		if (shape_check_collision(ball^, edge)) {
+		_, did_collide := shape_check_collision(ball^, edge)
+		if (did_collide) {
 			normal := -shape_line_normal(edge)
 			if (math.abs(normal.x) > 0) {
 				game.ball_direction.x = -game.ball_direction.x
@@ -303,7 +305,8 @@ update_game_normal :: proc() {
 		if (!brick.alive) {
 			continue
 		}
-		if (shape_check_collision(ball^, brick.rect)) {
+		_, did_collide := shape_check_collision(ball^, brick.rect)
+		if (did_collide) {
 			brick.alive = false
 			edges := shape_get_rect_lines(brick.rect)
 			for j := 0; j < len(edges); j += 1 {
