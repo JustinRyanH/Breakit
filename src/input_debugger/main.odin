@@ -20,23 +20,44 @@ main :: proc() {
 	panel_scroll := rl.Vector2{99, -20}
 
 
-	frame := game.FrameInput{}
+	file_handle, err := os.open(
+		"./logs/input.log",
+		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
+		0o644,
+	)
+	if err != os.ERROR_NONE {
+		fmt.printf("Error: %v\n", err)
+		return
+	}
+	defer os.close(file_handle)
+
+
+	frame := rl_platform.update_frame(game.FrameInput{})
+	write_size, write_err := os.write_ptr(
+		file_handle,
+		&frame.current_frame,
+		size_of(frame.current_frame),
+	)
+	if write_err != os.ERROR_NONE {
+		fmt.printf("Error: %v\n", write_err)
+		return
+	}
+
 	for {
 		frame = rl_platform.update_frame(frame)
+		write_size, write_err = os.write_ptr(
+			file_handle,
+			&frame.current_frame,
+			size_of(frame.current_frame),
+		)
+		if write_err != os.ERROR_NONE {
+			fmt.printf("Error: %v\n", write_err)
+			return
+		}
+
 		if rl.WindowShouldClose() {
 			break
 		}
-
-		file_handle, err := os.open(
-			"./logs/input.log",
-			os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
-			0o644,
-		)
-		if err != os.ERROR_NONE {
-			fmt.printf("Error: %v\n", err)
-			return
-		}
-		defer os.close(file_handle)
 
 
 		rl.BeginDrawing()
