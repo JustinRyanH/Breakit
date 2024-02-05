@@ -126,18 +126,21 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	defer platform_draw.end_drawing()
 
 	platform_draw.clear(BLACK)
+	mouse_pos := input_mouse_position(game.ctx.frame)
 
 	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
 
-	static_rect := Rectangle{Vec2{400, 400}, Vec2{100, 200}, game.rotation}
+	mouse_circle := Circle{mouse_pos, 25}
+	static_circle := Circle{Vec2{400, 400}, 100}
 
-	platform_draw.draw_shape(static_rect, Color{255, 203, 0, 255})
-	platform_draw.draw_shape(game.mouse_line, PINK)
+	platform_draw.draw_shape(static_circle, Color{255, 203, 0, 255})
+	platform_draw.draw_shape(mouse_circle, PINK)
 
-	evt, is_colliding := shape_is_line_colliding_rect(game.mouse_line, static_rect)
+	evt, is_colliding := shape_are_circles_colliding_v2(static_circle, mouse_circle)
 
 	if (is_colliding) {
 		platform_draw.draw_shape(Line{evt.start, evt.end, 5}, MAROON)
+		platform_draw.draw_shape(Line{evt.start, evt.start + evt.normal * 100, 5}, GREEN)
 		platform_draw.draw_text(fmt.ctprintf("P: %v", evt), 10, 10, 14, RED)
 	}
 

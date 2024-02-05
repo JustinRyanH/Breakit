@@ -85,7 +85,6 @@ shape_check_collision :: proc(shape_a: Shape, shape_b: Shape) -> bool {
 	return false
 }
 
-
 // Check collision between two rectangles using AABB, assumes there is no rotation
 shape_are_rects_colliding_aabb :: proc(rec_a, rec_b: Rectangle) -> bool {
 	rect_a_min, rect_a_extends := shape_get_rect_extends(rec_a)
@@ -141,6 +140,28 @@ shape_are_circles_colliding :: proc(
 		normal := math.normalize(delta)
 		a_evt = CollisionEvent{circle_a.pos + normal * circle_a.radius, normal}
 		b_evt = CollisionEvent{circle_b.pos - normal * circle_b.radius, -normal}
+		is_colliding = true
+		return
+	}
+	return
+}
+
+// returns true if the two circles intersect
+shape_are_circles_colliding_v2 :: proc(
+	circle_a, circle_b: Circle,
+) -> (
+	evt: ContactEvent,
+	is_colliding: bool,
+) {
+	delta := circle_b.pos - circle_a.pos
+	distance := math.vector_length(delta)
+	if (distance <= (circle_a.radius + circle_b.radius)) {
+		normal := math.normalize(delta)
+    evt.start = circle_a.pos + math.normalize(delta) * circle_a.radius
+    evt.end = circle_b.pos - math.normalize(delta) * circle_b.radius
+    evt.depth = math.length(evt.start - evt.end)
+      evt.normal = normal
+
 		is_colliding = true
 		return
 	}
