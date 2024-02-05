@@ -320,10 +320,12 @@ shape_is_line_colliding_rect_v2 :: proc(
 
 		return evt, true
 	case 2:
-		fmt.println("Two Points hit")
-		return
+		evt.start = c_points[0]
+		evt.end = c_points[1]
+		evt.normal = shape_line_normal(c_lines[0])
+		evt.depth = math.length(c_points[0] - c_points[1])
+		return evt, true
 	}
-
 	return
 }
 
