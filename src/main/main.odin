@@ -26,7 +26,7 @@ main :: proc() {
 	rl.SetTargetFPS(60.0)
 	defer rl.CloseWindow()
 
-	ctx := rl_platform.platform_new_context()
+	ctx := rl_platform.new_context()
 	defer rl_platform.deinit_game_context(ctx)
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
@@ -48,7 +48,7 @@ main :: proc() {
 			game_api.setup(ctx)
 		}
 
-		ctx.frame = rl_platform.platform_update_frame(ctx.frame)
+		ctx.frame = rl_platform.update_frame(ctx.frame)
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break
