@@ -8,6 +8,10 @@ import game "../game"
 import rl_platform "../raylib_platform"
 import rl "vendor:raylib"
 
+ScreenWidth :: 800
+ScreenHeight :: 450
+
+raylib_images: map[string]rl.Texture2D
 
 panel_rect := rl.Rectangle{0, 0, 400, 450}
 panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
@@ -49,13 +53,18 @@ draw_gui :: proc(frame: game.FrameInput) {
 }
 
 draw_input :: proc(frame: game.FrameInput) {
-
 }
 
 main :: proc() {
-	rl.InitWindow(800, 450, "Input Debugger")
+	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
+
+	raylib_images := make(map[string]rl.Texture2D)
+	defer delete(raylib_images)
+
+	space := rl.LoadTexture("assets/textures/keyboard/keyboard_space.png")
+	raylib_images["space"] = space
 
 	panel_rect.x = 800 - panel_rect.width
 
@@ -103,8 +112,9 @@ main :: proc() {
 		defer rl.EndDrawing()
 		rl.ClearBackground(rl.BLACK)
 
-		draw_input(frame)
+		rl.DrawTexture(raylib_images["space"], 100, 100, rl.WHITE)
 		draw_gui(frame)
+		draw_input(frame)
 
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
 	}
