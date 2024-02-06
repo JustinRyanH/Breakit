@@ -42,6 +42,15 @@ GameInputReader :: struct {
 	header:      InputFileHeader,
 }
 
+GameInputWriter :: struct {
+	file_path:   string,
+	file_handle: os.Handle,
+	is_open:     bool,
+
+	// Meta Data about file
+	header:      InputFileHeader,
+}
+
 // Create Input Reader, does not open the file
 game_input_reader_create :: proc(file_path: string) -> (reader: GameInputReader) {
 	reader.file_path = file_path
@@ -79,15 +88,6 @@ game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
 	}
 	return .SystemError
 
-}
-
-GameInputWriter :: struct {
-	file_path:   string,
-	file_handle: os.Handle,
-	is_open:     bool,
-
-	// Meta Data about file
-	header:      InputFileHeader,
 }
 
 game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
