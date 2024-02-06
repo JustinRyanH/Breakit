@@ -51,6 +51,7 @@ tasks:
     cmds:
       - odin test src/game -out:bin/game_test
       - odin test src/main -out:bin/platform_test
+      - odin test src/input_debugger -out:bin/input_test
     aliases:
       - t
     method: none

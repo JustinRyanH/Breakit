@@ -1,8 +1,9 @@
 package input
 
 import "core:fmt"
-import "core:math"
+import math "core:math/linalg"
 import "core:os"
+import "core:testing"
 
 import game "../game"
 import rl_platform "../raylib_platform"
@@ -108,4 +109,61 @@ main :: proc() {
 
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
 	}
+}
+
+
+@(test)
+test_input_reading_writing :: proc(t: ^testing.T) {
+	test_file_path := "./logs/test-input.log"
+	current_frame := game.UserInput{}
+	current_frame.meta.frame_id = 1
+	current_frame.meta.frame_delta = 1 / 60
+	current_frame.meta.screen_width = 100
+	current_frame.meta.screen_height = 120
+	current_frame.mouse.pos = math.Vector2f32{15, 15}
+	current_frame.keyboard.space_down = true
+
+	file_opened := false
+	file_handle, err := os.open(
+		test_file_path,
+		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
+		0o644,
+	)
+	if err != os.ERROR_NONE {
+		fmt.printf("Error: %v\n", err)
+		return
+	}
+	file_opened = true
+
+	defer {
+		if (file_opened) {
+			os.close(file_handle)
+		}
+		delete_err := os.remove(test_file_path)
+		if delete_err != os.ERROR_NONE {
+			fmt.printf("Error: %v\n", err)
+		}
+	}
+
+
+	write_size, write_err := os.write_ptr(file_handle, &current_frame, size_of(current_frame))
+	if write_err != os.ERROR_NONE {
+		fmt.printf("Error: %v\n", write_err)
+
+		return
+	}
+	os.close(file_handle)
+	file_opened = false
+
+	file_handle, err = os.open(test_file_path, os.O_RDONLY)
+	if err != os.ERROR_NONE {
+		fmt.printf("Error: %v\n", err)
+		return
+	}
+	file_opened = true
+
+	read_frame := game.UserInput{}
+	data, read_err := os.read_ptr(file_handle, &read_frame, size_of(read_frame))
+
+	testing.expect(t, current_frame == read_frame, "Able to read/write frames from system")
 }
