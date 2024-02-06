@@ -48,6 +48,10 @@ draw_gui :: proc(frame: game.FrameInput) {
 	}
 }
 
+draw_input :: proc(frame: game.FrameInput) {
+
+}
+
 main :: proc() {
 	rl.InitWindow(800, 450, "Input Debugger")
 	rl.SetTargetFPS(30.0)
@@ -97,9 +101,11 @@ main :: proc() {
 
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
-		rl.ClearBackground(rl.RAYWHITE)
+		rl.ClearBackground(rl.BLACK)
 
+		draw_input(frame)
 		draw_gui(frame)
+
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
 	}
 }
