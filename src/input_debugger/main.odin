@@ -114,6 +114,8 @@ main :: proc() {
 InputFileHeader :: struct {
 	version:     u16le,
 	header_size: u32le,
+	did_finish:  bool,
+	frame_count: u64le,
 }
 
 InputParsingError :: enum {
