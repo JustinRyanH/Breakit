@@ -57,4 +57,4 @@ tasks:
     method: none
     silent: true
     sources:
-      - ./src/**/*.doin
+      - ./src/**/*.odin
