@@ -116,12 +116,71 @@ InputFileHeader :: struct {
 	header_size: u32le,
 }
 
+InputParsingError :: enum {
+	BadHeader,
+	InvalidHeaderVersion,
+	InvalidHeaderSize,
+}
+
 GameInputFileError :: enum {
 	NotFound,
 	NoAccess,
 	FileTooBig,
 	MismatchWriteSize,
 	SystemError, // EFBIG, ENOSPC, EROFS
+}
+
+GameInputError :: union {
+	InputParsingError,
+	GameInputFileError,
+}
+
+GameInputReader :: struct {
+	file_path:   string,
+	file_handle: os.Handle,
+	is_open:     bool,
+
+	// Meta Data about file
+	header:      InputFileHeader,
+}
+
+// Create Input Reader, does not open the file
+game_input_reader_create :: proc(file_path: string) -> (reader: GameInputReader) {
+	reader.file_path = file_path
+	return
+}
+
+game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
+	handle, err := os.open(reader.file_path, os.O_RDONLY)
+	if err == os.ERROR_NONE {
+		reader.file_handle = handle
+		reader.is_open = true
+
+		size, read_err := os.read_ptr(reader.file_handle, &reader.header, size_of(reader.header))
+		if read_err != os.ERROR_NONE {
+			return .SystemError
+		}
+		if size != size_of(reader.header) {
+			return .BadHeader
+		}
+		if reader.header.version != 1 {
+			return .InvalidHeaderVersion
+		}
+
+		if reader.header.header_size != size_of(reader.header) {
+			return .InvalidHeaderSize
+		}
+
+		return nil
+	}
+	if err == os.ENOENT {
+		return .NotFound
+	}
+	if err == os.EACCES {
+		return .NoAccess
+	}
+	return .SystemError
+
 }
 
 GameInputWriter :: struct {
@@ -140,7 +199,7 @@ game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter)
 	return
 }
 
-game_input_open :: proc(writer: ^GameInputWriter) -> GameInputFileError {
+game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 	handle, err := os.open(
 		writer.file_path,
 		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
@@ -162,7 +221,7 @@ game_input_open :: proc(writer: ^GameInputWriter) -> GameInputFileError {
 }
 
 // Return true if the file was closed successfully
-game_input_close :: proc(writer: ^GameInputWriter) -> bool {
+game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 	success := os.close(writer.file_handle)
 	if (success) {
 		writer.is_open = false
@@ -170,7 +229,7 @@ game_input_close :: proc(writer: ^GameInputWriter) -> bool {
 	return success
 }
 
-game_input_write_header :: proc(writer: ^GameInputWriter) -> GameInputFileError {
+game_input_writer_insert_header :: proc(writer: ^GameInputWriter) -> GameInputError {
 	write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
 	if err != os.ERROR_NONE {
 		if err == os.EFBIG {
@@ -190,10 +249,13 @@ game_input_write_header :: proc(writer: ^GameInputWriter) -> GameInputFileError 
 @(test)
 test_input_writer :: proc(t: ^testing.T) {
 	writer := game_input_writer_create("bin/test.log")
-	game_input_open(&writer)
+	reader := game_input_reader_create("bin/test.log")
+	err := game_input_writer_open(&writer)
+	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
+
 	defer {
 		if writer.is_open {
-			game_input_close(&writer)
+			game_input_writer_close(&writer)
 		}
 		delete_err := os.remove(writer.file_path)
 		testing.expect(
@@ -203,7 +265,22 @@ test_input_writer :: proc(t: ^testing.T) {
 		)
 	}
 
-	game_input_write_header(&writer)
+	err = game_input_writer_insert_header(&writer)
+	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Go Error: %v", err))
+	game_input_writer_close(&writer)
+
+	err = game_input_reader_open(&reader)
+	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
+	testing.expect(t, reader.header.version == 1, "Expected Version to be 1")
+	testing.expect(
+		t,
+		reader.header.header_size == size_of(InputFileHeader),
+		fmt.tprintf(
+			"Expected Header Size to be %v, Got: ",
+			reader.header.header_size,
+			size_of(InputFileHeader),
+		),
+	)
 }
 
 
