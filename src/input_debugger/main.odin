@@ -111,6 +111,101 @@ main :: proc() {
 	}
 }
 
+InputFileHeader :: struct {
+	version:     u16le,
+	header_size: u32le,
+}
+
+GameInputFileError :: enum {
+	NotFound,
+	NoAccess,
+	FileTooBig,
+	MismatchWriteSize,
+	SystemError, // EFBIG, ENOSPC, EROFS
+}
+
+GameInputWriter :: struct {
+	file_path:   string,
+	file_handle: os.Handle,
+	is_open:     bool,
+
+	// Meta Data about file
+	header:      InputFileHeader,
+}
+
+game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
+	writer.file_path = file_path
+	writer.header.version = 1
+	writer.header.header_size = size_of(InputFileHeader)
+	return
+}
+
+game_input_open :: proc(writer: ^GameInputWriter) -> GameInputFileError {
+	handle, err := os.open(
+		writer.file_path,
+		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
+		0o644,
+	)
+	if err == os.ERROR_NONE {
+		writer.file_handle = handle
+		writer.is_open = true
+		return nil
+	}
+	if err == os.ENOENT {
+		return .NotFound
+	}
+	if err == os.EACCES {
+		return .NoAccess
+	}
+
+	return .SystemError
+}
+
+// Return true if the file was closed successfully
+game_input_close :: proc(writer: ^GameInputWriter) -> bool {
+	success := os.close(writer.file_handle)
+	if (success) {
+		writer.is_open = false
+	}
+	return success
+}
+
+game_input_write_header :: proc(writer: ^GameInputWriter) -> GameInputFileError {
+	write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
+	if err != os.ERROR_NONE {
+		if err == os.EFBIG {
+			return .FileTooBig
+		}
+		return .SystemError
+	}
+
+	if write_size != size_of(writer.header) {
+		return .MismatchWriteSize
+	}
+
+
+	return nil
+}
+
+@(test)
+test_input_writer :: proc(t: ^testing.T) {
+	writer := game_input_writer_create("bin/test.log")
+	game_input_open(&writer)
+	defer {
+		if writer.is_open {
+			game_input_close(&writer)
+		}
+		delete_err := os.remove(writer.file_path)
+		testing.expect(
+			t,
+			delete_err == os.ERROR_NONE,
+			fmt.tprintf("Unable to delete test file: #%v", delete_err),
+		)
+	}
+
+	game_input_write_header(&writer)
+}
+
 
 @(test)
 test_input_reading_writing :: proc(t: ^testing.T) {
