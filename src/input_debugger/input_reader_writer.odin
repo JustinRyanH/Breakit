@@ -18,10 +18,12 @@ InputParsingError :: enum {
 	BadHeader,
 	InvalidHeaderVersion,
 	InvalidHeaderSize,
+	NoMoreFrames,
 }
 
 GameInputFileError :: enum {
 	HandleClosedOrReadOnly,
+	FileNotOpen,
 	FileTooBig,
 	MismatchWriteSize,
 	NoAccess,
@@ -99,6 +101,38 @@ game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
 	return success
 }
 
+game_input_reader_read_input :: proc(
+	reader: ^GameInputReader,
+) -> (
+	new_frame: game.UserInput,
+	err: GameInputError,
+) {
+	if !reader.is_open {
+		err = .FileNotOpen
+		return
+	}
+
+	read_size, read_err := os.read_ptr(reader.file_handle, &new_frame, size_of(game.UserInput))
+	if read_err != os.ERROR_NONE {
+		if read_err == os.EBADF {
+			err = .HandleClosedOrReadOnly
+			return
+		}
+		err = .SystemError
+		return
+	}
+	if read_size == 0 {
+		err = .NoMoreFrames
+		return
+	}
+	if read_size != size_of(new_frame) {
+		err = .MismatchWriteSize
+		return
+	}
+
+	return
+}
+
 game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
 	writer.file_path = file_path
 	writer.header.version = 1
@@ -151,6 +185,9 @@ game_input_writer_insert_frame :: proc(
 	writer: ^GameInputWriter,
 	frame: game.FrameInput,
 ) -> GameInputError {
+	if !writer.is_open {
+		return .FileNotOpen
+	}
 	current_frame := frame.current_frame
 
 	write_size, err := os.write_ptr(writer.file_handle, &current_frame, size_of(current_frame))
@@ -227,61 +264,8 @@ test_input_writer :: proc(t: ^testing.T) {
 			size_of(InputFileHeader),
 		),
 	)
-}
 
-
-@(test)
-test_input_reading_writing :: proc(t: ^testing.T) {
-	test_file_path := "./logs/test-input.log"
-	current_frame := game.UserInput{}
-	current_frame.meta.frame_id = 1
-	current_frame.meta.frame_delta = 1 / 60
-	current_frame.meta.screen_width = 100
-	current_frame.meta.screen_height = 120
-	current_frame.mouse.pos = math.Vector2f32{15, 15}
-	current_frame.keyboard.space_down = true
-
-	file_opened := false
-	file_handle, err := os.open(
-		test_file_path,
-		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
-		0o644,
-	)
-	if err != os.ERROR_NONE {
-		fmt.printf("Error: %v\n", err)
-		return
-	}
-	file_opened = true
-
-	defer {
-		if (file_opened) {
-			os.close(file_handle)
-		}
-		delete_err := os.remove(test_file_path)
-		if delete_err != os.ERROR_NONE {
-			fmt.printf("Error: %v\n", err)
-		}
-	}
-
-
-	write_size, write_err := os.write_ptr(file_handle, &current_frame, size_of(current_frame))
-	if write_err != os.ERROR_NONE {
-		fmt.printf("Error: %v\n", write_err)
-
-		return
-	}
-	os.close(file_handle)
-	file_opened = false
-
-	file_handle, err = os.open(test_file_path, os.O_RDONLY)
-	if err != os.ERROR_NONE {
-		fmt.printf("Error: %v\n", err)
-		return
-	}
-	file_opened = true
-
-	read_frame := game.UserInput{}
-	data, read_err := os.read_ptr(file_handle, &read_frame, size_of(read_frame))
-
-	testing.expect(t, current_frame == read_frame, "Able to read/write frames from system")
+	input, read_err := game_input_reader_read_input(&reader)
+	testing.expect(t, read_err == nil, fmt.tprintf("Expected No Error, Got: %v", read_err))
+	testing.expect(t, input == current_frame, "Expected Frame to be the same")
 }
