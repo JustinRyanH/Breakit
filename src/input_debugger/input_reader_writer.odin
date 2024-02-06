@@ -106,6 +106,17 @@ game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 	if err == os.ERROR_NONE {
 		writer.file_handle = handle
 		writer.is_open = true
+		write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
+		if err != os.ERROR_NONE {
+			if err == os.EFBIG {
+				return .FileTooBig
+			}
+			return .SystemError
+		}
+
+		if write_size != size_of(writer.header) {
+			return .MismatchWriteSize
+		}
 		return nil
 	}
 	if err == os.ENOENT {
@@ -127,23 +138,6 @@ game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 	return success
 }
 
-game_input_writer_insert_header :: proc(writer: ^GameInputWriter) -> GameInputError {
-	write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
-	if err != os.ERROR_NONE {
-		if err == os.EFBIG {
-			return .FileTooBig
-		}
-		return .SystemError
-	}
-
-	if write_size != size_of(writer.header) {
-		return .MismatchWriteSize
-	}
-
-
-	return nil
-}
-
 @(test)
 test_input_writer :: proc(t: ^testing.T) {
 	writer := game_input_writer_create("bin/test.log")
@@ -163,7 +157,6 @@ test_input_writer :: proc(t: ^testing.T) {
 		)
 	}
 
-	err = game_input_writer_insert_header(&writer)
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Go Error: %v", err))
 	game_input_writer_close(&writer)
 
