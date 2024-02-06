@@ -21,10 +21,11 @@ InputParsingError :: enum {
 }
 
 GameInputFileError :: enum {
-	NotFound,
-	NoAccess,
+	HandleClosedOrReadOnly,
 	FileTooBig,
 	MismatchWriteSize,
+	NoAccess,
+	NotFound,
 	SystemError, // EFBIG, ENOSPC, EROFS
 }
 
@@ -90,6 +91,14 @@ game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
 
 }
 
+game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
+	success := os.close(reader.file_handle)
+	if (success) {
+		reader.is_open = false
+	}
+	return success
+}
+
 game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
 	writer.file_path = file_path
 	writer.header.version = 1
@@ -138,8 +147,43 @@ game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 	return success
 }
 
+game_input_writer_insert_frame :: proc(
+	writer: ^GameInputWriter,
+	frame: game.FrameInput,
+) -> GameInputError {
+	current_frame := frame.current_frame
+
+	write_size, err := os.write_ptr(writer.file_handle, &current_frame, size_of(current_frame))
+	if err != os.ERROR_NONE {
+		if err == os.EFBIG {
+			return .FileTooBig
+		}
+		if err == os.EBADF {
+			return .HandleClosedOrReadOnly
+		}
+		fmt.printf("Error: %v\n", err)
+		return .SystemError
+	}
+
+	if write_size != size_of(current_frame) {
+		return .MismatchWriteSize
+	}
+	return nil
+}
+
 @(test)
 test_input_writer :: proc(t: ^testing.T) {
+	current_frame := game.UserInput{}
+	current_frame.meta.frame_id = 1
+	current_frame.meta.frame_delta = 1 / 60
+	current_frame.meta.screen_width = 100
+	current_frame.meta.screen_height = 120
+	current_frame.mouse.pos = math.Vector2f32{15, 15}
+	current_frame.keyboard.space_down = true
+
+	frame_input := game.FrameInput{}
+	frame_input.current_frame = current_frame
+
 	writer := game_input_writer_create("bin/test.log")
 	reader := game_input_reader_create("bin/test.log")
 	err := game_input_writer_open(&writer)
@@ -148,7 +192,14 @@ test_input_writer :: proc(t: ^testing.T) {
 	defer {
 		if writer.is_open {
 			game_input_writer_close(&writer)
+			testing.expect(t, writer.is_open == false, "Expected Writer to be Closed")
 		}
+		if reader.is_open {
+			game_input_reader_close(&reader)
+			testing.expect(t, writer.is_open == false, "Expected Reader to be Closed")
+		}
+	}
+	defer {
 		delete_err := os.remove(writer.file_path)
 		testing.expect(
 			t,
@@ -158,6 +209,10 @@ test_input_writer :: proc(t: ^testing.T) {
 	}
 
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Go Error: %v", err))
+
+	err = game_input_writer_insert_frame(&writer, frame_input)
+	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
+
 	game_input_writer_close(&writer)
 
 	err = game_input_reader_open(&reader)
