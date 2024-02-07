@@ -23,6 +23,7 @@ There are the tasks I want to work on next
 [ ] Render Textures for the bricks
 [ ] If paddle overlaps ball,
   push the ball out, maybe adjust the velocity a bit too
+[ ] Get all of the Kenny Inputs sized the same
 
 ## DONE
 
