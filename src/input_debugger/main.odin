@@ -19,6 +19,13 @@ InputVCRState :: enum {
 	FinishedPlayback,
 }
 
+InputDebuggerState :: struct {
+	writer: GameInputWriter,
+	reader: GameInputReader,
+}
+
+db_state: InputDebuggerState
+
 
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
@@ -32,15 +39,15 @@ InputVCRState :: enum {
 
 
 main :: proc() {
+	db_state.writer = game_input_writer_create("logs/input.log")
+	db_state.reader = game_input_reader_create("logs/input.log")
 	vcr_state: InputVCRState = .Recording
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
 	}
-	input_writer := game_input_writer_create("logs/input.log")
-	input_reader := game_input_reader_create("logs/input.log")
 
-	err := game_input_writer_open(&input_writer)
+	err := game_input_writer_open(&db_state.writer)
 	if err != nil {
 		fmt.printf("Error opening input file: %v\n", err)
 		return
@@ -58,20 +65,20 @@ main :: proc() {
 
 
 	frame := rl_platform.update_frame(game.FrameInput{})
-	game_input_writer_insert_frame(&input_writer, frame)
+	game_input_writer_insert_frame(&db_state.writer, frame)
 
 	for {
 		switch vcr_state {
 		case .Recording:
 			frame = rl_platform.update_frame(frame)
-			err := game_input_writer_insert_frame(&input_writer, frame)
+			err := game_input_writer_insert_frame(&db_state.writer, frame)
 			if err != nil {
 				fmt.printf("Error writing to file: %v\n", err)
 				return
 			}
 			rl.DrawText("Recording", 10, 30, 20, rl.RED)
 		case .Playback:
-			new_frame, err := game_input_reader_read_input(&input_reader)
+			new_frame, err := game_input_reader_read_input(&db_state.reader)
 			if err != nil {
 				if err == .NoMoreFrames {
 					vcr_state = .FinishedPlayback
@@ -91,14 +98,14 @@ main :: proc() {
 		if rl.IsKeyPressed(.F5) {
 			switch vcr_state {
 			case .Recording:
-				game_input_writer_close(&input_writer)
-				err = game_input_reader_open(&input_reader)
+				game_input_writer_close(&db_state.writer)
+				err = game_input_reader_open(&db_state.reader)
 				if err != nil {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
 				}
 				frame := game.FrameInput{}
-				new_frame, err := game_input_reader_read_input(&input_reader)
+				new_frame, err := game_input_reader_read_input(&db_state.reader)
 				if err != nil {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
@@ -107,14 +114,14 @@ main :: proc() {
 				rl.SetTargetFPS(120)
 				vcr_state = .Playback
 			case .Playback, .FinishedPlayback:
-				game_input_reader_close(&input_reader)
-				err = game_input_writer_open(&input_writer)
+				game_input_reader_close(&db_state.reader)
+				err = game_input_writer_open(&db_state.writer)
 				if err != nil {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
 				}
 				frame = rl_platform.update_frame(game.FrameInput{})
-				game_input_writer_insert_frame(&input_writer, frame)
+				game_input_writer_insert_frame(&db_state.writer, frame)
 				rl.SetTargetFPS(30)
 				vcr_state = .Recording
 			}
