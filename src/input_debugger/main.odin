@@ -29,6 +29,34 @@ InputDebuggerState :: struct {
 db_state: InputDebuggerState
 
 
+read_write_frame :: proc() -> GameInputError {
+	switch db_state.vcr_state {
+	case .Recording:
+		db_state.frame = rl_platform.update_frame(db_state.frame)
+		err := game_input_writer_insert_frame(&db_state.writer, db_state.frame)
+		if err != nil {
+			return err
+		}
+		rl.DrawText("Recording", 10, 30, 20, rl.RED)
+	case .Playback:
+		new_frame, err := game_input_reader_read_input(&db_state.reader)
+		if err != nil {
+			if err == .NoMoreFrames {
+				db_state.vcr_state = .FinishedPlayback
+				return nil
+			}
+			return err
+		}
+		db_state.frame.last_frame = db_state.frame.current_frame
+		db_state.frame.current_frame = new_frame
+		rl.DrawText("Playback", 10, 30, 20, rl.RED)
+	case .FinishedPlayback:
+		rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
+	}
+	return nil
+}
+
+
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
 // this we will immediately resovle this problem before bringing it to the game
@@ -70,31 +98,10 @@ main :: proc() {
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
-		switch db_state.vcr_state {
-		case .Recording:
-			db_state.frame = rl_platform.update_frame(db_state.frame)
-			err := game_input_writer_insert_frame(&db_state.writer, db_state.frame)
-			if err != nil {
-				fmt.printf("Error writing to file: %v\n", err)
-				return
-			}
-			rl.DrawText("Recording", 10, 30, 20, rl.RED)
-		case .Playback:
-			new_frame, err := game_input_reader_read_input(&db_state.reader)
-			if err != nil {
-				if err == .NoMoreFrames {
-					db_state.vcr_state = .FinishedPlayback
-					continue
-				}
-				fmt.printf("Error reading from input file: %v\n", err)
-				return
-			}
-			db_state.frame.last_frame = db_state.frame.current_frame
-			db_state.frame.current_frame = new_frame
-			rl.DrawText("Playback", 10, 30, 20, rl.RED)
-		case .FinishedPlayback:
-			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
-
+		err := read_write_frame()
+		if err != nil {
+			fmt.printf("Error: %v", err)
+			return
 		}
 
 		if rl.IsKeyPressed(.F5) {
