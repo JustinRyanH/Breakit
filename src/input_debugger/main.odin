@@ -20,9 +20,10 @@ InputVCRState :: enum {
 }
 
 InputDebuggerState :: struct {
-	writer: GameInputWriter,
-	reader: GameInputReader,
-	frame:  game.FrameInput,
+	writer:    GameInputWriter,
+	reader:    GameInputReader,
+	frame:     game.FrameInput,
+	vcr_state: InputVCRState,
 }
 
 db_state: InputDebuggerState
@@ -42,7 +43,7 @@ db_state: InputDebuggerState
 main :: proc() {
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
-	vcr_state: InputVCRState = .Recording
+	db_state.vcr_state = .Recording
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
@@ -69,7 +70,7 @@ main :: proc() {
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
-		switch vcr_state {
+		switch db_state.vcr_state {
 		case .Recording:
 			db_state.frame = rl_platform.update_frame(db_state.frame)
 			err := game_input_writer_insert_frame(&db_state.writer, db_state.frame)
@@ -82,7 +83,7 @@ main :: proc() {
 			new_frame, err := game_input_reader_read_input(&db_state.reader)
 			if err != nil {
 				if err == .NoMoreFrames {
-					vcr_state = .FinishedPlayback
+					db_state.vcr_state = .FinishedPlayback
 					continue
 				}
 				fmt.printf("Error reading from input file: %v\n", err)
@@ -97,7 +98,7 @@ main :: proc() {
 		}
 
 		if rl.IsKeyPressed(.F5) {
-			switch vcr_state {
+			switch db_state.vcr_state {
 			case .Recording:
 				game_input_writer_close(&db_state.writer)
 				err = game_input_reader_open(&db_state.reader)
@@ -113,7 +114,7 @@ main :: proc() {
 				}
 				db_state.frame.current_frame = new_frame
 				rl.SetTargetFPS(120)
-				vcr_state = .Playback
+				db_state.vcr_state = .Playback
 			case .Playback, .FinishedPlayback:
 				game_input_reader_close(&db_state.reader)
 				err = game_input_writer_open(&db_state.writer)
@@ -124,7 +125,7 @@ main :: proc() {
 				db_state.frame = rl_platform.update_frame(game.FrameInput{})
 				game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 				rl.SetTargetFPS(30)
-				vcr_state = .Recording
+				db_state.vcr_state = .Recording
 			}
 		}
 
