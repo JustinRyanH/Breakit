@@ -21,11 +21,11 @@ panel_scroll := rl.Vector2{99, -20}
 // follow bad form, and not even write in a header with a version, however, after
 // this we will immediately resovle this problem before bringing it to the game
 // [x] Write the inputs to a file 
-// [ ] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
+// [x] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
+// [ ] Display the same keys being hit on the playback side
 // [ ] Generate a new file every time the apps starts up
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
-// [ ] Display the same keys being hit on the playback side
 
 ButtonInputRep :: struct {
 	name:    string,
