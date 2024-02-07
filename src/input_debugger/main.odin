@@ -11,7 +11,7 @@ import rl "vendor:raylib"
 ScreenWidth :: 800
 ScreenHeight :: 450
 
-raylib_images: map[string]rl.Texture2D
+input_reps: [dynamic]ButtonInputRep
 
 panel_rect := rl.Rectangle{0, 0, 400, 450}
 panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
@@ -26,6 +26,51 @@ panel_scroll := rl.Vector2{99, -20}
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 // [ ] Display the same keys being hit on the playback side
+
+ButtonInputRep :: struct {
+	name:    string,
+	pressed: bool,
+	pos:     rl.Vector2,
+	texture: rl.Texture2D,
+}
+
+load_inupt_rep :: proc(
+	name: string,
+	path: cstring,
+	pos: rl.Vector2,
+) -> (
+	button_rep: ButtonInputRep,
+) {
+	button_rep.name = name
+	button_rep.pos = pos
+	button_rep.texture = rl.LoadTexture(path)
+	return
+}
+
+unload_input_rep :: proc(rep: ^ButtonInputRep) {
+	rl.UnloadTexture(rep.texture)
+}
+
+draw_button_input_rep :: proc(rep: ^ButtonInputRep) {
+	texture := rep.texture
+	if rep.pressed {
+		rl.DrawTexture(texture, cast(i32)(rep.pos.x), cast(i32)(rep.pos.y), rl.GREEN)
+	} else {
+		rl.DrawTexture(texture, cast(i32)(rep.pos.x), cast(i32)(rep.pos.y), rl.GRAY)
+	}
+}
+
+input_rep_record_input :: proc(rep: ^ButtonInputRep) {
+	if rep.name == "space" {
+		rep.pressed = rl.IsKeyDown(.SPACE)
+	}
+	if rep.name == "left" {
+		rep.pressed = rl.IsKeyDown(.LEFT)
+	}
+	if rep.name == "right" {
+		rep.pressed = rl.IsKeyDown(.RIGHT)
+	}
+}
 
 draw_gui :: proc(frame: game.FrameInput) {
 	grid_rect := rl.Rectangle {
@@ -52,19 +97,22 @@ draw_gui :: proc(frame: game.FrameInput) {
 	}
 }
 
-draw_input :: proc(frame: game.FrameInput) {
-}
 
 main :: proc() {
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
 
-	raylib_images := make(map[string]rl.Texture2D)
-	defer delete(raylib_images)
+	input_reps = make([dynamic]ButtonInputRep)
+	defer delete(input_reps)
 
-	space := rl.LoadTexture("assets/textures/keyboard/keyboard_space.png")
-	raylib_images["space"] = space
+	space_button := load_inupt_rep(
+		"space",
+		"assets/textures/keyboard/keyboard_space.png",
+		rl.Vector2{100, 100},
+	)
+	defer unload_input_rep(&space_button)
+	append(&input_reps, space_button)
 
 	panel_rect.x = 800 - panel_rect.width
 
@@ -112,9 +160,11 @@ main :: proc() {
 		defer rl.EndDrawing()
 		rl.ClearBackground(rl.BLACK)
 
-		rl.DrawTexture(raylib_images["space"], 100, 100, rl.WHITE)
+		for _, i in input_reps {
+			input_rep_record_input(&input_reps[i])
+			draw_button_input_rep(&input_reps[i])
+		}
 		draw_gui(frame)
-		draw_input(frame)
 
 		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
 	}
