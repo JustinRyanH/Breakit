@@ -63,7 +63,7 @@ main :: proc() {
 	}
 
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
-	// rl.SetTargetFPS(30.0)
+	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
 
 	input_reps = make([dynamic]ButtonInputRep)
@@ -79,6 +79,12 @@ main :: proc() {
 	for {
 		switch vcr_state {
 		case .Recording:
+			frame = rl_platform.update_frame(frame)
+			err := game_input_writer_insert_frame(&input_writer, frame)
+			if err != nil {
+				fmt.printf("Error writing to file: %v\n", err)
+				return
+			}
 		case .Playback:
 		case .FinishedPlayback:
 			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
@@ -86,12 +92,6 @@ main :: proc() {
 		}
 
 		if is_recording {
-			frame = rl_platform.update_frame(frame)
-			err := game_input_writer_insert_frame(&input_writer, frame)
-			if err != nil {
-				fmt.printf("Error writing to file: %v\n", err)
-				return
-			}
 		} else if has_frames {
 			new_frame, err := game_input_reader_read_input(&input_reader)
 			if err != nil {
