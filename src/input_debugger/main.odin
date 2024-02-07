@@ -86,13 +86,6 @@ main :: proc() {
 				return
 			}
 		case .Playback:
-		case .FinishedPlayback:
-			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
-
-		}
-
-		if is_recording {
-		} else if has_frames {
 			new_frame, err := game_input_reader_read_input(&input_reader)
 			if err != nil {
 				if err == .NoMoreFrames {
@@ -105,11 +98,10 @@ main :: proc() {
 			}
 			frame.last_frame = frame.current_frame
 			frame.current_frame = new_frame
-		}
+		case .FinishedPlayback:
+			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
 
-		if !is_recording && !has_frames {
 		}
-
 
 		if rl.IsKeyPressed(.F5) {
 			if is_recording {
