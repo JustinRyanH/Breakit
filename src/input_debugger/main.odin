@@ -12,11 +12,6 @@ ScreenWidth :: 800
 ScreenHeight :: 450
 
 input_reps: [dynamic]ButtonInputRep
-
-panel_rect := rl.Rectangle{0, 0, 400, 450}
-panel_content_rect := rl.Rectangle{20, 40, 1_500, 10_000}
-panel_view := rl.Rectangle{}
-panel_scroll := rl.Vector2{99, -20}
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
 // this we will immediately resovle this problem before bringing it to the game
@@ -58,15 +53,15 @@ draw_button_input_rep :: proc(rep: ^ButtonInputRep) {
 	}
 }
 
-input_rep_record_input :: proc(rep: ^ButtonInputRep) {
+input_rep_record_input :: proc(rep: ^ButtonInputRep, frame: game.FrameInput) {
 	if rep.name == "space" {
-		rep.pressed = rl.IsKeyDown(.SPACE)
+		rep.pressed = game.input_is_space_down(frame)
 	}
 	if rep.name == "left" {
-		rep.pressed = rl.IsKeyDown(.LEFT)
+		rep.pressed = game.input_is_left_arrow_down(frame)
 	}
 	if rep.name == "right" {
-		rep.pressed = rl.IsKeyDown(.RIGHT)
+		rep.pressed = game.input_is_right_arrow_down(frame)
 	}
 }
 
@@ -101,33 +96,22 @@ input_rep_cleanup_all :: proc() {
 	}
 }
 
-draw_gui :: proc(frame: game.FrameInput) {
-	grid_rect := rl.Rectangle {
-		panel_rect.x + panel_scroll.x,
-		panel_rect.y + panel_scroll.y,
-		panel_content_rect.width + 12,
-		panel_content_rect.height + 12,
-	}
-	rl.GuiScrollPanel(panel_rect, nil, panel_content_rect, &panel_scroll, &panel_view)
-	{
-		rl.BeginScissorMode(
-			cast(i32)(panel_rect.x),
-			cast(i32)(panel_rect.y),
-			cast(i32)(panel_rect.width - 12),
-			cast(i32)(panel_rect.height - 12),
-		)
-		defer rl.EndScissorMode()
-		rl.GuiGrid(grid_rect, nil, 16, 3, nil)
-		text := fmt.ctprintf("Frame: %v", frame.current_frame)
-		text_width := cast(f32)(rl.MeasureText(text, 12)) + 20
-		panel_content_rect.width = math.max(text_width, panel_content_rect.width)
-
-		rl.DrawText(text, cast(i32)(grid_rect.x + 5), cast(i32)(grid_rect.y + 20), 12, rl.MAROON)
-	}
-}
-
 
 main :: proc() {
+	is_recording := true
+	has_frames := true
+	if (os.exists("logs/input.log")) {
+		os.remove("logs/input.log")
+	}
+	input_writer := game_input_writer_create("logs/input.log")
+	input_reader := game_input_reader_create("logs/input.log")
+
+	err := game_input_writer_open(&input_writer)
+	if err != nil {
+		fmt.printf("Error opening input file: %v\n", err)
+		return
+	}
+
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
@@ -137,13 +121,69 @@ main :: proc() {
 
 	input_rep_create_all()
 	defer input_rep_cleanup_all()
-	panel_rect.x = 800 - panel_rect.width
 
 
 	frame := rl_platform.update_frame(game.FrameInput{})
+	game_input_writer_insert_frame(&input_writer, frame)
 
 	for {
-		frame = rl_platform.update_frame(frame)
+		if is_recording {
+			frame = rl_platform.update_frame(frame)
+			err := game_input_writer_insert_frame(&input_writer, frame)
+			if err != nil {
+				fmt.printf("Error writing to file: %v\n", err)
+				return
+			}
+		} else if has_frames {
+			new_frame, err := game_input_reader_read_input(&input_reader)
+			if err != nil {
+				if err == .NoMoreFrames {
+					has_frames = false
+					continue
+				}
+				fmt.printf("Error reading from input file: %v\n", err)
+				return
+			}
+			frame.last_frame = frame.current_frame
+			frame.current_frame = new_frame
+		}
+
+		if !is_recording && !has_frames {
+			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
+		}
+
+
+		if rl.IsKeyPressed(.F5) {
+			if is_recording {
+				game_input_writer_close(&input_writer)
+				err = game_input_reader_open(&input_reader)
+				if err != nil {
+					fmt.printf("Error opening input file: %v\n", err)
+					return
+				}
+				frame := game.FrameInput{}
+				new_frame, err := game_input_reader_read_input(&input_reader)
+				if err != nil {
+					fmt.printf("Error opening input file: %v\n", err)
+					return
+				}
+				frame.current_frame = new_frame
+				is_recording = false
+				has_frames = true
+			} else {
+				game_input_reader_close(&input_reader)
+				err = game_input_writer_open(&input_writer)
+				if err != nil {
+					fmt.printf("Error opening input file: %v\n", err)
+					return
+				}
+				frame = rl_platform.update_frame(game.FrameInput{})
+				game_input_writer_insert_frame(&input_writer, frame)
+				is_recording = true
+
+			}
+		}
+
 
 		if rl.WindowShouldClose() {
 			break
@@ -155,11 +195,8 @@ main :: proc() {
 		rl.ClearBackground(rl.BLACK)
 
 		for _, i in input_reps {
-			input_rep_record_input(&input_reps[i])
+			input_rep_record_input(&input_reps[i], frame)
 			draw_button_input_rep(&input_reps[i])
 		}
-		draw_gui(frame)
-
-		rl.DrawText(fmt.ctprintf("P(%v)", panel_scroll), 10, 10, 20, rl.MAROON)
 	}
 }
