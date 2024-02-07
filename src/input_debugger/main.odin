@@ -30,20 +30,6 @@ InputVCRState :: enum {
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
-load_inupt_rep :: proc(
-	name: string,
-	path: cstring,
-	pos: rl.Vector2,
-) -> (
-	button_rep: ButtonInputRep,
-) {
-	button_rep.name = name
-	button_rep.pos = pos
-	button_rep.texture = rl.LoadTexture(path)
-	button_rep.scale = 1
-	return
-}
-
 
 main :: proc() {
 	vcr_state: InputVCRState = .Recording

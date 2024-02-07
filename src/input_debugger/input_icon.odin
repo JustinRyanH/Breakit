@@ -13,6 +13,20 @@ ButtonInputRep :: struct {
 	texture: rl.Texture2D,
 }
 
+input_rep_load :: proc(
+	name: string,
+	path: cstring,
+	pos: rl.Vector2,
+) -> (
+	button_rep: ButtonInputRep,
+) {
+	button_rep.name = name
+	button_rep.pos = pos
+	button_rep.texture = rl.LoadTexture(path)
+	button_rep.scale = 1
+	return
+}
+
 input_rep_draw_all :: proc(rep: ^ButtonInputRep) {
 	texture := rep.texture
 	if rep.pressed {
@@ -35,20 +49,20 @@ input_rep_record_input :: proc(rep: ^ButtonInputRep, frame: game.FrameInput) {
 }
 
 input_rep_create_all :: proc() {
-	space_button := load_inupt_rep(
+	space_button := input_rep_load(
 		"space",
 		"assets/textures/keyboard/keyboard_space.png",
 		rl.Vector2{80, 100},
 	)
 	space_button.scale = 1.25
 
-	left_button := load_inupt_rep(
+	left_button := input_rep_load(
 		"left",
 		"assets/textures/keyboard/keyboard_arrow_left.png",
 		rl.Vector2{150, 115},
 	)
 	left_button.scale = 0.8
-	right_button := load_inupt_rep(
+	right_button := input_rep_load(
 		"right",
 		"assets/textures/keyboard/keyboard_arrow_right.png",
 		rl.Vector2{195, 115},
