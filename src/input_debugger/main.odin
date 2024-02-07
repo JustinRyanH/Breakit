@@ -56,6 +56,37 @@ read_write_frame :: proc() -> GameInputError {
 	return nil
 }
 
+read_write_toggle :: proc() -> (err: GameInputError) {
+	new_frame := game.UserInput{}
+	switch db_state.vcr_state {
+	case .Recording:
+		game_input_writer_close(&db_state.writer)
+		err := game_input_reader_open(&db_state.reader)
+		if err != nil {
+			return err
+		}
+		db_state.frame = game.FrameInput{}
+		new_frame, err = game_input_reader_read_input(&db_state.reader)
+		if err != nil {
+			return err
+		}
+		db_state.frame.current_frame = new_frame
+		rl.SetTargetFPS(120)
+		db_state.vcr_state = .Playback
+	case .Playback, .FinishedPlayback:
+		game_input_reader_close(&db_state.reader)
+		err = game_input_writer_open(&db_state.writer)
+		if err != nil {
+			return err
+		}
+		db_state.frame = rl_platform.update_frame(game.FrameInput{})
+		game_input_writer_insert_frame(&db_state.writer, db_state.frame)
+		rl.SetTargetFPS(30)
+		db_state.vcr_state = .Recording
+	}
+	return nil
+}
+
 
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
@@ -93,7 +124,6 @@ main :: proc() {
 	input_rep_create_all()
 	defer input_rep_cleanup_all()
 
-
 	db_state.frame = rl_platform.update_frame(game.FrameInput{})
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
@@ -105,37 +135,12 @@ main :: proc() {
 		}
 
 		if rl.IsKeyPressed(.F5) {
-			switch db_state.vcr_state {
-			case .Recording:
-				game_input_writer_close(&db_state.writer)
-				err = game_input_reader_open(&db_state.reader)
-				if err != nil {
-					fmt.printf("Error opening input file: %v\n", err)
-					return
-				}
-				db_state.frame = game.FrameInput{}
-				new_frame, err := game_input_reader_read_input(&db_state.reader)
-				if err != nil {
-					fmt.printf("Error opening input file: %v\n", err)
-					return
-				}
-				db_state.frame.current_frame = new_frame
-				rl.SetTargetFPS(120)
-				db_state.vcr_state = .Playback
-			case .Playback, .FinishedPlayback:
-				game_input_reader_close(&db_state.reader)
-				err = game_input_writer_open(&db_state.writer)
-				if err != nil {
-					fmt.printf("Error opening input file: %v\n", err)
-					return
-				}
-				db_state.frame = rl_platform.update_frame(game.FrameInput{})
-				game_input_writer_insert_frame(&db_state.writer, db_state.frame)
-				rl.SetTargetFPS(30)
-				db_state.vcr_state = .Recording
+			err = read_write_toggle()
+			if err != nil {
+				fmt.printf("Error: %v", err)
+				return
 			}
 		}
-
 
 		if rl.WindowShouldClose() {
 			break
