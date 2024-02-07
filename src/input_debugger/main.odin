@@ -48,8 +48,6 @@ load_inupt_rep :: proc(
 main :: proc() {
 	vcr_state: InputVCRState = .Recording
 
-	is_recording := true
-	has_frames := true
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
 	}
@@ -85,12 +83,12 @@ main :: proc() {
 				fmt.printf("Error writing to file: %v\n", err)
 				return
 			}
+			rl.DrawText("Recording", 10, 30, 20, rl.RED)
 		case .Playback:
 			new_frame, err := game_input_reader_read_input(&input_reader)
 			if err != nil {
 				if err == .NoMoreFrames {
 					vcr_state = .FinishedPlayback
-					has_frames = false
 					continue
 				}
 				fmt.printf("Error reading from input file: %v\n", err)
@@ -98,13 +96,15 @@ main :: proc() {
 			}
 			frame.last_frame = frame.current_frame
 			frame.current_frame = new_frame
+			rl.DrawText("Playback", 10, 30, 20, rl.RED)
 		case .FinishedPlayback:
-			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
+			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
 
 		}
 
 		if rl.IsKeyPressed(.F5) {
-			if is_recording {
+			switch vcr_state {
+			case .Recording:
 				game_input_writer_close(&input_writer)
 				err = game_input_reader_open(&input_reader)
 				if err != nil {
@@ -118,10 +118,8 @@ main :: proc() {
 					return
 				}
 				frame.current_frame = new_frame
-				is_recording = false
-				has_frames = true
 				vcr_state = .Playback
-			} else {
+			case .Playback, .FinishedPlayback:
 				game_input_reader_close(&input_reader)
 				err = game_input_writer_open(&input_writer)
 				if err != nil {
@@ -130,9 +128,7 @@ main :: proc() {
 				}
 				frame = rl_platform.update_frame(game.FrameInput{})
 				game_input_writer_insert_frame(&input_writer, frame)
-				is_recording = true
 				vcr_state = .Recording
-
 			}
 		}
 
