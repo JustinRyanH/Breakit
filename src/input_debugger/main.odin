@@ -31,6 +31,7 @@ ButtonInputRep :: struct {
 	name:    string,
 	pressed: bool,
 	pos:     rl.Vector2,
+	scale:   f32,
 	texture: rl.Texture2D,
 }
 
@@ -44,15 +45,16 @@ load_inupt_rep :: proc(
 	button_rep.name = name
 	button_rep.pos = pos
 	button_rep.texture = rl.LoadTexture(path)
+	button_rep.scale = 1
 	return
 }
 
 draw_button_input_rep :: proc(rep: ^ButtonInputRep) {
 	texture := rep.texture
 	if rep.pressed {
-		rl.DrawTexture(texture, cast(i32)(rep.pos.x), cast(i32)(rep.pos.y), rl.GREEN)
+		rl.DrawTextureEx(texture, rep.pos, 0.0, rep.scale, rl.GREEN)
 	} else {
-		rl.DrawTexture(texture, cast(i32)(rep.pos.x), cast(i32)(rep.pos.y), rl.GRAY)
+		rl.DrawTextureEx(texture, rep.pos, 0.0, rep.scale, rl.RED)
 	}
 }
 
@@ -72,19 +74,22 @@ input_rep_create_all :: proc() {
 	space_button := load_inupt_rep(
 		"space",
 		"assets/textures/keyboard/keyboard_space.png",
-		rl.Vector2{100, 100},
+		rl.Vector2{80, 100},
 	)
+	space_button.scale = 1.25
 
 	left_button := load_inupt_rep(
 		"left",
 		"assets/textures/keyboard/keyboard_arrow_left.png",
-		rl.Vector2{150, 100},
+		rl.Vector2{150, 115},
 	)
+	left_button.scale = 0.8
 	right_button := load_inupt_rep(
 		"right",
 		"assets/textures/keyboard/keyboard_arrow_right.png",
-		rl.Vector2{200, 100},
+		rl.Vector2{195, 115},
 	)
+	right_button.scale = 0.8
 	append(&input_reps, space_button)
 	append(&input_reps, left_button)
 	append(&input_reps, right_button)
@@ -131,6 +136,7 @@ main :: proc() {
 	defer delete(input_reps)
 
 	input_rep_create_all()
+	defer input_rep_cleanup_all()
 	panel_rect.x = 800 - panel_rect.width
 
 
