@@ -13,6 +13,12 @@ ScreenHeight :: 450
 
 input_reps: [dynamic]ButtonInputRep
 
+InputVCRState :: enum {
+	Recording,
+	Playback,
+	FinishedPlayback,
+}
+
 
 // We are going to write out the frames into a file, the zeroth iteration will
 // follow bad form, and not even write in a header with a version, however, after
@@ -40,6 +46,8 @@ load_inupt_rep :: proc(
 
 
 main :: proc() {
+	vcr_state: InputVCRState = .Recording
+
 	is_recording := true
 	has_frames := true
 	if (os.exists("logs/input.log")) {
@@ -80,6 +88,7 @@ main :: proc() {
 			new_frame, err := game_input_reader_read_input(&input_reader)
 			if err != nil {
 				if err == .NoMoreFrames {
+					vcr_state = .FinishedPlayback
 					has_frames = false
 					continue
 				}
@@ -112,6 +121,7 @@ main :: proc() {
 				frame.current_frame = new_frame
 				is_recording = false
 				has_frames = true
+				vcr_state = .Playback
 			} else {
 				game_input_reader_close(&input_reader)
 				err = game_input_writer_open(&input_writer)
@@ -122,6 +132,7 @@ main :: proc() {
 				frame = rl_platform.update_frame(game.FrameInput{})
 				game_input_writer_insert_frame(&input_writer, frame)
 				is_recording = true
+				vcr_state = .Recording
 
 			}
 		}
