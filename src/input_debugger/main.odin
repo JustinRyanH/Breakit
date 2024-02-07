@@ -118,6 +118,7 @@ main :: proc() {
 					return
 				}
 				frame.current_frame = new_frame
+				rl.SetTargetFPS(120)
 				vcr_state = .Playback
 			case .Playback, .FinishedPlayback:
 				game_input_reader_close(&input_reader)
@@ -128,6 +129,7 @@ main :: proc() {
 				}
 				frame = rl_platform.update_frame(game.FrameInput{})
 				game_input_writer_insert_frame(&input_writer, frame)
+				rl.SetTargetFPS(30)
 				vcr_state = .Recording
 			}
 		}
