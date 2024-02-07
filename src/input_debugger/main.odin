@@ -47,10 +47,6 @@ load_inupt_rep :: proc(
 	return
 }
 
-unload_input_rep :: proc(rep: ^ButtonInputRep) {
-	rl.UnloadTexture(rep.texture)
-}
-
 draw_button_input_rep :: proc(rep: ^ButtonInputRep) {
 	texture := rep.texture
 	if rep.pressed {
@@ -69,6 +65,34 @@ input_rep_record_input :: proc(rep: ^ButtonInputRep) {
 	}
 	if rep.name == "right" {
 		rep.pressed = rl.IsKeyDown(.RIGHT)
+	}
+}
+
+input_rep_create_all :: proc() {
+	space_button := load_inupt_rep(
+		"space",
+		"assets/textures/keyboard/keyboard_space.png",
+		rl.Vector2{100, 100},
+	)
+
+	left_button := load_inupt_rep(
+		"left",
+		"assets/textures/keyboard/keyboard_arrow_left.png",
+		rl.Vector2{150, 100},
+	)
+	right_button := load_inupt_rep(
+		"right",
+		"assets/textures/keyboard/keyboard_arrow_right.png",
+		rl.Vector2{200, 100},
+	)
+	append(&input_reps, space_button)
+	append(&input_reps, left_button)
+	append(&input_reps, right_button)
+}
+
+input_rep_cleanup_all :: proc() {
+	for _, i in input_reps {
+		rl.UnloadTexture(input_reps[i].texture)
 	}
 }
 
@@ -106,14 +130,7 @@ main :: proc() {
 	input_reps = make([dynamic]ButtonInputRep)
 	defer delete(input_reps)
 
-	space_button := load_inupt_rep(
-		"space",
-		"assets/textures/keyboard/keyboard_space.png",
-		rl.Vector2{100, 100},
-	)
-	defer unload_input_rep(&space_button)
-	append(&input_reps, space_button)
-
+	input_rep_create_all()
 	panel_rect.x = 800 - panel_rect.width
 
 
