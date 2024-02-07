@@ -22,6 +22,7 @@ InputVCRState :: enum {
 InputDebuggerState :: struct {
 	writer: GameInputWriter,
 	reader: GameInputReader,
+	frame:  game.FrameInput,
 }
 
 db_state: InputDebuggerState
@@ -64,14 +65,14 @@ main :: proc() {
 	defer input_rep_cleanup_all()
 
 
-	frame := rl_platform.update_frame(game.FrameInput{})
-	game_input_writer_insert_frame(&db_state.writer, frame)
+	db_state.frame = rl_platform.update_frame(game.FrameInput{})
+	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
 		switch vcr_state {
 		case .Recording:
-			frame = rl_platform.update_frame(frame)
-			err := game_input_writer_insert_frame(&db_state.writer, frame)
+			db_state.frame = rl_platform.update_frame(db_state.frame)
+			err := game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 			if err != nil {
 				fmt.printf("Error writing to file: %v\n", err)
 				return
@@ -87,8 +88,8 @@ main :: proc() {
 				fmt.printf("Error reading from input file: %v\n", err)
 				return
 			}
-			frame.last_frame = frame.current_frame
-			frame.current_frame = new_frame
+			db_state.frame.last_frame = db_state.frame.current_frame
+			db_state.frame.current_frame = new_frame
 			rl.DrawText("Playback", 10, 30, 20, rl.RED)
 		case .FinishedPlayback:
 			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
@@ -104,13 +105,13 @@ main :: proc() {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
 				}
-				frame := game.FrameInput{}
+				db_state.frame = game.FrameInput{}
 				new_frame, err := game_input_reader_read_input(&db_state.reader)
 				if err != nil {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
 				}
-				frame.current_frame = new_frame
+				db_state.frame.current_frame = new_frame
 				rl.SetTargetFPS(120)
 				vcr_state = .Playback
 			case .Playback, .FinishedPlayback:
@@ -120,8 +121,8 @@ main :: proc() {
 					fmt.printf("Error opening input file: %v\n", err)
 					return
 				}
-				frame = rl_platform.update_frame(game.FrameInput{})
-				game_input_writer_insert_frame(&db_state.writer, frame)
+				db_state.frame = rl_platform.update_frame(game.FrameInput{})
+				game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 				rl.SetTargetFPS(30)
 				vcr_state = .Recording
 			}
@@ -138,7 +139,7 @@ main :: proc() {
 		rl.ClearBackground(rl.BLACK)
 
 		for _, i in input_reps {
-			input_rep_record_input(&input_reps[i], frame)
+			input_rep_record_input(&input_reps[i], db_state.frame)
 			input_rep_draw_all(&input_reps[i])
 		}
 	}
