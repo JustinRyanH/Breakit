@@ -63,7 +63,7 @@ main :: proc() {
 	}
 
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
-	rl.SetTargetFPS(30.0)
+	// rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
 
 	input_reps = make([dynamic]ButtonInputRep)
@@ -77,6 +77,14 @@ main :: proc() {
 	game_input_writer_insert_frame(&input_writer, frame)
 
 	for {
+		switch vcr_state {
+		case .Recording:
+		case .Playback:
+		case .FinishedPlayback:
+			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
+
+		}
+
 		if is_recording {
 			frame = rl_platform.update_frame(frame)
 			err := game_input_writer_insert_frame(&input_writer, frame)
@@ -100,7 +108,6 @@ main :: proc() {
 		}
 
 		if !is_recording && !has_frames {
-			rl.DrawText("Used all frame", 10, 30, 20, rl.RED)
 		}
 
 
