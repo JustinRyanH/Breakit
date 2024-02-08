@@ -38,7 +38,7 @@ RlToMuKeyMap :: struct {
 	mu_key: mu.Key,
 }
 
-mu_load_input :: proc(ctx: ^mu.Context) {
+ray_mu_load_input :: proc(ctx: ^mu.Context) {
 	@(static)
 	test_input_buffer: [512]byte
 
@@ -155,7 +155,7 @@ main :: proc() {
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
-		mu_load_input(ctx)
+		ray_mu_load_input(ctx)
 
 		err := read_write_frame()
 		if err != nil {
