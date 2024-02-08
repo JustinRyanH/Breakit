@@ -11,7 +11,6 @@ There are the tasks I want to work on next
 
 [ ] Input Recording Test File
 [ ] Steal Zylinski's Leak Detector
-[ ] MicroUI over Raygui
 
 ## Nice to Haves
 
@@ -27,6 +26,7 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] MicroUI over Raygui
 [x] MVP
 [x] Hot Reloading
 

@@ -19,7 +19,10 @@ RlToMuKeyMap :: struct {
 	mu_key: mu.Key,
 }
 
-create_mu_framebuffer :: proc(ctx: ^mu.Context) {
+setup_raylib_mui :: proc(ctx: ^mu.Context) {
+	ctx.text_width = mu.default_atlas_text_width
+	ctx.text_height = mu.default_atlas_text_height
+
 	pixels = make([][4]u8, mu.DEFAULT_ATLAS_WIDTH * mu.DEFAULT_ATLAS_HEIGHT)
 	for alpha, i in mu.default_atlas_alpha {
 		pixels[i].rgb = 0xff
@@ -35,7 +38,7 @@ create_mu_framebuffer :: proc(ctx: ^mu.Context) {
 	atlas = rl.LoadTextureFromImage(atlas_image)
 }
 
-destroy_mu_framebuffer :: proc() {
+destroy_raylib_mui :: proc() {
 	rl.UnloadTexture(atlas)
 	delete(pixels)
 }

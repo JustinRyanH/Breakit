@@ -48,8 +48,8 @@ main :: proc() {
 
 	mu.init(ctx)
 
-	rl_platform.create_mu_framebuffer(ctx)
-	defer rl_platform.destroy_mu_framebuffer()
+	rl_platform.setup_raylib_mui(ctx)
+	defer rl_platform.destroy_raylib_mui()
 
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
