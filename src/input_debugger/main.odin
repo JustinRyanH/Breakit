@@ -31,10 +31,24 @@ playback_gui :: proc(ctx: ^mu.Context) {
 	mu.begin(ctx)
 	defer mu.end(ctx)
 
+	window_width: i32 = 400
+
 	if db_state.vcr_state == .Playback || db_state.vcr_state == .FinishedPlayback {
-		if mu.window(ctx, "Playback State", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
-			mu.layout_row(ctx, {75, -1})
-			mu.label(ctx, "test")
+		if mu.window(
+			   ctx,
+			   "Playback State",
+			   {800 - window_width, 150, window_width, 200},
+			   {.NO_CLOSE, .NO_RESIZE},
+		   ) {
+			for frame in db_state.frame_history {
+				font := ctx.style.font
+				label := fmt.tprintf("%v", frame)
+
+				text_width := ctx.text_width(font, label)
+				mu.layout_row(ctx, {text_width, -1})
+				mu.label(ctx, label)
+
+			}
 		}
 	}
 }
@@ -44,6 +58,9 @@ main :: proc() {
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
+
+	input_debugger_setup(&db_state)
+	defer input_debugger_teardown(&db_state)
 
 	ctx := new(mu.Context)
 	defer free(ctx)
