@@ -58,8 +58,6 @@ ray_mu_load_input :: proc(ctx: ^mu.Context) {
 	mouse_x, mouse_y := rl.GetMouseX(), rl.GetMouseY()
 	mu.input_mouse_move(ctx, mouse_x, mouse_y)
 	mu.input_scroll(ctx, 0, i32(rl.GetMouseWheelMove() * -30))
-
-
 	
 
 	//odinfmt: disable
@@ -113,9 +111,51 @@ ray_mu_render :: proc(ctx: ^mu.Context, texture: rl.Texture) {
 		rl.DrawTextureRec(atlas, src, pos, transmute(rl.Color)color)
 	}
 
-
 	rl.BeginScissorMode(0, 0, rl.GetScreenWidth(), rl.GetScreenWidth())
 	defer rl.EndScissorMode()
+
+	cmd: ^mu.Command
+	for variant in mu.next_command_iterator(ctx, &cmd) {
+		#partial switch cmd in variant {
+		case ^mu.Command_Clip:
+			rl.EndScissorMode()
+			rl.BeginScissorMode(cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h)
+		case ^mu.Command_Rect:
+			rl.DrawRectangle(
+				cmd.rect.x,
+				cmd.rect.y,
+				cmd.rect.w,
+				cmd.rect.h,
+				transmute(rl.Color)(cmd.color),
+			)
+		case ^mu.Command_Text:
+			pos := [2]i32{cmd.pos.x, cmd.pos.y}
+			for ch in cmd.str {
+				if ch & 0xc0 != 0x80 {
+					r := min(int(ch), 127)
+					rect := mu.default_atlas[mu.DEFAULT_ATLAS_FONT + r]
+					render_texture(rect, pos, cmd.color, texture)
+					pos.x += rect.w
+				}
+			}
+		case ^mu.Command_Icon:
+			rect := mu.default_atlas[cmd.id]
+			x := cmd.rect.x + (cmd.rect.w - rect.w) / 2
+			y := cmd.rect.y + (cmd.rect.h - rect.h) / 2
+			render_texture(rect, {x, y}, cmd.color, texture)
+		}
+	}
+}
+
+gui_test :: proc(ctx: ^mu.Context) {
+
+	mu.begin(ctx)
+	defer mu.end(ctx)
+
+	if mu.window(ctx, "settings", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
+		mu.layout_row(ctx, {75, -1})
+		mu.label(ctx, "hertz")
+	}
 }
 
 
@@ -173,6 +213,7 @@ main :: proc() {
 
 	for {
 		ray_mu_load_input(ctx)
+		gui_test(ctx)
 
 		err := read_write_frame()
 		if err != nil {
