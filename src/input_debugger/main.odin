@@ -31,9 +31,11 @@ playback_gui :: proc(ctx: ^mu.Context) {
 	mu.begin(ctx)
 	defer mu.end(ctx)
 
-	if mu.window(ctx, "Playback State", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
-		mu.layout_row(ctx, {75, -1})
-		mu.label(ctx, "test")
+	if db_state.vcr_state == .Playback || db_state.vcr_state == .FinishedPlayback {
+		if mu.window(ctx, "Playback State", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
+			mu.layout_row(ctx, {75, -1})
+			mu.label(ctx, "test")
+		}
 	}
 }
 
@@ -76,9 +78,7 @@ main :: proc() {
 
 	for {
 		rl_platform.load_input(ctx)
-		if db_state.vcr_state == .Playback || db_state.vcr_state == .FinishedPlayback {
-			playback_gui(ctx)
-		}
+		playback_gui(ctx)
 
 		err := read_write_frame()
 		if err != nil {
