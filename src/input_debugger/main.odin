@@ -47,25 +47,9 @@ main :: proc() {
 	defer free(ctx)
 
 	mu.init(ctx)
-	ctx.text_width = mu.default_atlas_text_width
-	ctx.text_height = mu.default_atlas_text_height
 
-	pixels := make([][4]u8, mu.DEFAULT_ATLAS_WIDTH * mu.DEFAULT_ATLAS_HEIGHT)
-	defer delete(pixels)
-	for alpha, i in mu.default_atlas_alpha {
-		pixels[i].rgb = 0xff
-		pixels[i].a = alpha
-	}
-
-	atlas_image := rl.Image {
-		data    = raw_data(pixels),
-		width   = mu.DEFAULT_ATLAS_WIDTH,
-		height  = mu.DEFAULT_ATLAS_HEIGHT,
-		mipmaps = 1,
-		format  = .UNCOMPRESSED_R8G8B8A8,
-	}
-	atlas := rl.LoadTextureFromImage(atlas_image)
-	defer rl.UnloadTexture(atlas)
+	rl_platform.create_mu_framebuffer(ctx)
+	defer rl_platform.destroy_mu_framebuffer()
 
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
@@ -122,6 +106,6 @@ main :: proc() {
 			input_rep_draw_all(&input_reps[i])
 		}
 
-		rl_platform.render_ui(ctx, atlas)
+		rl_platform.render_ui(ctx)
 	}
 }

@@ -6,6 +6,8 @@ import "core:unicode/utf8"
 import mu "vendor:microui"
 import rl "vendor:raylib"
 
+pixels: [][4]u8
+atlas: rl.Texture
 
 RlToMuMouseMap :: struct {
 	rl_button: rl.MouseButton,
@@ -15,6 +17,27 @@ RlToMuMouseMap :: struct {
 RlToMuKeyMap :: struct {
 	rl_key: rl.KeyboardKey,
 	mu_key: mu.Key,
+}
+
+create_mu_framebuffer :: proc(ctx: ^mu.Context) {
+	pixels = make([][4]u8, mu.DEFAULT_ATLAS_WIDTH * mu.DEFAULT_ATLAS_HEIGHT)
+	for alpha, i in mu.default_atlas_alpha {
+		pixels[i].rgb = 0xff
+		pixels[i].a = alpha
+	}
+	atlas_image := rl.Image {
+		data    = raw_data(pixels),
+		width   = mu.DEFAULT_ATLAS_WIDTH,
+		height  = mu.DEFAULT_ATLAS_HEIGHT,
+		mipmaps = 1,
+		format  = .UNCOMPRESSED_R8G8B8A8,
+	}
+	atlas = rl.LoadTextureFromImage(atlas_image)
+}
+
+destroy_mu_framebuffer :: proc() {
+	rl.UnloadTexture(atlas)
+	delete(pixels)
 }
 
 load_input :: proc(ctx: ^mu.Context) {
@@ -80,7 +103,8 @@ load_input :: proc(ctx: ^mu.Context) {
 	}
 }
 
-render_ui :: proc(ctx: ^mu.Context, texture: rl.Texture) {
+render_ui :: proc(ctx: ^mu.Context) {
+	texture := atlas
 	render_texture :: proc "contextless" (
 		rect: mu.Rect,
 		pos: [2]i32,
