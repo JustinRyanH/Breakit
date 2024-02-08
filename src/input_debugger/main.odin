@@ -101,6 +101,23 @@ ray_mu_load_input :: proc(ctx: ^mu.Context) {
 	}
 }
 
+ray_mu_render :: proc(ctx: ^mu.Context, texture: rl.Texture) {
+	render_texture :: proc "contextless" (
+		rect: mu.Rect,
+		pos: [2]i32,
+		color: mu.Color,
+		atlas: rl.Texture,
+	) {
+		src := rl.Rectangle{cast(f32)rect.x, cast(f32)rect.y, cast(f32)rect.w, cast(f32)rect.h}
+		pos := rl.Vector2{cast(f32)pos.x, cast(f32)pos.y}
+		rl.DrawTextureRec(atlas, src, pos, transmute(rl.Color)color)
+	}
+
+
+	rl.BeginScissorMode(0, 0, rl.GetScreenWidth(), rl.GetScreenWidth())
+	defer rl.EndScissorMode()
+}
+
 
 main :: proc() {
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
@@ -184,5 +201,7 @@ main :: proc() {
 			input_rep_record_input(&input_reps[i], db_state.frame)
 			input_rep_draw_all(&input_reps[i])
 		}
+
+		ray_mu_render(ctx, atlas)
 	}
 }
