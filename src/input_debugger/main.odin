@@ -26,14 +26,14 @@ db_state: InputDebuggerState
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
-gui_test :: proc(ctx: ^mu.Context) {
+playback_gui :: proc(ctx: ^mu.Context) {
 
 	mu.begin(ctx)
 	defer mu.end(ctx)
 
-	if mu.window(ctx, "settings", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
+	if mu.window(ctx, "Playback State", {50, 150, 150, 300}, {.NO_CLOSE, .NO_RESIZE}) {
 		mu.layout_row(ctx, {75, -1})
-		mu.label(ctx, "hertz")
+		mu.label(ctx, "test")
 	}
 }
 
@@ -76,7 +76,9 @@ main :: proc() {
 
 	for {
 		rl_platform.load_input(ctx)
-		gui_test(ctx)
+		if db_state.vcr_state == .Playback || db_state.vcr_state == .FinishedPlayback {
+			playback_gui(ctx)
+		}
 
 		err := read_write_frame()
 		if err != nil {
