@@ -1,4 +1,4 @@
-package input
+package platform_raylib
 
 import "core:strings"
 import "core:unicode/utf8"
@@ -6,7 +6,18 @@ import "core:unicode/utf8"
 import mu "vendor:microui"
 import rl "vendor:raylib"
 
-ray_mu_load_input :: proc(ctx: ^mu.Context) {
+
+RlToMuMouseMap :: struct {
+	rl_button: rl.MouseButton,
+	mu_button: mu.Mouse,
+}
+
+RlToMuKeyMap :: struct {
+	rl_key: rl.KeyboardKey,
+	mu_key: mu.Key,
+}
+
+load_input :: proc(ctx: ^mu.Context) {
 	@(static)
 	test_input_buffer: [512]byte
 
@@ -69,7 +80,7 @@ ray_mu_load_input :: proc(ctx: ^mu.Context) {
 	}
 }
 
-ray_mu_render :: proc(ctx: ^mu.Context, texture: rl.Texture) {
+render_ui :: proc(ctx: ^mu.Context, texture: rl.Texture) {
 	render_texture :: proc "contextless" (
 		rect: mu.Rect,
 		pos: [2]i32,

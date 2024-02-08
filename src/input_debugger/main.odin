@@ -3,8 +3,6 @@ package input
 import "core:fmt"
 import math "core:math/linalg"
 import "core:os"
-import "core:strings"
-import "core:unicode/utf8"
 
 import mu "vendor:microui"
 import rl "vendor:raylib"
@@ -27,16 +25,6 @@ db_state: InputDebuggerState
 // [ ] Generate a new file every time the apps starts up
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
-
-RlToMuMouseMap :: struct {
-	rl_button: rl.MouseButton,
-	mu_button: mu.Mouse,
-}
-
-RlToMuKeyMap :: struct {
-	rl_key: rl.KeyboardKey,
-	mu_key: mu.Key,
-}
 
 gui_test :: proc(ctx: ^mu.Context) {
 
@@ -103,7 +91,7 @@ main :: proc() {
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
-		ray_mu_load_input(ctx)
+		rl_platform.load_input(ctx)
 		gui_test(ctx)
 
 		err := read_write_frame()
@@ -134,6 +122,6 @@ main :: proc() {
 			input_rep_draw_all(&input_reps[i])
 		}
 
-		ray_mu_render(ctx, atlas)
+		rl_platform.render_ui(ctx, atlas)
 	}
 }
