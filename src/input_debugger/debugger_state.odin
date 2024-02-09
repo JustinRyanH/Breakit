@@ -101,6 +101,7 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 	return nil
 }
 
+@(private)
 toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	game_input_reader_close(&state.reader)
 	err = game_input_writer_open(&state.writer)
@@ -116,7 +117,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	return
 }
 
-
+@(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame := game.UserInput{}
 
