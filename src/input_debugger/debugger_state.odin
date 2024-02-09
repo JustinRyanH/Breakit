@@ -98,7 +98,13 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in state.playback.state {
 	case VcrRecording:
-		return record_input(state)
+    state.frame = rl_platform.update_frame(state.frame)
+    err := game_input_writer_insert_frame(&state.writer, state.frame)
+    if err != nil {
+      return err
+    }
+    rl.DrawText("Recording", 10, 30, 20, rl.RED)
+    return nil
 	case VcrPlayback:
 		if state.playback.has_loaded_all_playback {
 			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
@@ -142,17 +148,6 @@ playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	append(&state.playback.frame_history, new_frame)
 	state.frame.last_frame = state.frame.current_frame
 	state.frame.current_frame = new_frame
-	return
-}
-
-@(private)
-record_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	state.frame = rl_platform.update_frame(state.frame)
-	err = game_input_writer_insert_frame(&state.writer, state.frame)
-	if err != nil {
-		return err
-	}
-	rl.DrawText("Recording", 10, 30, 20, rl.RED)
 	return
 }
 
