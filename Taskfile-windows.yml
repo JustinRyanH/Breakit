@@ -33,7 +33,7 @@ tasks:
     generates:
       - bin/input.exe
     sources:
-      - ./src/input_debugger/**/*.odin
+      - ./src/**/*.odin
 
   game:
     deps: [test]
