@@ -66,20 +66,9 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	}
 	switch state.vcr_state {
 	case .Recording:
-		record_input(state)
+		return record_input(state)
 	case .Playback:
-		new_frame, err := game_input_reader_read_input(&state.reader)
-		if err != nil {
-			if err == .NoMoreFrames {
-				state.vcr_state = .FinishedPlayback
-				return nil
-			}
-			return err
-		}
-		append(&state.playback.frame_history, new_frame)
-		state.frame.last_frame = state.frame.current_frame
-		state.frame.current_frame = new_frame
-		rl.DrawText("Playback", 10, 30, 20, rl.RED)
+		return playback_input(state)
 	case .FinishedPlayback:
 		rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
 	}
@@ -94,6 +83,24 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 		return toggle_recording(state)
 	}
 	return nil
+}
+@(private)
+playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	new_frame := game.UserInput{}
+	new_frame, err = game_input_reader_read_input(&state.reader)
+	if err != nil {
+		if err == .NoMoreFrames {
+			state.vcr_state = .FinishedPlayback
+			return nil
+		}
+		return err
+	}
+	append(&state.playback.frame_history, new_frame)
+	state.frame.last_frame = state.frame.current_frame
+	state.frame.current_frame = new_frame
+	rl.DrawText("Playback", 10, 30, 20, rl.RED)
+
+	return
 }
 
 @(private)
