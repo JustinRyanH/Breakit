@@ -27,7 +27,7 @@ db_state: InputDebuggerState
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
-playback_gui :: proc(ctx: ^mu.Context, db_state: ^InputDebuggerState) {
+playback_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 	mu.begin(ctx)
 	defer mu.end(ctx)
@@ -102,7 +102,7 @@ main :: proc() {
 	for {
 		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
-		playback_gui(ctx, &db_state)
+		playback_gui(&db_state, ctx)
 
 		err := read_write_frame(&db_state)
 		if err != nil {
