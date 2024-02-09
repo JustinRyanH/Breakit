@@ -67,17 +67,23 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 	if !input_debugger_query_if_recording(db_state) {
 		if mu.window(
 			   ctx,
-			   "Playback State",
+			   "Input Playback",
 			   {800 - window_width, 150, window_width, 200},
-			   {.NO_CLOSE, .NO_RESIZE},
+			   {.NO_CLOSE},
 		   ) {
+
 			frame_history := input_get_frame_history(db_state)
-			for frame in frame_history {
+			for frame, frame_index in frame_history {
 				font := ctx.style.font
 				label := fmt.tprintf("%v", frame)
 
 				text_width := ctx.text_width(font, label)
-				mu.layout_row(ctx, {text_width, -1})
+				mu.layout_row(ctx, {32, text_width, -1})
+				res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
+				if .SUBMIT in res {
+					fmt.println("CLICK ", frame_index)
+				}
+
 				mu.label(ctx, label)
 			}
 		}
@@ -177,8 +183,6 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 		return err
 	}
 
-	append(&state.playback.frame_history, new_frame)
-	state.frame.current_frame = new_frame
 	rl.SetTargetFPS(120)
 	state.playback.state = VcrPlayback{0}
 
