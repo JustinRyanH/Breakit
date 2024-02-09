@@ -11,26 +11,30 @@ InputVCRState :: enum {
 	FinishedPlayback,
 }
 
-FrameHistory :: [dynamic]game.UserInput
-
-InputDebuggerState :: struct {
-	writer:        GameInputWriter,
-	reader:        GameInputReader,
-	frame:         game.FrameInput,
-	vcr_state:     InputVCRState,
+Playback :: struct {
 	frame_history: FrameHistory,
 }
 
+FrameHistory :: [dynamic]game.UserInput
+
+InputDebuggerState :: struct {
+	writer:    GameInputWriter,
+	reader:    GameInputReader,
+	frame:     game.FrameInput,
+	vcr_state: InputVCRState,
+	playback:  Playback,
+}
+
 input_debugger_setup :: proc(db_state: ^InputDebuggerState) {
-	db_state.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
+	db_state.playback.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
 }
 
 input_debugger_teardown :: proc(db_state: ^InputDebuggerState) {
-	delete(db_state.frame_history)
+	delete(db_state.playback.frame_history)
 }
 
 input_get_frame_history :: proc(db_state: ^InputDebuggerState) -> FrameHistory {
-	return db_state.frame_history
+	return db_state.playback.frame_history
 }
 
 
@@ -52,7 +56,7 @@ read_write_frame :: proc() -> GameInputError {
 			}
 			return err
 		}
-		append(&db_state.frame_history, new_frame)
+		append(&db_state.playback.frame_history, new_frame)
 		db_state.frame.last_frame = db_state.frame.current_frame
 		db_state.frame.current_frame = new_frame
 		rl.DrawText("Playback", 10, 30, 20, rl.RED)
@@ -76,7 +80,7 @@ read_write_toggle :: proc() -> (err: GameInputError) {
 		if err != nil {
 			return err
 		}
-		append(&db_state.frame_history, new_frame)
+		append(&db_state.playback.frame_history, new_frame)
 		db_state.frame.current_frame = new_frame
 		rl.SetTargetFPS(120)
 		db_state.vcr_state = .Playback
@@ -90,7 +94,7 @@ read_write_toggle :: proc() -> (err: GameInputError) {
 		game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 		rl.SetTargetFPS(30)
 		db_state.vcr_state = .Recording
-		clear(&db_state.frame_history)
+		clear(&db_state.playback.frame_history)
 	}
 	return nil
 }
