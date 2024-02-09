@@ -7,12 +7,6 @@ import rl "vendor:raylib"
 import game "../game"
 import rl_platform "../raylib_platform"
 
-InputVCRState :: enum {
-	Recording,
-	Playback,
-	FinishedPlayback,
-}
-
 VcrRecording :: struct {}
 
 VcrPaused :: struct {
@@ -39,11 +33,10 @@ VcrState :: struct {
 FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
-	writer:    GameInputWriter,
-	reader:    GameInputReader,
-	frame:     game.FrameInput,
-	vcr_state: InputVCRState,
-	playback:  VcrState,
+	writer:   GameInputWriter,
+	reader:   GameInputReader,
+	frame:    game.FrameInput,
+	playback: VcrState,
 }
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
@@ -53,6 +46,10 @@ input_debugger_setup :: proc(state: ^InputDebuggerState) {
 
 input_debugger_teardown :: proc(state: ^InputDebuggerState) {
 	delete(state.playback.frame_history)
+}
+
+input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
+	return state.playback.state == VcrRecording{}
 }
 
 input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
@@ -74,20 +71,16 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		return playback_input(state)
 	case VcrPaused:
 	}
-	switch state.vcr_state {
-	case .Recording:
-	case .Playback:
-	case .FinishedPlayback:
-	}
 	return nil
 }
 
 input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	switch state.vcr_state {
-	case .Recording:
+	switch s in state.playback.state {
+	case VcrRecording:
 		return toggle_playback(state)
-	case .Playback, .FinishedPlayback:
+	case VcrPlayback:
 		return toggle_recording(state)
+	case VcrPaused:
 	}
 	return nil
 }
@@ -97,7 +90,6 @@ playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame, err = game_input_reader_read_input(&state.reader)
 	if err != nil {
 		if err == .NoMoreFrames {
-			state.vcr_state = .FinishedPlayback
 			state.playback.has_loaded_all_playback = true
 			return nil
 		}
@@ -130,7 +122,6 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	state.frame = rl_platform.update_frame(game.FrameInput{})
 	game_input_writer_insert_frame(&state.writer, state.frame)
 	rl.SetTargetFPS(30)
-	state.vcr_state = .Recording
 	state.playback.state = VcrRecording{}
 	clear(&state.playback.frame_history)
 	return
@@ -155,7 +146,6 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	append(&state.playback.frame_history, new_frame)
 	state.frame.current_frame = new_frame
 	rl.SetTargetFPS(120)
-	state.vcr_state = .Playback
 	state.playback.state = VcrPlayback{0}
 
 	return

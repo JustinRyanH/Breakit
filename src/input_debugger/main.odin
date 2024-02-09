@@ -33,7 +33,7 @@ playback_gui :: proc(ctx: ^mu.Context) {
 
 	window_width: i32 = 400
 
-	if db_state.vcr_state == .Playback || db_state.vcr_state == .FinishedPlayback {
+	if !input_debugger_query_if_recording(&db_state) {
 		if mu.window(
 			   ctx,
 			   "Playback State",
@@ -72,7 +72,6 @@ main :: proc() {
 
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
-	db_state.vcr_state = .Recording
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
