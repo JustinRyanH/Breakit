@@ -100,6 +100,7 @@ main :: proc() {
 	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 
 	for {
+		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
 		playback_gui(ctx)
 
@@ -132,5 +133,6 @@ main :: proc() {
 		}
 
 		rl_platform.render_ui(ctx)
+
 	}
 }
