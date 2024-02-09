@@ -2,6 +2,7 @@ package input
 
 import "core:fmt"
 
+import mu "vendor:microui"
 import rl "vendor:raylib"
 
 import game "../game"
@@ -54,6 +55,33 @@ input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
 
 input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 	return state.playback.frame_history
+}
+
+input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
+
+	mu.begin(ctx)
+	defer mu.end(ctx)
+
+	window_width: i32 = 400
+
+	if !input_debugger_query_if_recording(db_state) {
+		if mu.window(
+			   ctx,
+			   "Playback State",
+			   {800 - window_width, 150, window_width, 200},
+			   {.NO_CLOSE, .NO_RESIZE},
+		   ) {
+			frame_history := input_get_frame_history(db_state)
+			for frame in frame_history {
+				font := ctx.style.font
+				label := fmt.tprintf("%v", frame)
+
+				text_width := ctx.text_width(font, label)
+				mu.layout_row(ctx, {text_width, -1})
+				mu.label(ctx, label)
+			}
+		}
+	}
 }
 
 

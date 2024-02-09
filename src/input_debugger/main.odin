@@ -27,33 +27,6 @@ db_state: InputDebuggerState
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
-playback_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
-
-	mu.begin(ctx)
-	defer mu.end(ctx)
-
-	window_width: i32 = 400
-
-	if !input_debugger_query_if_recording(db_state) {
-		if mu.window(
-			   ctx,
-			   "Playback State",
-			   {800 - window_width, 150, window_width, 200},
-			   {.NO_CLOSE, .NO_RESIZE},
-		   ) {
-			frame_history := input_get_frame_history(db_state)
-			for frame in frame_history {
-				font := ctx.style.font
-				label := fmt.tprintf("%v", frame)
-
-				text_width := ctx.text_width(font, label)
-				mu.layout_row(ctx, {text_width, -1})
-				mu.label(ctx, label)
-			}
-		}
-	}
-}
-
 
 main :: proc() {
 	default_allocator := context.allocator
@@ -102,7 +75,7 @@ main :: proc() {
 	for {
 		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
-		playback_gui(&db_state, ctx)
+		input_debugger_gui(&db_state, ctx)
 
 		err := read_write_frame(&db_state)
 		if err != nil {
