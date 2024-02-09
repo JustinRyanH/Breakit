@@ -84,6 +84,12 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 	}
 	return nil
 }
+
+
+//////////////////////
+// Private Procs
+//////////////////////
+
 @(private)
 playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame := game.UserInput{}
