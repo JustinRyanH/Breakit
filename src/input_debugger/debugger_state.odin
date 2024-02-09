@@ -96,25 +96,22 @@ read_write_toggle :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 
 	switch state.vcr_state {
 	case .Recording:
-		return state_record_frame(state)
+		return toggle_playback(state)
 	case .Playback, .FinishedPlayback:
-		return state_playback_frame(state)
+		return toggle_recording(state)
 	}
 	return nil
 }
 
-state_playback_frame :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	game_input_reader_close(&state.reader)
-
 	err = game_input_writer_open(&state.writer)
 	if err != nil {
 		return
 	}
-
-	rl.SetTargetFPS(30)
-
 	state.frame = rl_platform.update_frame(game.FrameInput{})
 	game_input_writer_insert_frame(&state.writer, state.frame)
+	rl.SetTargetFPS(30)
 	state.vcr_state = .Recording
 	state.playback.state = VcrRecording{}
 	clear(&state.playback.frame_history)
@@ -122,7 +119,7 @@ state_playback_frame :: proc(state: ^InputDebuggerState) -> (err: GameInputError
 }
 
 
-state_record_frame :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame := game.UserInput{}
 
 	game_input_writer_close(&state.writer)
