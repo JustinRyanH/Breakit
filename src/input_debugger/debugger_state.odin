@@ -8,7 +8,9 @@ import rl "vendor:raylib"
 import game "../game"
 import rl_platform "../raylib_platform"
 
-VcrRecording :: struct {}
+VcrRecording :: struct {
+    current_frame: game.FrameInput,
+}
 
 VcrPaused :: struct {
 	paused_index: int,
@@ -50,7 +52,8 @@ input_debugger_teardown :: proc(state: ^InputDebuggerState) {
 }
 
 input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
-	return state.playback.state == VcrRecording{}
+  _, ok := state.playback.state.(VcrRecording)
+  return ok
 }
 
 input_debugger_query_current_frame :: proc(state: ^InputDebuggerState) -> game.FrameInput {
@@ -99,6 +102,7 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
     state.frame = rl_platform.update_frame(state.frame)
+    s.current_frame = state.frame
     err := game_input_writer_insert_frame(&state.writer, state.frame)
     if err != nil {
       return err
