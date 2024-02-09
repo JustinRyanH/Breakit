@@ -11,8 +11,27 @@ InputVCRState :: enum {
 	FinishedPlayback,
 }
 
-Playback :: struct {
-	frame_history: FrameHistory,
+VcrRecording :: struct {}
+
+VcrPaused :: struct {
+	paused_index: int,
+}
+
+VcrPlayback :: struct {
+	current_index: int,
+}
+
+PlaybackState :: union {
+	VcrRecording,
+	VcrPaused,
+	VcrPlayback,
+}
+
+
+VcrState :: struct {
+	frame_history:           FrameHistory,
+	state:                   PlaybackState,
+	has_loaded_all_playback: bool,
 }
 
 FrameHistory :: [dynamic]game.UserInput
@@ -22,11 +41,12 @@ InputDebuggerState :: struct {
 	reader:    GameInputReader,
 	frame:     game.FrameInput,
 	vcr_state: InputVCRState,
-	playback:  Playback,
+	playback:  VcrState,
 }
 
 input_debugger_setup :: proc(db_state: ^InputDebuggerState) {
 	db_state.playback.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
+	db_state.vcr_state = .Recording
 }
 
 input_debugger_teardown :: proc(db_state: ^InputDebuggerState) {
@@ -39,6 +59,11 @@ input_get_frame_history :: proc(db_state: ^InputDebuggerState) -> FrameHistory {
 
 
 read_write_frame :: proc(db_state: ^InputDebuggerState) -> GameInputError {
+	switch s in db_state.playback.state {
+	case VcrRecording:
+	case VcrPlayback:
+	case VcrPaused:
+	}
 	switch db_state.vcr_state {
 	case .Recording:
 		db_state.frame = rl_platform.update_frame(db_state.frame)
@@ -68,6 +93,7 @@ read_write_frame :: proc(db_state: ^InputDebuggerState) -> GameInputError {
 
 read_write_toggle :: proc(db_date: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame := game.UserInput{}
+
 	switch db_state.vcr_state {
 	case .Recording:
 		game_input_writer_close(&db_state.writer)
@@ -84,6 +110,7 @@ read_write_toggle :: proc(db_date: ^InputDebuggerState) -> (err: GameInputError)
 		db_state.frame.current_frame = new_frame
 		rl.SetTargetFPS(120)
 		db_state.vcr_state = .Playback
+		db_state.playback.state = VcrPlayback{0}
 	case .Playback, .FinishedPlayback:
 		game_input_reader_close(&db_state.reader)
 		err = game_input_writer_open(&db_state.writer)
@@ -94,6 +121,7 @@ read_write_toggle :: proc(db_date: ^InputDebuggerState) -> (err: GameInputError)
 		game_input_writer_insert_frame(&db_state.writer, db_state.frame)
 		rl.SetTargetFPS(30)
 		db_state.vcr_state = .Recording
+		db_state.playback.state = VcrRecording{}
 		clear(&db_state.playback.frame_history)
 	}
 	return nil
