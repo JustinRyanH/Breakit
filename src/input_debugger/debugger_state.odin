@@ -53,6 +53,10 @@ input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
 	return state.playback.state == VcrRecording{}
 }
 
+input_debugger_query_current_frame :: proc(state: ^InputDebuggerState) -> game.FrameInput {
+	return state.frame
+}
+
 input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 	return state.playback.frame_history
 }

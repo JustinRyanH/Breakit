@@ -69,9 +69,6 @@ main :: proc() {
 	input_rep_create_all()
 	defer input_rep_cleanup_all()
 
-	db_state.frame = rl_platform.update_frame(game.FrameInput{})
-	game_input_writer_insert_frame(&db_state.writer, db_state.frame)
-
 	for {
 		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
@@ -101,7 +98,8 @@ main :: proc() {
 		rl.ClearBackground(rl.BLACK)
 
 		for _, i in input_reps {
-			input_rep_record_input(&input_reps[i], db_state.frame)
+			current_frame := input_debugger_query_current_frame(&db_state)
+			input_rep_record_input(&input_reps[i], current_frame)
 			input_rep_draw_all(&input_reps[i])
 		}
 
