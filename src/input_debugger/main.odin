@@ -21,8 +21,8 @@ db_state: InputDebuggerState
 // this we will immediately resovle this problem before bringing it to the game
 // [x] Write the inputs to a file 
 // [x] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
-// [ ] Display the same keys being hit on the playback side
-// [ ] Generate a new file every time the apps starts up
+// [x] Display the same keys being hit on the playback side
+// [ ] Set up Playback tools to loop, pause, and replay
 // [ ] Create a raygui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
