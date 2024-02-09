@@ -63,7 +63,7 @@ load_input :: proc(ctx: ^mu.Context) {
 	mouse_x, mouse_y := rl.GetMouseX(), rl.GetMouseY()
 	mu.input_mouse_move(ctx, mouse_x, mouse_y)
 	mouse_wheel := rl.GetMouseWheelMoveV()
-	mu.input_scroll(ctx, i32(mouse_wheel.y * -30), i32(mouse_wheel.x * -30))
+	mu.input_scroll(ctx, i32(mouse_wheel.x * -30), i32(mouse_wheel.y * -30))
 
 
 	
