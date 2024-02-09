@@ -24,11 +24,9 @@ InputParsingError :: enum {
 GameInputFileError :: enum {
 	HandleClosedOrReadOnly,
 	FileNotOpen,
-	FileTooBig,
-	MismatchWriteSize,
 	NoAccess,
-	NotFound,
-	SystemError, // EFBIG, ENOSPC, EROFS
+	MismatchWriteSize,
+	SystemError,
 }
 
 GameInputError :: union {
@@ -83,22 +81,28 @@ game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
 
 		return nil
 	}
-	if err == os.ENOENT {
-		return .NotFound
-	}
-	if err == os.EACCES {
-		return .NoAccess
+	when ODIN_OS == .Darwin {
 	}
 	return .SystemError
 
 }
 
 game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
-	success := os.close(reader.file_handle)
-	if (success) {
-		reader.is_open = false
+	when ODIN_OS == .Darwin {
+		success := os.close(reader.file_handle)
+		if (success) {
+			reader.is_open = false
+		}
+		return true
+	} else when ODIN_OS == .Windows {
+		err := os.close(reader.file_handle)
+		if (err != os.ERROR_NONE) {
+			reader.is_open = false
+			return true
+		}
+
 	}
-	return success
+	return false
 }
 
 game_input_reader_read_input :: proc(
@@ -114,12 +118,21 @@ game_input_reader_read_input :: proc(
 
 	read_size, read_err := os.read_ptr(reader.file_handle, &new_frame, size_of(game.UserInput))
 	if read_err != os.ERROR_NONE {
-		if read_err == os.EBADF {
-			err = .HandleClosedOrReadOnly
+		when ODIN_OS == .Darwin {
+			if read_err == os.EBADF {
+				err = .HandleClosedOrReadOnly
+				return
+			}
+			err = .SystemError
+			return
+		} else when ODIN_OS == .Windows {
+			if read_err == os.ERROR_EOF {
+				err = .NoMoreFrames
+				return
+			}
+			err = .SystemError
 			return
 		}
-		err = .SystemError
-		return
 	}
 	if read_size == 0 {
 		err = .NoMoreFrames
@@ -151,9 +164,6 @@ game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 		writer.is_open = true
 		write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
 		if err != os.ERROR_NONE {
-			if err == os.EFBIG {
-				return .FileTooBig
-			}
 			return .SystemError
 		}
 
@@ -162,23 +172,26 @@ game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 		}
 		return nil
 	}
-	if err == os.ENOENT {
-		return .NotFound
-	}
-	if err == os.EACCES {
-		return .NoAccess
-	}
 
 	return .SystemError
 }
 
 // Return true if the file was closed successfully
 game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
-	success := os.close(writer.file_handle)
-	if (success) {
-		writer.is_open = false
+	when ODIN_OS == .Darwin {
+		success := os.close(writer.file_handle)
+		if (success) {
+			writer.is_open = false
+		}
+		return true
+	} else when ODIN_OS == .Windows {
+		err := os.close(writer.file_handle)
+		if (err != os.ERROR_NONE) {
+			writer.is_open = false
+			return true
+		}
 	}
-	return success
+	return false
 }
 
 game_input_writer_insert_frame :: proc(
@@ -192,13 +205,6 @@ game_input_writer_insert_frame :: proc(
 
 	write_size, err := os.write_ptr(writer.file_handle, &current_frame, size_of(current_frame))
 	if err != os.ERROR_NONE {
-		if err == os.EFBIG {
-			return .FileTooBig
-		}
-		if err == os.EBADF {
-			return .HandleClosedOrReadOnly
-		}
-		fmt.printf("Error: %v\n", err)
 		return .SystemError
 	}
 
