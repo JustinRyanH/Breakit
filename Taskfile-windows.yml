@@ -12,7 +12,7 @@ tasks:
       - task: test
 
   platform:
-    deps: [game]
+    deps: [nuklear, game]
     cmds:
       - odin build src/main -out:bin/Breakit.exe -debug
     aliases:
@@ -24,7 +24,7 @@ tasks:
       - ./**/*.odin
 
   input:
-    deps: [game]
+    deps: [nuklear, game]
     cmds:
       - odin build src/input_debugger -out:bin/input.exe -debug
     aliases:
@@ -57,3 +57,16 @@ tasks:
     silent: true
     sources:
       - ./src/**/*.doin
+
+  nuklear:
+    cmds:
+      - clang -c src/nuklear/nuklear.c -std=c99 -o bin/nuklear.obj -O2
+      - llvm-lib bin/nuklear.obj
+      - powershell rm bin/nuklear.obj
+      - powershell mv bin/nuklear.lib src/nuklear/nuklear_windows_amd64.lib
+    sources:
+      - ./src/nuklear/**/*.c
+      - ./src/nuklear/**/*.h
+      - ./src/nuklear/**/*.odin
+    generates:
+      - src/nuklear/nuklear_windows_amd64.lib
