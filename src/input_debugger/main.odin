@@ -9,6 +9,7 @@ import rl "vendor:raylib"
 
 import game "../game"
 import rl_platform "../raylib_platform"
+import ta "../tracking_alloc"
 
 ScreenWidth :: 800
 ScreenHeight :: 450
@@ -55,6 +56,12 @@ playback_gui :: proc(ctx: ^mu.Context) {
 
 
 main :: proc() {
+	default_allocator := context.allocator
+	tracking_allocator: ta.Tracking_Allocator
+	ta.tracking_allocator_init(&tracking_allocator, default_allocator)
+	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
+	defer ta.tracking_allocator_destroy(&tracking_allocator)
+
 	rl.InitWindow(ScreenWidth, ScreenHeight, "Input Debugger")
 	rl.SetTargetFPS(30.0)
 	defer rl.CloseWindow()
