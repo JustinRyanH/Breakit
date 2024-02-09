@@ -104,7 +104,7 @@ main :: proc() {
 		}
 
 		if rl.IsKeyPressed(.F5) {
-			err = read_write_toggle(&db_state)
+			err = input_debugger_toggle_playback(&db_state)
 			if err != nil {
 				fmt.printf("Error: %v", err)
 				return
