@@ -38,7 +38,7 @@ input_get_frame_history :: proc(db_state: ^InputDebuggerState) -> FrameHistory {
 }
 
 
-read_write_frame :: proc() -> GameInputError {
+read_write_frame :: proc(db_state: ^InputDebuggerState) -> GameInputError {
 	switch db_state.vcr_state {
 	case .Recording:
 		db_state.frame = rl_platform.update_frame(db_state.frame)
@@ -66,7 +66,7 @@ read_write_frame :: proc() -> GameInputError {
 	return nil
 }
 
-read_write_toggle :: proc() -> (err: GameInputError) {
+read_write_toggle :: proc(db_date: ^InputDebuggerState) -> (err: GameInputError) {
 	new_frame := game.UserInput{}
 	switch db_state.vcr_state {
 	case .Recording:

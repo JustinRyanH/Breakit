@@ -48,7 +48,6 @@ playback_gui :: proc(ctx: ^mu.Context) {
 				text_width := ctx.text_width(font, label)
 				mu.layout_row(ctx, {text_width, -1})
 				mu.label(ctx, label)
-
 			}
 		}
 	}
@@ -98,14 +97,14 @@ main :: proc() {
 		rl_platform.load_input(ctx)
 		playback_gui(ctx)
 
-		err := read_write_frame()
+		err := read_write_frame(&db_state)
 		if err != nil {
 			fmt.printf("Error: %v", err)
 			return
 		}
 
 		if rl.IsKeyPressed(.F5) {
-			err = read_write_toggle()
+			err = read_write_toggle(&db_state)
 			if err != nil {
 				fmt.printf("Error: %v", err)
 				return
