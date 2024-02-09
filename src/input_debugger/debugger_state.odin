@@ -11,19 +11,26 @@ InputVCRState :: enum {
 	FinishedPlayback,
 }
 
+FrameHistory :: [dynamic]game.UserInput
+
 InputDebuggerState :: struct {
 	writer:        GameInputWriter,
 	reader:        GameInputReader,
 	frame:         game.FrameInput,
 	vcr_state:     InputVCRState,
-	frame_history: [dynamic]game.UserInput,
+	frame_history: FrameHistory,
 }
 
 input_debugger_setup :: proc(db_state: ^InputDebuggerState) {
 	db_state.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
 }
+
 input_debugger_teardown :: proc(db_state: ^InputDebuggerState) {
 	delete(db_state.frame_history)
+}
+
+input_get_frame_history :: proc(db_state: ^InputDebuggerState) -> FrameHistory {
+	return db_state.frame_history
 }
 
 

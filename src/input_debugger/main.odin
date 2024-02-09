@@ -40,7 +40,8 @@ playback_gui :: proc(ctx: ^mu.Context) {
 			   {800 - window_width, 150, window_width, 200},
 			   {.NO_CLOSE, .NO_RESIZE},
 		   ) {
-			for frame in db_state.frame_history {
+			frame_history := input_get_frame_history(&db_state)
+			for frame in frame_history {
 				font := ctx.style.font
 				label := fmt.tprintf("%v", frame)
 
