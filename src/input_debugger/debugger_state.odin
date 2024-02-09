@@ -66,12 +66,7 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	}
 	switch state.vcr_state {
 	case .Recording:
-		state.frame = rl_platform.update_frame(state.frame)
-		err := game_input_writer_insert_frame(&state.writer, state.frame)
-		if err != nil {
-			return err
-		}
-		rl.DrawText("Recording", 10, 30, 20, rl.RED)
+		record_input(state)
 	case .Playback:
 		new_frame, err := game_input_reader_read_input(&state.reader)
 		if err != nil {
@@ -99,6 +94,17 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 		return toggle_recording(state)
 	}
 	return nil
+}
+
+@(private)
+record_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	state.frame = rl_platform.update_frame(state.frame)
+	err = game_input_writer_insert_frame(&state.writer, state.frame)
+	if err != nil {
+		return err
+	}
+	rl.DrawText("Recording", 10, 30, 20, rl.RED)
+	return
 }
 
 @(private)
