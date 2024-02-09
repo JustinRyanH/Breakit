@@ -96,7 +96,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
-	switch s in state.playback.state {
+	switch s in &state.playback.state {
 	case VcrRecording:
     state.frame = rl_platform.update_frame(state.frame)
     err := game_input_writer_insert_frame(&state.writer, state.frame)
