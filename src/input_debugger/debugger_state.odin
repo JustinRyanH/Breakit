@@ -92,8 +92,6 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 }
 
 input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	new_frame := game.UserInput{}
-
 	switch state.vcr_state {
 	case .Recording:
 		return toggle_playback(state)
