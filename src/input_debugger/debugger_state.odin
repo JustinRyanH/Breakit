@@ -1,5 +1,7 @@
 package input
 
+import "core:fmt"
+
 import rl "vendor:raylib"
 
 import game "../game"
@@ -46,7 +48,7 @@ InputDebuggerState :: struct {
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
 	state.playback.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
-	state.vcr_state = .Recording
+	state.playback.state = VcrRecording{}
 }
 
 input_debugger_teardown :: proc(state: ^InputDebuggerState) {
@@ -61,16 +63,21 @@ input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in state.playback.state {
 	case VcrRecording:
+		return record_input(state)
 	case VcrPlayback:
+		if state.playback.has_loaded_all_playback {
+			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
+		} else {
+			rl.DrawText("Playback", 10, 30, 20, rl.RED)
+		}
+
+		return playback_input(state)
 	case VcrPaused:
 	}
 	switch state.vcr_state {
 	case .Recording:
-		return record_input(state)
 	case .Playback:
-		return playback_input(state)
 	case .FinishedPlayback:
-		rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
 	}
 	return nil
 }
@@ -91,6 +98,7 @@ playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	if err != nil {
 		if err == .NoMoreFrames {
 			state.vcr_state = .FinishedPlayback
+			state.playback.has_loaded_all_playback = true
 			return nil
 		}
 		return err
@@ -98,8 +106,6 @@ playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	append(&state.playback.frame_history, new_frame)
 	state.frame.last_frame = state.frame.current_frame
 	state.frame.current_frame = new_frame
-	rl.DrawText("Playback", 10, 30, 20, rl.RED)
-
 	return
 }
 
