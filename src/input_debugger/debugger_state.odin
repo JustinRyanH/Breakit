@@ -101,37 +101,50 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 	window_width: i32 = 400
 
 	if !input_debugger_query_if_recording(db_state) {
-		if mu.window(
-			   ctx,
-			   "Input Playback",
-			   {800 - window_width, 150, window_width, 200},
-			   {.NO_CLOSE},
-		   ) {
+		if mu.window(ctx, "Input Recording", {800 - window_width, 150, window_width, 200}) {
+			mu.layout_row(ctx, {50, 50})
 
-			frame_history := input_get_frame_history(db_state)
-			for frame, frame_index in frame_history {
-				font := ctx.style.font
-				label := fmt.tprintf("%v", frame)
-
-				text_width := ctx.text_width(font, label)
-				mu.layout_row(ctx, {32, text_width, -1})
-				res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
-				if .SUBMIT in res {
-					#partial switch v in &db_state.playback.state {
-					case VcrPlayback:
-						v.current_index = frame_index
-						fmt.printf("Set current index to %d\n", frame_index)
-					case VcrPaused:
-						v.paused_index = frame_index
-					}
+			#partial switch v in &db_state.playback.state {
+			case VcrPlayback:
+				if mu.button(ctx, "PAUSE", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrPaused{v.current_index}
 				}
+			case VcrPaused:
+				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrPlayback{v.paused_index}
+				}
+			}
 
-				mu.label(ctx, label)
+			if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
+				db_state.playback.state = VcrPlayback{0}
+			}
+
+			if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
+				frame_history := input_get_frame_history(db_state)
+				for frame, frame_index in frame_history {
+					font := ctx.style.font
+					label := fmt.tprintf("%v", frame)
+
+					text_width := ctx.text_width(font, label)
+					mu.layout_row(ctx, {32, text_width, -1})
+					res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
+					if .SUBMIT in res {
+						#partial switch v in &db_state.playback.state {
+						case VcrPlayback:
+							v.current_index = frame_index
+							fmt.printf("Set current index to %d\n", frame_index)
+						case VcrPaused:
+							v.paused_index = frame_index
+						}
+					}
+
+					mu.label(ctx, label)
+				}
 			}
 		}
+
 	}
 }
-
 
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in &state.playback.state {
