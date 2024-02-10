@@ -13,6 +13,7 @@ VcrRecording :: struct {
 	current_frame: game.FrameInput,
 }
 
+// TODO: Remove me, I should just be a variable on Loop and PLayback
 VcrPaused :: struct {
 	current_index: int,
 }
