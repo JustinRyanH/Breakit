@@ -10,7 +10,6 @@ There are the tasks I want to work on next
 ## Core
 
 [ ] Input Recording Test File
-[ ] Steal Zylinski's Leak Detector
 
 ## Nice to Haves
 
@@ -21,14 +20,15 @@ There are the tasks I want to work on next
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
 [ ] If paddle overlaps ball,
-  push the ball out, maybe adjust the velocity a bit too
-[ ] Get all of the Kenny Inputs sized the same
+push the ball out, maybe adjust the velocity a bit too
+[ ] Make a MicroUI style/atlas editor
 
 ## DONE
 
 [x] MicroUI over Raygui
 [x] MVP
 [x] Hot Reloading
+[x] Steal Zylinski's Leak Detector
 
 ## THOUGHTS
 
