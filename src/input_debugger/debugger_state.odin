@@ -1,6 +1,7 @@
 package input
 
 import "core:fmt"
+import "core:math"
 
 import mu "vendor:microui"
 import rl "vendor:raylib"
@@ -65,14 +66,20 @@ input_debugger_query_current_frame :: proc(
 	case VcrRecording:
 		frame_input = v.current_frame
 	case VcrPlayback:
-		idx := v.current_index
-		fmt.println("idx", idx)
+		if len(state.playback.frame_history) == 0 {
+			return
+		}
 
+		idx := v.current_index
 		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
 		current_frame := state.playback.frame_history[idx]
 
 		frame_input = game.FrameInput{previous_frame, current_frame, false}
 	case VcrPaused:
+		if len(state.playback.frame_history) == 0 {
+			return
+		}
+
 		idx := v.paused_index
 		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
 		current_frame := state.playback.frame_history[idx]
@@ -80,6 +87,7 @@ input_debugger_query_current_frame :: proc(
 	}
 	return
 }
+
 
 input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 	return state.playback.frame_history
@@ -109,7 +117,13 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 				mu.layout_row(ctx, {32, text_width, -1})
 				res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
 				if .SUBMIT in res {
-					fmt.println("CLICK ", frame_index)
+					#partial switch v in &db_state.playback.state {
+					case VcrPlayback:
+						v.current_index = frame_index
+						fmt.printf("Set current index to %d\n", frame_index)
+					case VcrPaused:
+						v.paused_index = frame_index
+					}
 				}
 
 				mu.label(ctx, label)
@@ -160,25 +174,28 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 //////////////////////
 
 @(private)
-playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	new_frame := game.UserInput{}
-	new_frame, err = game_input_reader_read_input(&state.reader)
-	if err != nil {
+playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
+	if !state.playback.has_loaded_all_playback {
+		new_frame, err := game_input_reader_read_input(&state.reader)
 		if err == .NoMoreFrames {
 			state.playback.has_loaded_all_playback = true
+		} else if err != nil {
 			return nil
+		} else {
+			append(&state.playback.frame_history, new_frame)
 		}
-		return err
 	}
-	append(&state.playback.frame_history, new_frame)
 	v, ok := &state.playback.state.(VcrPlayback)
 	if ok {
-		v.current_index = len(state.playback.frame_history) - 1
+		len_of_history := len(state.playback.frame_history)
+		if len_of_history == 0 {
+			return nil
+		}
+		v.current_index = math.clamp(v.current_index + 1, 0, len_of_history - 1)
 	}
 
-	state.frame.last_frame = state.frame.current_frame
-	state.frame.current_frame = new_frame
-	return
+	state.frame = input_debugger_query_current_frame(state)
+	return nil
 }
 
 @(private)
@@ -193,6 +210,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	rl.SetTargetFPS(30)
 	state.playback.state = VcrRecording{}
 	clear(&state.playback.frame_history)
+	state.playback.has_loaded_all_playback = false
 	return
 }
 
