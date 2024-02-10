@@ -14,8 +14,7 @@ VcrRecording :: struct {
 }
 
 VcrPaused :: struct {
-	// TODO:: rename me to current_index
-	paused_index: int,
+	current_index: int,
 }
 
 VcrPlayback :: struct {
@@ -68,24 +67,9 @@ input_debugger_query_current_frame :: proc(
 	case VcrRecording:
 		frame_input = v.current_frame
 	case VcrPlayback:
-		if len(state.playback.frame_history) == 0 {
-			return
-		}
-
-		idx := v.current_index
-		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
-		current_frame := state.playback.frame_history[idx]
-
-		frame_input = game.FrameInput{previous_frame, current_frame, false}
+		return frame_at_index(state, v.current_index)
 	case VcrPaused:
-		if len(state.playback.frame_history) == 0 {
-			return
-		}
-
-		idx := v.paused_index
-		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
-		current_frame := state.playback.frame_history[idx]
-		frame_input = game.FrameInput{previous_frame, current_frame, false}
+		return frame_at_index(state, v.current_index)
 	}
 	return
 }
@@ -113,7 +97,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 				}
 			case VcrPaused:
 				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPlayback{v.paused_index}
+					db_state.playback.state = VcrPlayback{v.current_index}
 				}
 			}
 
@@ -139,7 +123,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 							v.current_index = frame_index
 							fmt.printf("Set current index to %d\n", frame_index)
 						case VcrPaused:
-							v.paused_index = frame_index
+							v.current_index = frame_index
 						}
 					}
 
@@ -252,4 +236,16 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	state.playback.state = VcrPlayback{0}
 
 	return
+}
+
+
+@(private = "file")
+frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput {
+	if len(state.playback.frame_history) == 0 {
+		return game.FrameInput{}
+	}
+
+	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
+	current_frame := state.playback.frame_history[idx]
+	return game.FrameInput{previous_frame, current_frame, false}
 }
