@@ -4,9 +4,6 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Input Recording
-[ ] Input Playback
-
 ## Core
 
 [ ] Input Recording Test File
@@ -29,6 +26,8 @@ push the ball out, maybe adjust the velocity a bit too
 [x] MVP
 [x] Hot Reloading
 [x] Steal Zylinski's Leak Detector
+[x] Input Recording
+[x] Input Playback
 
 ## THOUGHTS
 
