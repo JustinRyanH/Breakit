@@ -20,12 +20,14 @@ VcrPaused :: struct {
 
 VcrPlayback :: struct {
 	current_index: int,
+	paused:        bool,
 }
 
 VcrLoop :: struct {
 	current_index: int,
 	start_index:   int,
 	end_index:     int,
+	paused:        bool,
 }
 
 PlaybackState :: union {
@@ -115,17 +117,19 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 						0,
 						0,
 						len(db_state.playback.frame_history) - 1,
+            false
 					}
 				}
 			case VcrPaused:
 				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPlayback{v.current_index}
+					db_state.playback.state = VcrPlayback{v.current_index, false}
 				}
 				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
 					db_state.playback.state = VcrLoop {
 						0,
 						0,
 						len(db_state.playback.frame_history) - 1,
+            false,
 					}
 				}
 
@@ -140,7 +144,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 					db_state.playback.state = VcrPaused{v.current_index}
 				}
 				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPlayback{v.current_index}
+					db_state.playback.state = VcrPlayback{v.current_index, false}
 				}
 
 				mu.slider(ctx, &slider_start, 0, 50, 1, "Start Frame: %.0f")
@@ -150,7 +154,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 
 			if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
-				db_state.playback.state = VcrPlayback{0}
+				db_state.playback.state = VcrPlayback{0, false}
 			}
 
 			if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
@@ -288,7 +292,7 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	}
 
 	rl.SetTargetFPS(120)
-	state.playback.state = VcrPlayback{0}
+	state.playback.state = VcrPlayback{0, false}
 
 	return
 }
