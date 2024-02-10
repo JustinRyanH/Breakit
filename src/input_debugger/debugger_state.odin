@@ -21,10 +21,17 @@ VcrPlayback :: struct {
 	current_index: int,
 }
 
+VcrLoop :: struct {
+	current_index: int,
+	start_index:   int,
+	end_index:     int,
+}
+
 PlaybackState :: union {
 	VcrRecording,
 	VcrPaused,
 	VcrPlayback,
+	VcrLoop,
 }
 
 
@@ -37,11 +44,10 @@ VcrState :: struct {
 FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
-	writer:         GameInputWriter,
-	reader:         GameInputReader,
-	frame:          game.FrameInput,
-	playback:       VcrState,
-	playback_start: f32,
+	writer:   GameInputWriter,
+	reader:   GameInputReader,
+	frame:    game.FrameInput,
+	playback: VcrState,
 }
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
@@ -70,6 +76,8 @@ input_debugger_query_current_frame :: proc(
 		return frame_at_index(state, v.current_index)
 	case VcrPaused:
 		return frame_at_index(state, v.current_index)
+	case VcrLoop:
+		return frame_at_index(state, v.current_index)
 	}
 	return
 }
@@ -94,25 +102,55 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 			   {800 - window_width, 0, window_width, window_height},
 			   {.NO_CLOSE},
 		   ) {
-			mu.layout_row(ctx, {50, 50, 75})
+			mu.layout_row(ctx, {50, 50, 75, 75, 50})
 
 			#partial switch v in &db_state.playback.state {
 			case VcrPlayback:
 				if mu.button(ctx, "PAUSE", .NONE) == {.SUBMIT} {
 					db_state.playback.state = VcrPaused{v.current_index}
 				}
+				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrLoop {
+						0,
+						0,
+						len(db_state.playback.frame_history) - 1,
+					}
+				}
 			case VcrPaused:
 				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
 					db_state.playback.state = VcrPlayback{v.current_index}
 				}
+				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrLoop {
+						0,
+						0,
+						len(db_state.playback.frame_history) - 1,
+					}
+				}
+
+			case VcrLoop:
+				@(static)
+				slider_start: mu.Real
+
+				@(static)
+				slider_end: mu.Real
+
+				if mu.button(ctx, "PAUSE", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrPaused{v.current_index}
+				}
+				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
+					db_state.playback.state = VcrPlayback{v.current_index}
+				}
+
+				mu.slider(ctx, &slider_start, 0, 50, 1, "Start Frame: %.0f")
+				mu.slider(ctx, &slider_end, 50, 100, 1, "End Frame: %.0f")
+
 			}
 
 
 			if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
 				db_state.playback.state = VcrPlayback{0}
 			}
-
-			mu.slider(ctx, &db_state.playback_start, 0, 100, 1, "Start Frame: %.0f")
 
 			if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
 				frame_history := input_get_frame_history(db_state)
@@ -160,6 +198,14 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		return playback_input(state)
 	case VcrPaused:
 		rl.DrawText("Paused", 10, 30, 20, rl.RED)
+	case VcrLoop:
+		rl.DrawText(
+			fmt.ctprintf("Looping from %d to %d", s.start_index, s.end_index),
+			10,
+			30,
+			20,
+			rl.RED,
+		)
 	}
 	return nil
 }
@@ -171,6 +217,9 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 	case VcrPlayback:
 		return toggle_recording(state)
 	case VcrPaused:
+		return toggle_recording(state)
+	case VcrLoop:
+		return toggle_recording(state)
 	}
 	return nil
 }

@@ -24,7 +24,8 @@ db_state: InputDebuggerState
 // [x] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
 // [x] Display the same keys being hit on the playback side
 // [ ] Set up Playback tools to loop, pause, and replay
-// [ ] Create a raygui list of files in the logs directory
+//    [ ] Refactor: Move away from pause struct into a boolean on loop and playback
+// [ ] Create a mui list of files in the logs directory
 // [ ] Allow selecting a file to play back
 
 
