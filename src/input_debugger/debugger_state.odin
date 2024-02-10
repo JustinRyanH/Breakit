@@ -85,9 +85,15 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 	defer mu.end(ctx)
 
 	window_width: i32 = 400
+	window_height: i32 = 450
 
 	if !input_debugger_query_if_recording(db_state) {
-		if mu.window(ctx, "Input Recording", {800 - window_width, 150, window_width, 200}) {
+		if mu.window(
+			   ctx,
+			   "Input Recording",
+			   {800 - window_width, 0, window_width, window_height},
+			   {.NO_CLOSE},
+		   ) {
 			mu.layout_row(ctx, {50, 50, 75})
 
 			#partial switch v in &db_state.playback.state {
