@@ -37,10 +37,11 @@ VcrState :: struct {
 FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
-	writer:   GameInputWriter,
-	reader:   GameInputReader,
-	frame:    game.FrameInput,
-	playback: VcrState,
+	writer:         GameInputWriter,
+	reader:         GameInputReader,
+	frame:          game.FrameInput,
+	playback:       VcrState,
+	playback_start: f32,
 }
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
@@ -102,7 +103,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 	if !input_debugger_query_if_recording(db_state) {
 		if mu.window(ctx, "Input Recording", {800 - window_width, 150, window_width, 200}) {
-			mu.layout_row(ctx, {50, 50})
+			mu.layout_row(ctx, {50, 50, 75})
 
 			#partial switch v in &db_state.playback.state {
 			case VcrPlayback:
@@ -115,9 +116,12 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 				}
 			}
 
+
 			if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
 				db_state.playback.state = VcrPlayback{0}
 			}
+
+			mu.slider(ctx, &db_state.playback_start, 0, 100, 1, "Start Frame: %.0f")
 
 			if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
 				frame_history := input_get_frame_history(db_state)
