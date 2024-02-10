@@ -33,9 +33,7 @@ tasks:
     generates:
       - bin/input
     sources:
-      - ./src/input_debugger/**/*.odin
-      - ./src/game/**/*.odin
-      - ./src/raylib_platform/**/*.odin
+      - ./src/**/*.odin
 
   game:
     deps: [test]
