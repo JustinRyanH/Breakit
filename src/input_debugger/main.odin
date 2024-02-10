@@ -73,6 +73,14 @@ main :: proc() {
 		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
 		input_debugger_gui(&db_state, ctx)
+		
+    if rl.IsKeyPressed(.F5) {
+			err = input_debugger_toggle_playback(&db_state)
+			if err != nil {
+				fmt.printf("Error: %v", err)
+				return
+			}
+		}
 
 		err := read_write_frame(&db_state)
 		if err != nil {
@@ -80,13 +88,6 @@ main :: proc() {
 			return
 		}
 
-		if rl.IsKeyPressed(.F5) {
-			err = input_debugger_toggle_playback(&db_state)
-			if err != nil {
-				fmt.printf("Error: %v", err)
-				return
-			}
-		}
 
 		if rl.WindowShouldClose() {
 			break

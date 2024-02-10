@@ -9,7 +9,7 @@ import game "../game"
 import rl_platform "../raylib_platform"
 
 VcrRecording :: struct {
-    current_frame: game.FrameInput,
+	current_frame: game.FrameInput,
 }
 
 VcrPaused :: struct {
@@ -52,16 +52,33 @@ input_debugger_teardown :: proc(state: ^InputDebuggerState) {
 }
 
 input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
-  _, ok := state.playback.state.(VcrRecording)
-  return ok
+	_, ok := state.playback.state.(VcrRecording)
+	return ok
 }
 
-input_debugger_query_current_frame :: proc(state: ^InputDebuggerState) -> game.FrameInput {
-  #partial switch v in state.playback.state {
-      case VcrRecording:
-        return v.current_frame
-  }
-	return state.frame
+input_debugger_query_current_frame :: proc(
+	state: ^InputDebuggerState,
+) -> (
+	frame_input: game.FrameInput,
+) {
+	switch v in state.playback.state {
+	case VcrRecording:
+		frame_input = v.current_frame
+	case VcrPlayback:
+		idx := v.current_index
+		fmt.println("idx", idx)
+
+		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
+		current_frame := state.playback.frame_history[idx]
+
+		frame_input = game.FrameInput{previous_frame, current_frame, false}
+	case VcrPaused:
+		idx := v.paused_index
+		previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
+		current_frame := state.playback.frame_history[idx]
+		frame_input = game.FrameInput{previous_frame, current_frame, false}
+	}
+	return
 }
 
 input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
@@ -105,14 +122,14 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
-    state.frame = rl_platform.update_frame(state.frame)
-    s.current_frame = state.frame
-    err := game_input_writer_insert_frame(&state.writer, state.frame)
-    if err != nil {
-      return err
-    }
-    rl.DrawText("Recording", 10, 30, 20, rl.RED)
-    return nil
+		state.frame = rl_platform.update_frame(state.frame)
+		s.current_frame = state.frame
+		err := game_input_writer_insert_frame(&state.writer, state.frame)
+		if err != nil {
+			return err
+		}
+		rl.DrawText("Recording", 10, 30, 20, rl.RED)
+		return nil
 	case VcrPlayback:
 		if state.playback.has_loaded_all_playback {
 			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
@@ -154,6 +171,11 @@ playback_input :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 		return err
 	}
 	append(&state.playback.frame_history, new_frame)
+	v, ok := &state.playback.state.(VcrPlayback)
+	if ok {
+		v.current_index = len(state.playback.frame_history) - 1
+	}
+
 	state.frame.last_frame = state.frame.current_frame
 	state.frame.current_frame = new_frame
 	return
