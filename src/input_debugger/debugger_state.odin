@@ -121,7 +121,6 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 						#partial switch v in &db_state.playback.state {
 						case VcrPlayback:
 							v.current_index = frame_index
-							fmt.printf("Set current index to %d\n", frame_index)
 						case VcrPaused:
 							v.current_index = frame_index
 						}
@@ -152,9 +151,9 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		} else {
 			rl.DrawText("Playback", 10, 30, 20, rl.RED)
 		}
-
 		return playback_input(state)
 	case VcrPaused:
+		rl.DrawText("Paused", 10, 30, 20, rl.RED)
 	}
 	return nil
 }
