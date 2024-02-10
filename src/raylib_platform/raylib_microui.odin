@@ -3,8 +3,9 @@ package platform_raylib
 import "core:strings"
 import "core:unicode/utf8"
 
-import mu "vendor:microui"
 import rl "vendor:raylib"
+
+import mu "../microui"
 
 pixels: [][4]u8
 atlas: rl.Texture

@@ -3,10 +3,10 @@ package input
 import "core:fmt"
 import "core:math"
 
-import mu "vendor:microui"
 import rl "vendor:raylib"
 
 import game "../game"
+import mu "../microui"
 import rl_platform "../raylib_platform"
 
 VcrRecording :: struct {

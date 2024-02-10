@@ -4,10 +4,10 @@ import "core:fmt"
 import math "core:math/linalg"
 import "core:os"
 
-import mu "vendor:microui"
 import rl "vendor:raylib"
 
 import game "../game"
+import mu "../microui"
 import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 
@@ -73,8 +73,8 @@ main :: proc() {
 		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
 		input_debugger_gui(&db_state, ctx)
-		
-    if rl.IsKeyPressed(.F5) {
+
+		if rl.IsKeyPressed(.F5) {
 			err = input_debugger_toggle_playback(&db_state)
 			if err != nil {
 				fmt.printf("Error: %v", err)
