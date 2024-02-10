@@ -10,10 +10,10 @@ There are the tasks I want to work on next
 
 ## Nice to Haves
 
-[ ] Particles on Hit
 [ ] Input Recording, Stream Compress/Decompress
 [ ] Start Menu
 [ ] Start Menu with Keyboard Selectable Options
+[ ] Particles on Hit
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
 [ ] If paddle overlaps ball,
