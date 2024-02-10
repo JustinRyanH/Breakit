@@ -4,6 +4,8 @@ There are the tasks I want to work on next
 
 ## Active
 
+[ ] Harden the UI for the Input Debugger
+
 ## Core
 
 [ ] Input Recording Test File
