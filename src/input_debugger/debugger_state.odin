@@ -14,6 +14,7 @@ VcrRecording :: struct {
 }
 
 VcrPaused :: struct {
+	// TODO:: rename me to current_index
 	paused_index: int,
 }
 
