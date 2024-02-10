@@ -13,11 +13,6 @@ VcrRecording :: struct {
 	current_frame: game.FrameInput,
 }
 
-// TODO: Remove me, I should just be a variable on Loop and PLayback
-VcrPaused :: struct {
-	current_index: int,
-}
-
 VcrPlayback :: struct {
 	current_index: int,
 	paused:        bool,
@@ -32,7 +27,6 @@ VcrLoop :: struct {
 
 PlaybackState :: union {
 	VcrRecording,
-	VcrPaused,
 	VcrPlayback,
 	VcrLoop,
 }
@@ -77,8 +71,6 @@ input_debugger_query_current_frame :: proc(
 		frame_input = v.current_frame
 	case VcrPlayback:
 		return frame_at_index(state, v.current_index)
-	case VcrPaused:
-		return frame_at_index(state, v.current_index)
 	case VcrLoop:
 		return frame_at_index(state, v.current_index)
 	}
@@ -109,27 +101,17 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 			#partial switch v in &db_state.playback.state {
 			case VcrPlayback:
-				if mu.button(ctx, "PAUSE", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPaused{v.current_index}
+				// FIX: This is backwards
+				txt := "PAUSED" if v.paused else "RESUME"
+				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
+					v.paused = !v.paused
 				}
 				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
 					db_state.playback.state = VcrLoop {
 						0,
 						0,
 						len(db_state.playback.frame_history) - 1,
-            false
-					}
-				}
-			case VcrPaused:
-				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPlayback{v.current_index, false}
-				}
-				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrLoop {
-						0,
-						0,
-						len(db_state.playback.frame_history) - 1,
-            false,
+						false,
 					}
 				}
 
@@ -140,11 +122,9 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 				@(static)
 				slider_end: mu.Real
 
-				if mu.button(ctx, "PAUSE", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPaused{v.current_index}
-				}
-				if mu.button(ctx, "RESUME", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrPlayback{v.current_index, false}
+				txt := "PAUSED" if v.paused else "RESUME"
+				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
+					v.paused = !v.paused
 				}
 
 				mu.slider(ctx, &slider_start, 0, 50, 1, "Start Frame: %.0f")
@@ -157,6 +137,7 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 				db_state.playback.state = VcrPlayback{0, false}
 			}
 
+			// FIX:  This is no longer displaying
 			if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
 				frame_history := input_get_frame_history(db_state)
 				for frame, frame_index in frame_history {
@@ -170,12 +151,10 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 						#partial switch v in &db_state.playback.state {
 						case VcrPlayback:
 							v.current_index = frame_index
-						case VcrPaused:
-							v.current_index = frame_index
 						}
-					}
 
-					mu.label(ctx, label)
+						mu.label(ctx, label)
+					}
 				}
 			}
 		}
@@ -201,8 +180,6 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 			rl.DrawText("Playback", 10, 30, 20, rl.RED)
 		}
 		return playback_input(state)
-	case VcrPaused:
-		rl.DrawText("Paused", 10, 30, 20, rl.RED)
 	case VcrLoop:
 		rl.DrawText(
 			fmt.ctprintf("Looping from %d to %d", s.start_index, s.end_index),
@@ -220,8 +197,6 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 	case VcrRecording:
 		return toggle_playback(state)
 	case VcrPlayback:
-		return toggle_recording(state)
-	case VcrPaused:
 		return toggle_recording(state)
 	case VcrLoop:
 		return toggle_recording(state)
