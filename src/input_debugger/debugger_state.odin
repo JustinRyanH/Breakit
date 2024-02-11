@@ -103,7 +103,7 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 			#partial switch v in &state.playback.state {
 			case VcrPlayback:
 				mu.layout_row(ctx, {50, 50, 50})
-				txt := "PAUSED" if !v.active else "RESUME"
+				txt := "PAUSE" if v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
 				}
@@ -119,7 +119,7 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 			case VcrLoop:
 				mu.layout_row(ctx, {50, 50, 100, 100, 50})
-				txt := "PAUSED" if !v.active else "RESUME"
+				txt := "PAUSE" if v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
 				}
@@ -129,7 +129,6 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 				}
 
 				fh_len := frame_history_len(state)
-
 
 				slider_res := mu.slider(
 					ctx,
@@ -204,12 +203,18 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		return playback_input(state)
 	case VcrLoop:
 		rl.DrawText(
-			fmt.ctprintf("Looping from %d to %d", s.start_index, s.end_index),
+			fmt.ctprintf(
+				"Looping from %d to %d: frame %d",
+				s.start_index,
+				s.end_index,
+				s.current_index,
+			),
 			10,
 			30,
 			20,
 			rl.RED,
 		)
+		return playback_input(state)
 	}
 	return nil
 }
@@ -243,13 +248,33 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 			append(&state.playback.frame_history, new_frame)
 		}
 	}
-	v, ok := &state.playback.state.(VcrPlayback)
-	if ok {
+	#partial switch v in &state.playback.state {
+	case VcrPlayback:
+		if !v.active {
+			return nil
+		}
 		len_of_history := frame_history_len(state)
 		if len_of_history == 0 {
 			return nil
 		}
-		v.current_index = math.clamp(v.current_index + 1, 0, len_of_history - 1)
+		v.current_index += 1
+		if v.current_index >= len_of_history {
+			v.current_index = 0
+			v.active = false
+		}
+	case VcrLoop:
+		if !v.active {
+			return nil
+		}
+		len_of_history := frame_history_len(state)
+		if len_of_history == 0 {
+			return nil
+		}
+
+		v.current_index += 1
+		if v.current_index > v.end_index {
+			v.current_index = v.start_index
+		}
 	}
 
 	state.frame = input_debugger_query_current_frame(state)
