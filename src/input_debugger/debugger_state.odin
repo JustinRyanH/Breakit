@@ -102,7 +102,7 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 			#partial switch v in &state.playback.state {
 			case VcrPlayback:
-				mu.layout_row(ctx, {50, 50, 75, 75, 50})
+				mu.layout_row(ctx, {50, 50, 50})
 				txt := "PAUSED" if !v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
@@ -118,31 +118,41 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 				}
 
 			case VcrLoop:
-				mu.layout_row(ctx, {50, 50, 75, 75, 50})
+				mu.layout_row(ctx, {50, 50, 100, 100, 50})
 				txt := "PAUSED" if !v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
 				}
 
+				if mu.button(ctx, "Back", .NONE) == {.SUBMIT} {
+					state.playback.state = VcrPlayback{v.current_index, v.active}
+				}
+
 				fh_len := frame_history_len(state)
 
 
-				mu.slider(
+				slider_res := mu.slider(
 					ctx,
 					&state.playback.loop_min,
 					0,
-					cast(mu.Real)v.end_index,
+					cast(mu.Real)v.end_index - 1 if v.end_index != 0 else 0,
 					1,
 					"Start Frame: %.0f",
 				)
-				mu.slider(
+				if .CHANGE in slider_res {
+					v.start_index = cast(int)state.playback.loop_min
+				}
+				slider_res = mu.slider(
 					ctx,
 					&state.playback.loop_max,
-					cast(mu.Real)v.start_index + 1,
+					cast(mu.Real)v.start_index + 1 if fh_len != 0 else 0,
 					cast(mu.Real)fh_len,
 					1,
 					"End Frame: %.0f",
 				)
+				if .CHANGE in slider_res {
+					v.end_index = cast(int)state.playback.loop_max
+				}
 
 				if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
 					state.playback.state = VcrPlayback{0, false}
