@@ -174,6 +174,7 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 						#partial switch v in &state.playback.state {
 						case VcrPlayback:
 							v.current_index = frame_index
+							v.active = true
 						}
 					}
 				}
@@ -196,9 +197,9 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		return nil
 	case VcrPlayback:
 		if state.playback.has_loaded_all_playback {
-			rl.DrawText("Playback Finished", 10, 30, 20, rl.RED)
+			rl.DrawText("Playback Loaded", 10, 30, 20, rl.RED)
 		} else {
-			rl.DrawText("Playback", 10, 30, 20, rl.RED)
+			rl.DrawText("Playback Loading", 10, 30, 20, rl.RED)
 		}
 		return playback_input(state)
 	case VcrLoop:
@@ -239,13 +240,16 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 @(private)
 playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 	if !state.playback.has_loaded_all_playback {
-		new_frame, err := game_input_reader_read_input(&state.reader)
-		if err == .NoMoreFrames {
-			state.playback.has_loaded_all_playback = true
-		} else if err != nil {
-			return nil
-		} else {
-			append(&state.playback.frame_history, new_frame)
+		for i := 0; i < 30; i += 1 {
+			new_frame, err := game_input_reader_read_input(&state.reader)
+			if err == .NoMoreFrames {
+				state.playback.has_loaded_all_playback = true
+				break
+			} else if err != nil {
+				return nil
+			} else {
+				append(&state.playback.frame_history, new_frame)
+			}
 		}
 	}
 	#partial switch v in &state.playback.state {
@@ -290,7 +294,6 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	}
 	state.frame = rl_platform.update_frame(game.FrameInput{})
 	game_input_writer_insert_frame(&state.writer, state.frame)
-	rl.SetTargetFPS(30)
 	state.playback.state = VcrRecording{}
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
@@ -313,7 +316,6 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 		return err
 	}
 
-	rl.SetTargetFPS(120)
 	state.playback.state = VcrPlayback{0, false}
 
 	return
