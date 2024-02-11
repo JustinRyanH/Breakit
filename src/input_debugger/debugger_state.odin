@@ -36,6 +36,8 @@ VcrState :: struct {
 	frame_history:           FrameHistory,
 	state:                   PlaybackState,
 	has_loaded_all_playback: bool,
+	loop_min:                mu.Real,
+	loop_max:                mu.Real,
 }
 
 FrameHistory :: [dynamic]game.UserInput
@@ -106,27 +108,19 @@ input_debugger_gui :: proc(db_state: ^InputDebuggerState, ctx: ^mu.Context) {
 					v.active = !v.active
 				}
 				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
-					db_state.playback.state = VcrLoop {
-						0,
-						0,
-						len(db_state.playback.frame_history) - 1,
-						false,
-					}
+					fh_len := frame_history_len(db_state)
+					db_state.playback.state = VcrLoop{0, 0, fh_len - 1, false}
+					db_state.playback.loop_min = cast(f32)0
+					db_state.playback.loop_max = cast(f32)fh_len - 1
 				}
 
 			case VcrLoop:
-				@(static)
-				slider_start: mu.Real
-
-				@(static)
-				slider_end: mu.Real
-
 				txt := "PAUSED" if !v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
 				}
-				mu.slider(ctx, &slider_start, 0, 50, 1, "Start Frame: %.0f")
-				mu.slider(ctx, &slider_end, 50, 100, 1, "End Frame: %.0f")
+				mu.slider(ctx, &db_state.playback.loop_min, 0, 50, 1, "Start Frame: %.0f")
+				mu.slider(ctx, &db_state.playback.loop_max, 50, 100, 1, "End Frame: %.0f")
 
 			}
 
@@ -220,7 +214,7 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 	}
 	v, ok := &state.playback.state.(VcrPlayback)
 	if ok {
-		len_of_history := len(state.playback.frame_history)
+		len_of_history := frame_history_len(state)
 		if len_of_history == 0 {
 			return nil
 		}
@@ -272,11 +266,17 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 
 @(private = "file")
 frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput {
-	if len(state.playback.frame_history) == 0 {
+	if frame_history_len(state) == 0 {
 		return game.FrameInput{}
 	}
 
 	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
 	current_frame := state.playback.frame_history[idx]
 	return game.FrameInput{previous_frame, current_frame, false}
+}
+
+
+@(private = "file")
+frame_history_len :: proc(state: ^InputDebuggerState) -> int {
+	return len(state.playback.frame_history)
 }
