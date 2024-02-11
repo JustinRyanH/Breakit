@@ -71,7 +71,6 @@ main :: proc() {
 	defer input_rep_cleanup_all()
 
 	for {
-		defer free_all(context.temp_allocator)
 		rl_platform.load_input(ctx)
 		input_debugger_gui(&db_state, ctx)
 
@@ -107,5 +106,6 @@ main :: proc() {
 
 		rl_platform.render_ui(ctx)
 
+		free_all(context.temp_allocator)
 	}
 }
