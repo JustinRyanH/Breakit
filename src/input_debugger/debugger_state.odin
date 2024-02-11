@@ -102,7 +102,7 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 			#partial switch v in &state.playback.state {
 			case VcrPlayback:
-				mu.layout_row(ctx, {50, 50, 50})
+				mu.layout_row(ctx, {50, 50, 50, 50})
 				txt := "PAUSE" if v.active else "RESUME"
 				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
 					v.active = !v.active
@@ -113,6 +113,8 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 					state.playback.loop_min = cast(f32)0
 					state.playback.loop_max = cast(f32)fh_len - 1
 				}
+				if mu.button(ctx, "STEP", .NONE) == {.SUBMIT} {}
+
 				if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
 					state.playback.state = VcrPlayback{0, false}
 				}
@@ -257,15 +259,7 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 		if !v.active {
 			return nil
 		}
-		len_of_history := frame_history_len(state)
-		if len_of_history == 0 {
-			return nil
-		}
-		v.current_index += 1
-		if v.current_index >= len_of_history {
-			v.current_index = 0
-			v.active = false
-		}
+		step_playback(state, &v)
 	case VcrLoop:
 		if !v.active {
 			return nil
@@ -283,6 +277,18 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 
 	state.frame = input_debugger_query_current_frame(state)
 	return nil
+}
+
+step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
+	len_of_history := frame_history_len(state)
+	if len_of_history == 0 {
+		return
+	}
+	v.current_index += 1
+	if v.current_index >= len_of_history {
+		v.current_index = 0
+		v.active = false
+	}
 }
 
 @(private)
