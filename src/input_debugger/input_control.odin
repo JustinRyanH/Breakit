@@ -325,16 +325,15 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	return nil
 }
 
-input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) {
 	switch s in state.playback.state {
 	case VcrRecording:
-		return toggle_playback(state)
+		toggle_playback(state)
 	case VcrPlayback:
-		return toggle_recording(state)
+		toggle_recording(state)
 	case VcrLoop:
-		return toggle_recording(state)
+		toggle_recording(state)
 	}
-	return nil
 }
 
 
@@ -396,21 +395,18 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 }
 
 @(private)
-toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+toggle_recording :: proc(state: ^InputDebuggerState) {
 	input_file_new_file(&state.ifs)
-	// TODO: Defer close on error
 	input_file_begin_write(&state.ifs)
 
 	new_frame := rl_platform.update_frame(game.FrameInput{})
 	state.playback.state = VcrRecording{new_frame}
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
-	return
 }
 
 @(private)
-toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	// TODO: Defer close on error
+toggle_playback :: proc(state: ^InputDebuggerState) {
 	input_file_begin_read(&state.ifs)
 
 	new_frame := game.UserInput{}
