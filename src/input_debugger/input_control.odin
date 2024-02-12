@@ -45,19 +45,36 @@ VcrState :: struct {
 
 InputFileSystem :: struct {
 	current_file: string,
+	io:           GameInputIO,
 }
 
 // We are going to free the previous file,
 // so let's start with a copy of empty string instead of a static
-input_file_system_setup :: proc(ifs: ^InputFileSystem) {
+input_file_setup :: proc(ifs: ^InputFileSystem) {
 	ifs.current_file = strings.clone("")
 }
 
-input_file_system_new_file :: proc(ifs: ^InputFileSystem) {
+input_file_new_file :: proc(ifs: ^InputFileSystem) {
 	old_str := ifs.current_file
 	now := time.to_unix_seconds(time.now())
 	log_name := fmt.tprintf("logs/file-%d.ilog", now)
 	ifs.current_file = strings.clone(log_name)
+}
+
+input_file_begin_write :: proc(ifs: ^InputFileSystem) {
+	game_input_close(&ifs.io)
+
+	new_writer := game_input_writer_create(ifs.current_file)
+	game_input_writer_open(&new_writer)
+	ifs.io = new_writer
+}
+
+input_file_begin_read :: proc(ifs: ^InputFileSystem) {
+	game_input_close(&ifs.io)
+
+	new_reader := game_input_reader_create(ifs.current_file)
+	game_input_reader_open(&new_reader)
+	ifs.io = new_reader
 }
 
 
@@ -135,7 +152,7 @@ gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 	mu.layout_row(ctx, {100})
 	button_res := mu.button(ctx, "Start New File")
 	if .SUBMIT in button_res {
-		input_file_system_new_file(&state.ifs)
+		input_file_new_file(&state.ifs)
 	}
 
 	header_res := mu.header(ctx, "Input Files", {.CLOSED})

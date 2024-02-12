@@ -53,7 +53,9 @@ main :: proc() {
 
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
-	input_file_system_setup(&db_state.ifs)
+	input_file_setup(&db_state.ifs)
+	input_file_new_file(&db_state.ifs)
+	input_file_begin_write(&db_state.ifs)
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
@@ -73,6 +75,7 @@ main :: proc() {
 
 	for {
 		rl_platform.load_input(mu_ctx)
+
 		input_debugger_gui(db_state, mu_ctx)
 
 		if rl.IsKeyPressed(.F5) {
@@ -99,8 +102,8 @@ main :: proc() {
 		defer rl.EndDrawing()
 		rl.ClearBackground(rl.BLACK)
 
+		current_frame := input_debugger_query_current_frame(db_state)
 		for _, i in input_reps {
-			current_frame := input_debugger_query_current_frame(db_state)
 			input_rep_record_input(&input_reps[i], current_frame)
 			input_rep_draw_all(&input_reps[i])
 		}
