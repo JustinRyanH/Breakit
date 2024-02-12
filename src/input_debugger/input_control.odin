@@ -47,14 +47,28 @@ InputFileSystem :: struct {
 	current_file: string,
 }
 
+// We are going to free the previous file,
+// so let's start with a copy of empty string instead of a static
+input_file_system_setup :: proc(ifs: ^InputFileSystem) {
+	ifs.current_file = strings.clone("")
+}
+
+input_file_system_new_file :: proc(ifs: ^InputFileSystem) {
+	old_str := ifs.current_file
+	now := time.to_unix_seconds(time.now())
+	log_name := fmt.tprintf("logs/file-%d.ilog", now)
+	ifs.current_file = strings.clone(log_name)
+}
+
+
 FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
-	input_file_system: InputFileSystem,
-	writer:            GameInputWriter,
-	reader:            GameInputReader,
-	frame:             game.FrameInput,
-	playback:          VcrState,
+	ifs:      InputFileSystem,
+	writer:   GameInputWriter,
+	reader:   GameInputReader,
+	frame:    game.FrameInput,
+	playback: VcrState,
 }
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
@@ -117,14 +131,11 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 	mu.layout_row(ctx, {-1})
-	mu.label(ctx, fmt.tprintf("Loaded File: %s", state.input_file_system.current_file))
+	mu.label(ctx, fmt.tprintf("Loaded File: %s", state.ifs.current_file))
 	mu.layout_row(ctx, {100})
 	button_res := mu.button(ctx, "Start New File")
 	if .SUBMIT in button_res {
-		old_str := state.input_file_system.current_file
-		now := time.to_unix_seconds(time.now())
-		log_name := fmt.tprintf("file-%d.ilog", now)
-		state.input_file_system.current_file = strings.clone(log_name)
+		input_file_system_new_file(&state.ifs)
 	}
 
 	header_res := mu.header(ctx, "Input Files", {.CLOSED})
