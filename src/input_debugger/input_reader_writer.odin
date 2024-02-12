@@ -52,6 +52,11 @@ GameInputWriter :: struct {
 	header:      InputFileHeader,
 }
 
+GameInputFile :: union {
+	GameInputReader,
+	GameInputWriter,
+}
+
 // Create Input Reader, does not open the file
 game_input_reader_create :: proc(file_path: string) -> (reader: GameInputReader) {
 	reader.file_path = file_path
