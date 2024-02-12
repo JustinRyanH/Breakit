@@ -290,6 +290,7 @@ gui_frame_list :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
+	draw_frame(state)
 	switch s in &state.playback.state {
 	case VcrRecording:
 		new_frame := rl_platform.update_frame(s.current_frame)
@@ -323,6 +324,33 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		return playback_input(state)
 	}
 	return nil
+}
+
+draw_frame :: proc(state: ^InputDebuggerState) {
+	switch s in state.playback.state {
+	case VcrRecording:
+		rl.DrawText("Recording", 10, 30, 20, rl.RED)
+	case VcrPlayback:
+		if state.playback.has_loaded_all_playback {
+			rl.DrawText("Playback Loaded", 10, 30, 20, rl.RED)
+		} else {
+			rl.DrawText("Playback Loading", 10, 30, 20, rl.RED)
+		}
+	case VcrLoop:
+		rl.DrawText(
+			fmt.ctprintf(
+				"Looping from %d to %d: frame %d",
+				s.start_index,
+				s.end_index,
+				s.current_index,
+			),
+			10,
+			30,
+			20,
+			rl.RED,
+		)
+	}
+
 }
 
 input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) {
