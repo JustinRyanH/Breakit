@@ -40,13 +40,18 @@ VcrState :: struct {
 	loop_max:                mu.Real,
 }
 
+InputFileSystem :: struct {
+	current_file: string,
+}
+
 FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
-	writer:   GameInputWriter,
-	reader:   GameInputReader,
-	frame:    game.FrameInput,
-	playback: VcrState,
+	input_file_system: InputFileSystem,
+	writer:            GameInputWriter,
+	reader:            GameInputReader,
+	frame:             game.FrameInput,
+	playback:          VcrState,
 }
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
@@ -99,6 +104,10 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 			   {800 - window_width, 0, window_width, window_height},
 			   {.NO_CLOSE},
 		   ) {
+
+			mu.layout_row(ctx, {-1})
+			mu.label(ctx, fmt.tprintf("Loaded File: %s", state.input_file_system.current_file))
+
 
 			#partial switch v in &state.playback.state {
 			case VcrPlayback:

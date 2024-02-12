@@ -52,6 +52,7 @@ main :: proc() {
 
 	db_state.writer = game_input_writer_create("logs/input.log")
 	db_state.reader = game_input_reader_create("logs/input.log")
+	db_state.input_file_system.current_file = "logs/input.log"
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
