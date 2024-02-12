@@ -195,22 +195,25 @@ gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 }
 
 gui_frame_list :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
-	if mu.header(ctx, "Frame List", {.CLOSED}) == {.ACTIVE} {
-		frame_history := input_get_frame_history(state)
-		for frame, frame_index in frame_history {
-			font := ctx.style.font
-			label := fmt.tprintf("%v", frame)
+	res := mu.header(ctx, "Frame List", {.CLOSED})
+	if .ACTIVE not_in res {
+		return
+	}
 
-			text_width := ctx.text_width(font, label)
-			mu.layout_row(ctx, {32, text_width, -1})
-			res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
+	frame_history := input_get_frame_history(state)
+	for frame, frame_index in frame_history {
+		font := ctx.style.font
+		label := fmt.tprintf("%v", frame)
 
-			mu.label(ctx, label)
-			if .SUBMIT in res {
-				#partial switch v in &state.playback.state {
-				case VcrPlayback:
-					v.current_index = frame_index
-				}
+		text_width := ctx.text_width(font, label)
+		mu.layout_row(ctx, {32, text_width, -1})
+		res := mu.button(ctx, fmt.tprintf("%d", frame_index), .NONE)
+
+		mu.label(ctx, label)
+		if .SUBMIT in res {
+			#partial switch v in &state.playback.state {
+			case VcrPlayback:
+				v.current_index = frame_index
 			}
 		}
 	}
