@@ -11,6 +11,7 @@ import game "../game"
 import mu "../microui"
 import rl_platform "../raylib_platform"
 
+
 VcrRecording :: struct {
 	current_frame: game.FrameInput,
 }
