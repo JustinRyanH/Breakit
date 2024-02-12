@@ -111,80 +111,85 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 				mu.header(ctx, "Load Files", {.CLOSED})
 			}
 
-			#partial switch v in &state.playback.state {
-			case VcrPlayback:
-				mu.layout_row(ctx, {50, 50, 50, 50})
-				if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
-					fh_len := frame_history_len(state)
-					state.playback.state = VcrLoop{0, 0, fh_len - 1, false}
-					state.playback.loop_min = cast(f32)0
-					state.playback.loop_max = cast(f32)fh_len - 1
-				}
 
-				txt := "PAUSE" if v.active else "RESUME"
-				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
-					v.active = !v.active
-				}
-
-				if !v.active {
-					if mu.button(ctx, "STEP >", .NONE) == {.SUBMIT} {
-						step_playback(state, &v)
-					}
-				}
-
-				if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
-					state.playback.state = VcrPlayback{0, false}
-				}
-
-			case VcrLoop:
-				mu.layout_row(ctx, {50, 50, 100, 100, 50, 50})
-
-				if mu.button(ctx, "Back", .NONE) == {.SUBMIT} {
-					state.playback.state = VcrPlayback{v.current_index, v.active}
-				}
-
-				fh_len := frame_history_len(state)
-
-				slider_res := mu.slider(
-					ctx,
-					&state.playback.loop_min,
-					0,
-					cast(mu.Real)v.end_index - 1 if v.end_index != 0 else 0,
-					1,
-					"Start Frame: %.0f",
-				)
-				if .CHANGE in slider_res {
-					v.start_index = cast(int)state.playback.loop_min
-				}
-				slider_res = mu.slider(
-					ctx,
-					&state.playback.loop_max,
-					cast(mu.Real)v.start_index + 1 if fh_len != 0 else 0,
-					cast(mu.Real)fh_len,
-					1,
-					"End Frame: %.0f",
-				)
-				if .CHANGE in slider_res {
-					v.end_index = cast(int)state.playback.loop_max
-				}
-
-				txt := "PAUSE" if v.active else "RESUME"
-				if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
-					v.active = !v.active
-				}
-
-				if !v.active {
-					if mu.button(ctx, "STEP >", .NONE) == {.SUBMIT} {
-						step_loop(state, &v)
-					}
-				}
-
-				if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
-					state.playback.state = VcrPlayback{0, false}
-				}
-			}
-
+			gui_playback_controls(state, ctx)
 			gui_frame_list(state, ctx)
+		}
+	}
+}
+
+
+gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
+	#partial switch v in &state.playback.state {
+	case VcrPlayback:
+		mu.layout_row(ctx, {50, 50, 50, 50})
+		if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
+			fh_len := frame_history_len(state)
+			state.playback.state = VcrLoop{0, 0, fh_len - 1, false}
+			state.playback.loop_min = cast(f32)0
+			state.playback.loop_max = cast(f32)fh_len - 1
+		}
+
+		txt := "PAUSE" if v.active else "RESUME"
+		if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
+			v.active = !v.active
+		}
+
+		if !v.active {
+			if mu.button(ctx, "STEP >", .NONE) == {.SUBMIT} {
+				step_playback(state, &v)
+			}
+		}
+
+		if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
+			state.playback.state = VcrPlayback{0, false}
+		}
+
+	case VcrLoop:
+		mu.layout_row(ctx, {50, 50, 100, 100, 50, 50})
+
+		if mu.button(ctx, "Back", .NONE) == {.SUBMIT} {
+			state.playback.state = VcrPlayback{v.current_index, v.active}
+		}
+
+		fh_len := frame_history_len(state)
+
+		slider_res := mu.slider(
+			ctx,
+			&state.playback.loop_min,
+			0,
+			cast(mu.Real)v.end_index - 1 if v.end_index != 0 else 0,
+			1,
+			"Start Frame: %.0f",
+		)
+		if .CHANGE in slider_res {
+			v.start_index = cast(int)state.playback.loop_min
+		}
+		slider_res = mu.slider(
+			ctx,
+			&state.playback.loop_max,
+			cast(mu.Real)v.start_index + 1 if fh_len != 0 else 0,
+			cast(mu.Real)fh_len,
+			1,
+			"End Frame: %.0f",
+		)
+		if .CHANGE in slider_res {
+			v.end_index = cast(int)state.playback.loop_max
+		}
+
+		txt := "PAUSE" if v.active else "RESUME"
+		if mu.button(ctx, txt, .NONE) == {.SUBMIT} {
+			v.active = !v.active
+		}
+
+		if !v.active {
+			if mu.button(ctx, "STEP >", .NONE) == {.SUBMIT} {
+				step_loop(state, &v)
+			}
+		}
+
+		if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
+			state.playback.state = VcrPlayback{0, false}
 		}
 	}
 }
