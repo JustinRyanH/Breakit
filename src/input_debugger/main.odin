@@ -55,10 +55,6 @@ main :: proc() {
 	input_file_new_file(&db_state.ifs)
 	input_file_begin_write(&db_state.ifs)
 
-	if (os.exists("logs/input.log")) {
-		os.remove("logs/input.log")
-	}
-
 	input_reps = make([dynamic]ButtonInputRep)
 	defer delete(input_reps)
 
@@ -95,6 +91,7 @@ main :: proc() {
 			input_rep_record_input(&input_reps[i], current_frame)
 			input_rep_draw_all(&input_reps[i])
 		}
+		input_debugger_draw(db_state)
 
 		rl_platform.render_ui(mu_ctx)
 

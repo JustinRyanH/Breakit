@@ -170,11 +170,6 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 	mu.layout_row(ctx, {-1})
 	mu.label(ctx, fmt.tprintf("Loaded File: %s", state.ifs.current_file))
-	mu.layout_row(ctx, {100})
-	button_res := mu.button(ctx, "Start New File")
-	if .SUBMIT in button_res {
-		input_file_new_file(&state.ifs)
-	}
 
 	header_res := mu.header(ctx, "Input Files", {.CLOSED})
 	if .ACTIVE not_in header_res {
@@ -290,7 +285,6 @@ gui_frame_list :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
-	draw_frame(state)
 	switch s in &state.playback.state {
 	case VcrRecording:
 		new_frame := rl_platform.update_frame(s.current_frame)
@@ -326,7 +320,7 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	return nil
 }
 
-draw_frame :: proc(state: ^InputDebuggerState) {
+input_debugger_draw :: proc(state: ^InputDebuggerState) {
 	switch s in state.playback.state {
 	case VcrRecording:
 		rl.DrawText("Recording", 10, 30, 20, rl.RED)
