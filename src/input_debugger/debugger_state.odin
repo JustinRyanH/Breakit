@@ -2,6 +2,8 @@ package input
 
 import "core:fmt"
 import "core:math"
+import "core:strings"
+import "core:time"
 
 import rl "vendor:raylib"
 
@@ -105,9 +107,6 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 			   {.NO_CLOSE},
 		   ) {
 
-			mu.layout_row(ctx, {-1})
-			mu.label(ctx, fmt.tprintf("Loaded File: %s", state.input_file_system.current_file))
-
 			gui_file_explorer(state, ctx)
 			gui_playback_controls(state, ctx)
 			gui_frame_list(state, ctx)
@@ -116,8 +115,19 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 }
 
 gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
-	res := mu.header(ctx, "Input Files", {.CLOSED})
-	if .ACTIVE not_in res {
+	mu.layout_row(ctx, {-1})
+	mu.label(ctx, fmt.tprintf("Loaded File: %s", state.input_file_system.current_file))
+	mu.layout_row(ctx, {100})
+	button_res := mu.button(ctx, "Start New File")
+	if .SUBMIT in button_res {
+		old_str := state.input_file_system.current_file
+		now := time.to_unix_seconds(time.now())
+		log_name := fmt.tprintf("file-%d.ilog", now)
+		state.input_file_system.current_file = strings.clone(log_name)
+	}
+
+	header_res := mu.header(ctx, "Input Files", {.CLOSED})
+	if .ACTIVE not_in header_res {
 		return
 	}
 }
