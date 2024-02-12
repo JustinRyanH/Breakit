@@ -43,12 +43,12 @@ main :: proc() {
 	input_debugger_setup(db_state)
 	defer input_debugger_teardown(db_state)
 
-	ctx := new(mu.Context)
-	defer free(ctx)
+	mu_ctx := new(mu.Context)
+	defer free(mu_ctx)
 
-	mu.init(ctx)
+	mu.init(mu_ctx)
 
-	rl_platform.setup_raylib_mui(ctx)
+	rl_platform.setup_raylib_mui(mu_ctx)
 	defer rl_platform.destroy_raylib_mui()
 
 	db_state.writer = game_input_writer_create("logs/input.log")
@@ -72,8 +72,8 @@ main :: proc() {
 	defer input_rep_cleanup_all()
 
 	for {
-		rl_platform.load_input(ctx)
-		input_debugger_gui(db_state, ctx)
+		rl_platform.load_input(mu_ctx)
+		input_debugger_gui(db_state, mu_ctx)
 
 		if rl.IsKeyPressed(.F5) {
 			err = input_debugger_toggle_playback(db_state)
@@ -105,7 +105,7 @@ main :: proc() {
 			input_rep_draw_all(&input_reps[i])
 		}
 
-		rl_platform.render_ui(ctx)
+		rl_platform.render_ui(mu_ctx)
 
 		free_all(context.temp_allocator)
 	}
