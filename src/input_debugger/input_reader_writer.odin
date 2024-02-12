@@ -52,9 +52,18 @@ GameInputWriter :: struct {
 	header:      InputFileHeader,
 }
 
-GameInputFile :: union {
+GameInputIO :: union {
 	GameInputReader,
 	GameInputWriter,
+}
+
+game_input_close :: proc(io: ^GameInputIO) {
+	switch v in io {
+	case GameInputWriter:
+		game_input_writer_close(&v)
+	case GameInputReader:
+		game_input_reader_close(&v)
+	}
 }
 
 // Create Input Reader, does not open the file
