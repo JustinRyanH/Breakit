@@ -298,11 +298,7 @@ read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 		new_frame := rl_platform.update_frame(state.frame)
 		state.frame = new_frame
 		s.current_frame = state.frame
-		err := game_input_writer_insert_frame(&state.writer, state.frame)
-		if err != nil {
-			return err
-		}
-		err = input_file_write_frame(&state.ifs, state.frame)
+		err := input_file_write_frame(&state.ifs, state.frame)
 		if err != nil {
 			return nil
 		}
@@ -354,12 +350,7 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> (err: Game
 playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 	if !state.playback.has_loaded_all_playback {
 		for i := 0; i < 30; i += 1 {
-			new_frame, err := game_input_reader_read_input(&state.reader)
-			new_frame_two, err_two := input_file_read_input(&state.ifs)
-			if err_two != nil && err_two != .NoMoreFrames {
-				return err_two
-			}
-
+			new_frame, err := input_file_read_input(&state.ifs)
 			if err == .NoMoreFrames {
 				state.playback.has_loaded_all_playback = true
 				break
