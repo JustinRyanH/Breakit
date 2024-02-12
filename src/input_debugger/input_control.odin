@@ -81,13 +81,24 @@ input_file_write_frame :: proc(
 	ifs: ^InputFileSystem,
 	new_frame: game.FrameInput,
 ) -> GameInputError {
-	switch v in &ifs.io {
-	case nil, GameInputReader:
-		return .NotInReadMode
-	case GameInputWriter:
-		return game_input_writer_insert_frame(&v, new_frame)
+	writer, ok := ifs.io.(GameInputWriter)
+	if ok {
+		return game_input_writer_insert_frame(&writer, new_frame)
 	}
-	return nil
+	return .NotInReadMode
+}
+
+input_file_read_input :: proc(
+	ifs: ^InputFileSystem,
+) -> (
+	input: game.UserInput,
+	err: GameInputError,
+) {
+	reader, ok := ifs.io.(GameInputReader)
+	if ok {
+		return game_input_reader_read_input(&reader)
+	}
+	return game.UserInput{}, .NotInWriteMode
 }
 
 
@@ -344,6 +355,11 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 	if !state.playback.has_loaded_all_playback {
 		for i := 0; i < 30; i += 1 {
 			new_frame, err := game_input_reader_read_input(&state.reader)
+			new_frame_two, err_two := input_file_read_input(&state.ifs)
+			if err_two != nil && err_two != .NoMoreFrames {
+				return err_two
+			}
+
 			if err == .NoMoreFrames {
 				state.playback.has_loaded_all_playback = true
 				break
@@ -395,6 +411,10 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 
 @(private)
 toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	input_file_new_file(&state.ifs)
+	// TODO: Defer close on error
+	input_file_begin_write(&state.ifs)
+
 	game_input_reader_close(&state.reader)
 	err = game_input_writer_open(&state.writer)
 	if err != nil {
@@ -410,6 +430,9 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 
 @(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	// TODO: Defer close on error
+	input_file_begin_read(&state.ifs)
+
 	new_frame := game.UserInput{}
 
 	game_input_writer_close(&state.writer)
@@ -419,10 +442,6 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	}
 
 	state.frame = game.FrameInput{}
-	new_frame, err = game_input_reader_read_input(&state.reader)
-	if err != nil {
-		return err
-	}
 
 	state.playback.state = VcrPlayback{0, false}
 
