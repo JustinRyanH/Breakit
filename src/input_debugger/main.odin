@@ -51,20 +51,12 @@ main :: proc() {
 	rl_platform.setup_raylib_mui(mu_ctx)
 	defer rl_platform.destroy_raylib_mui()
 
-	db_state.writer = game_input_writer_create("logs/input.log")
-	db_state.reader = game_input_reader_create("logs/input.log")
 	input_file_setup(&db_state.ifs)
 	input_file_new_file(&db_state.ifs)
 	input_file_begin_write(&db_state.ifs)
 
 	if (os.exists("logs/input.log")) {
 		os.remove("logs/input.log")
-	}
-
-	err := game_input_writer_open(&db_state.writer)
-	if err != nil {
-		fmt.printf("Error opening input file: %v\n", err)
-		return
 	}
 
 	input_reps = make([dynamic]ButtonInputRep)
@@ -79,7 +71,7 @@ main :: proc() {
 		input_debugger_gui(db_state, mu_ctx)
 
 		if rl.IsKeyPressed(.F5) {
-			err = input_debugger_toggle_playback(db_state)
+			err := input_debugger_toggle_playback(db_state)
 			if err != nil {
 				fmt.printf("Error: %v", err)
 				return

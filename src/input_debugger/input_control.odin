@@ -106,8 +106,6 @@ FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
 	ifs:      InputFileSystem,
-	writer:   GameInputWriter,
-	reader:   GameInputReader,
 	frame:    game.FrameInput,
 	playback: VcrState,
 }
@@ -406,13 +404,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	// TODO: Defer close on error
 	input_file_begin_write(&state.ifs)
 
-	game_input_reader_close(&state.reader)
-	err = game_input_writer_open(&state.writer)
-	if err != nil {
-		return
-	}
 	state.frame = rl_platform.update_frame(game.FrameInput{})
-	game_input_writer_insert_frame(&state.writer, state.frame)
 	state.playback.state = VcrRecording{}
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
@@ -425,12 +417,6 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	input_file_begin_read(&state.ifs)
 
 	new_frame := game.UserInput{}
-
-	game_input_writer_close(&state.writer)
-	err = game_input_reader_open(&state.reader)
-	if err != nil {
-		return err
-	}
 
 	state.frame = game.FrameInput{}
 
