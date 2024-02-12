@@ -26,6 +26,8 @@ GameInputFileError :: enum {
 	FileNotOpen,
 	NoAccess,
 	MismatchWriteSize,
+	NotInReadMode,
+	NotInWriteMode,
 	SystemError,
 }
 

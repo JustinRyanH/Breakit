@@ -77,6 +77,19 @@ input_file_begin_read :: proc(ifs: ^InputFileSystem) {
 	ifs.io = new_reader
 }
 
+input_file_write_frame :: proc(
+	ifs: ^InputFileSystem,
+	new_frame: game.FrameInput,
+) -> GameInputError {
+	switch v in &ifs.io {
+	case nil, GameInputReader:
+		return .NotInReadMode
+	case GameInputWriter:
+		return game_input_writer_insert_frame(&v, new_frame)
+	}
+	return nil
+}
+
 
 FrameHistory :: [dynamic]game.UserInput
 
@@ -271,11 +284,16 @@ gui_frame_list :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 read_write_frame :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
-		state.frame = rl_platform.update_frame(state.frame)
+		new_frame := rl_platform.update_frame(state.frame)
+		state.frame = new_frame
 		s.current_frame = state.frame
 		err := game_input_writer_insert_frame(&state.writer, state.frame)
 		if err != nil {
 			return err
+		}
+		err = input_file_write_frame(&state.ifs, state.frame)
+		if err != nil {
+			return nil
 		}
 		rl.DrawText("Recording", 10, 30, 20, rl.RED)
 		return nil
