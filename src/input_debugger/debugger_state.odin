@@ -107,14 +107,18 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 			mu.layout_row(ctx, {-1})
 			mu.label(ctx, fmt.tprintf("Loaded File: %s", state.input_file_system.current_file))
-			{
-				mu.header(ctx, "Load Files", {.CLOSED})
-			}
 
-
+			gui_file_explorer(state, ctx)
 			gui_playback_controls(state, ctx)
 			gui_frame_list(state, ctx)
 		}
+	}
+}
+
+gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
+	res := mu.header(ctx, "Input Files", {.CLOSED})
+	if .ACTIVE not_in res {
+		return
 	}
 }
 
@@ -151,7 +155,7 @@ gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 		}
 
 	case VcrLoop:
-		mu.layout_row(ctx, {50, 50, 100, 100, 50, 50})
+		mu.layout_row(ctx, {50, 75, 75, 50, 50, 50})
 
 		if mu.button(ctx, "Back", .NONE) == {.SUBMIT} {
 			state.playback.state = VcrPlayback{v.current_index, v.active}
