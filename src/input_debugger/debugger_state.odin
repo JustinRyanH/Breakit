@@ -120,6 +120,11 @@ input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 
 gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
+	res := mu.header(ctx, "Playback Controls", {.EXPANDED})
+	if .ACTIVE not_in res {
+		return
+	}
+
 	#partial switch v in &state.playback.state {
 	case VcrPlayback:
 		mu.layout_row(ctx, {50, 50, 50, 50})
