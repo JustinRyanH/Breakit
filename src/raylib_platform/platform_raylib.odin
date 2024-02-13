@@ -22,7 +22,8 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 update_frame :: proc(previous_frame: game.FrameInput) -> (new_frame: game.FrameInput) {
 	new_frame.debug = previous_frame.debug
 	new_frame.last_frame = previous_frame.current_frame
-	new_frame.current_frame = collect_user_input(new_frame.last_frame.meta.frame_id + 1)
+	new_frame.current_frame = current_frame_input()
+	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
 	if (rl.IsKeyPressed(.F1)) {
 		new_frame.debug = !new_frame.debug
 	}
@@ -81,9 +82,9 @@ raylib_end_drawing_2d :: proc() {
 }
 
 @(private)
-collect_user_input :: proc(frame_id: int) -> (new_input: game.UserInput) {
+current_frame_input :: proc() -> (new_input: game.UserInput) {
 	new_input.meta = game.FrameMeta {
-		frame_id,
+		0,
 		rl.GetFrameTime(),
 		cast(f32)rl.GetScreenWidth(),
 		cast(f32)rl.GetScreenHeight(),
