@@ -10,6 +10,13 @@ import rl "vendor:raylib"
 
 import "../game"
 
+
+when ODIN_OS == .Darwin {
+	DLL_EXTENSION :: ".dylib"
+} else when ODIN_OS == .Windows {
+	DLL_EXTENSION :: ".dll"
+}
+
 GameAPI :: struct {
 	name:         string,
 	path:         string,
@@ -133,25 +140,12 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 }
 
 game_api_file_path :: proc(api: GameAPI) -> string {
-	// TODO(jhr): Extraxct to constant
-	when ODIN_OS == .Darwin {
-		dll_extension := ".dylib"
-	} else when ODIN_OS == .Windows {
-		dll_extension := ".dll"
-	}
-
-	file_name := fmt.tprintf("{0}{1}", api.name, dll_extension)
+	file_name := fmt.tprintf("{0}{1}", api.name, DLL_EXTENSION)
 	return filepath.join({api.path, file_name}, context.temp_allocator)
 }
 
 game_api_version_path :: proc(api: GameAPI) -> string {
-	when ODIN_OS == .Darwin {
-		dll_extension := ".dylib"
-	} else when ODIN_OS == .Windows {
-		dll_extension := ".dll"
-	}
-
-	new_name := fmt.tprintf("{0}_{1}{2}", api.name, api.iteration, dll_extension)
+	new_name := fmt.tprintf("{0}_{1}{2}", api.name, api.iteration, DLL_EXTENSION)
 	return filepath.join({api.path, new_name}, context.temp_allocator)
 
 }
