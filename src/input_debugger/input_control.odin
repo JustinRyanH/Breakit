@@ -12,6 +12,7 @@ import game "../game"
 import mu "../microui"
 import rl_platform "../raylib_platform"
 
+FrameHistory :: [dynamic]game.UserInput
 
 VcrRecording :: struct {
 	current_frame: game.FrameInput,
@@ -120,8 +121,6 @@ input_file_read_input :: proc(
 	return game.UserInput{}, .NotInWriteMode
 }
 
-
-FrameHistory :: [dynamic]game.UserInput
 
 InputDebuggerState :: struct {
 	ifs:      InputFileSystem,
