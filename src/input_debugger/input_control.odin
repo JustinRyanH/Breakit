@@ -252,7 +252,7 @@ gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 		mu.layout_row(ctx, {50, 50, 50, 50})
 		if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
 			fh_len := frame_history_len(state)
-			state.playback.state = VcrLoop{0, 0, fh_len - 1, false}
+			state.playback.state = VcrLoop{0, 0, fh_len - 1, v.active}
 			state.playback.loop_min = cast(f32)0
 			state.playback.loop_max = cast(f32)fh_len - 1
 		}
