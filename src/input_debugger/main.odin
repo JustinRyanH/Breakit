@@ -24,8 +24,9 @@ input_reps: [dynamic]ButtonInputRep
 // [x] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
 // [x] Display the same keys being hit on the playback side
 // [x] Set up Playback tools to loop, pause, and replay
-// [ ] Create a mui list of files in the logs directory
-// [ ] Allow selecting a file to play back
+// [x] Create a mui list of files in the logs directory
+// [x] Allow selecting a file to play back
+// [ ] Keep the loop setting
 
 
 main :: proc() {
@@ -67,11 +68,11 @@ main :: proc() {
 		input_debugger_gui(db_state, mu_ctx)
 
 		if rl.IsKeyPressed(.F5) {
-      err := input_debugger_toggle_playback(db_state)
-      if err != nil {
-        fmt.printf("Err: %v", err)
-        return
-      }
+			err := input_debugger_toggle_playback(db_state)
+			if err != nil {
+				fmt.printf("Err: %v", err)
+				return
+			}
 
 		}
 
