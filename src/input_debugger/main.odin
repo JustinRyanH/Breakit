@@ -27,6 +27,7 @@ input_reps: [dynamic]ButtonInputRep
 // [x] Create a mui list of files in the logs directory
 // [x] Allow selecting a file to play back
 // [ ] Keep the loop setting
+// [ ] Refactor and Extract
 
 
 main :: proc() {

@@ -12,6 +12,7 @@ There are the tasks I want to work on next
 
 ## Nice to Haves
 
+[ ] Move main.odin and input_debugger/main.odin to src
 [ ] Input Recording, Stream Compress/Decompress
 [ ] Start Menu
 [ ] Start Menu with Keyboard Selectable Options
