@@ -61,20 +61,22 @@ input_file_new_file :: proc(ifs: ^InputFileSystem) {
 	ifs.current_file = strings.clone(log_name)
 }
 
-input_file_begin_write :: proc(ifs: ^InputFileSystem) {
+input_file_begin_write :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
 	game_input_close(&ifs.io)
 
 	new_writer := game_input_writer_create(ifs.current_file)
-	game_input_writer_open(&new_writer)
+	err = game_input_writer_open(&new_writer)
 	ifs.io = new_writer
+  return
 }
 
-input_file_begin_read :: proc(ifs: ^InputFileSystem) {
+input_file_begin_read :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
 	game_input_close(&ifs.io)
 
 	new_reader := game_input_reader_create(ifs.current_file)
-	game_input_reader_open(&new_reader)
+	err = game_input_reader_open(&new_reader)
 	ifs.io = new_reader
+  return
 }
 
 input_file_write_frame :: proc(
@@ -347,15 +349,16 @@ input_debugger_draw :: proc(state: ^InputDebuggerState) {
 
 }
 
-input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) {
+input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch s in state.playback.state {
 	case VcrRecording:
-		toggle_playback(state)
+		return toggle_playback(state)
 	case VcrPlayback:
-		toggle_recording(state)
+		return toggle_recording(state)
 	case VcrLoop:
-		toggle_recording(state)
+		return toggle_recording(state)
 	}
+  return nil
 }
 
 
@@ -417,19 +420,20 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 }
 
 @(private)
-toggle_recording :: proc(state: ^InputDebuggerState) {
+toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	input_file_new_file(&state.ifs)
-	input_file_begin_write(&state.ifs)
+	err = input_file_begin_write(&state.ifs)
 
 	new_frame := rl_platform.update_frame(game.FrameInput{})
 	state.playback.state = VcrRecording{new_frame}
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
+  return
 }
 
 @(private)
-toggle_playback :: proc(state: ^InputDebuggerState) {
-	input_file_begin_read(&state.ifs)
+toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	err = input_file_begin_read(&state.ifs)
 
 	new_frame := game.UserInput{}
 
