@@ -2,6 +2,7 @@ package input
 
 import "core:fmt"
 import "core:math"
+import "core:os"
 import "core:strings"
 import "core:time"
 
@@ -59,6 +60,20 @@ input_file_new_file :: proc(ifs: ^InputFileSystem) {
 	now := time.to_unix_seconds(time.now())
 	log_name := fmt.tprintf("logs/file-%d.ilog", now)
 	ifs.current_file = strings.clone(log_name)
+	delete(old_str)
+}
+
+
+input_file_read_new_file :: proc(
+	ifs: ^InputFileSystem,
+	new_file: string,
+) -> (
+	err: GameInputError,
+) {
+	game_input_close(&ifs.io)
+	delete(ifs.current_file)
+	ifs.current_file = strings.clone(new_file)
+	return input_file_begin_read(ifs)
 }
 
 input_file_begin_write :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
@@ -67,7 +82,7 @@ input_file_begin_write :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
 	new_writer := game_input_writer_create(ifs.current_file)
 	err = game_input_writer_open(&new_writer)
 	ifs.io = new_writer
-  return
+	return
 }
 
 input_file_begin_read :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
@@ -76,7 +91,7 @@ input_file_begin_read :: proc(ifs: ^InputFileSystem) -> (err: GameInputError) {
 	new_reader := game_input_reader_create(ifs.current_file)
 	err = game_input_reader_open(&new_reader)
 	ifs.io = new_reader
-  return
+	return
 }
 
 input_file_write_frame :: proc(
@@ -118,6 +133,24 @@ input_debugger_setup :: proc(state: ^InputDebuggerState) {
 
 input_debugger_teardown :: proc(state: ^InputDebuggerState) {
 	delete(state.playback.frame_history)
+}
+
+input_debugger_load_file :: proc(
+	state: ^InputDebuggerState,
+	file: string,
+) -> (
+	err: GameInputError,
+) {
+	err = input_file_read_new_file(&state.ifs, file)
+	if err != nil {
+		return
+	}
+
+	clear(&state.playback.frame_history)
+	state.playback.has_loaded_all_playback = false
+
+	state.playback.state = VcrPlayback{0, true}
+	return
 }
 
 input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
@@ -175,6 +208,34 @@ gui_file_explorer :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 
 	header_res := mu.header(ctx, "Input Files", {.CLOSED})
 	if .ACTIVE not_in header_res {
+		log_dir, err := os.open("logs")
+
+		if err != os.ERROR_NONE {
+			fmt.printf("Errno: %v", err)
+			return
+		}
+		defer os.close(log_dir)
+
+		files, dir_err := os.read_dir(log_dir, 50, context.temp_allocator)
+
+		if dir_err != os.ERROR_NONE {
+			fmt.printf("Errno: %v", err)
+			return
+		}
+
+		for file in files {
+			mu.layout_row(ctx, {-1})
+			button_ref := mu.button(ctx, fmt.tprintf("Load %s", file.name))
+			if .SUBMIT in button_ref {
+				new_file := fmt.tprintf("logs/%s", file.name)
+				err := input_debugger_load_file(state, new_file)
+				if err != nil {
+					fmt.printf("Err: %v", err)
+					return
+				}
+			}
+		}
+
 		return
 	}
 }
@@ -358,7 +419,7 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputE
 	case VcrLoop:
 		return toggle_recording(state)
 	}
-  return nil
+	return nil
 }
 
 
@@ -428,17 +489,15 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	state.playback.state = VcrRecording{new_frame}
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
-  return
+	return
 }
 
 @(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	err = input_file_begin_read(&state.ifs)
-
 	new_frame := game.UserInput{}
 
 	state.playback.state = VcrPlayback{0, false}
-
 	return
 }
 
