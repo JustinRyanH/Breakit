@@ -364,9 +364,8 @@ gui_frame_list :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 read_write_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
-		new_frame := rl_platform.update_frame(s.current_frame, input)
-		s.current_frame = new_frame
-		err := input_file_write_frame(&state.ifs, new_frame)
+		s.current_frame = rl_platform.update_frame(s.current_frame, input)
+		err := input_file_write_frame(&state.ifs, s.current_frame)
 		if err != nil {
 			return nil
 		}
