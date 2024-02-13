@@ -9,7 +9,8 @@ import "../game"
 
 new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
-	ctx.frame = update_frame(ctx.frame)
+	input := get_current_user_input()
+	ctx.frame = update_frame(ctx.frame, input)
 	setup_raylib_platform(&ctx.cmds)
 	setup_raylib_draw_cmds(&ctx.draw_cmds)
 	return ctx
@@ -19,10 +20,15 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 	free(ctx)
 }
 
-update_frame :: proc(previous_frame: game.FrameInput) -> (new_frame: game.FrameInput) {
+update_frame :: proc(
+	previous_frame: game.FrameInput,
+	user_input: game.UserInput,
+) -> (
+	new_frame: game.FrameInput,
+) {
 	new_frame.debug = previous_frame.debug
 	new_frame.last_frame = previous_frame.current_frame
-	new_frame.current_frame = get_current_user_input()
+	new_frame.current_frame = user_input
 	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
 	if (rl.IsKeyPressed(.F1)) {
 		new_frame.debug = !new_frame.debug
