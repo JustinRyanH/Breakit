@@ -22,12 +22,32 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 update_frame :: proc(previous_frame: game.FrameInput) -> (new_frame: game.FrameInput) {
 	new_frame.debug = previous_frame.debug
 	new_frame.last_frame = previous_frame.current_frame
-	new_frame.current_frame = current_frame_input()
+	new_frame.current_frame = get_current_user_input()
 	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
 	if (rl.IsKeyPressed(.F1)) {
 		new_frame.debug = !new_frame.debug
 	}
 	return new_frame
+}
+
+
+// Returns the current user input, frame id is zero
+get_current_user_input :: proc() -> (new_input: game.UserInput) {
+	new_input.meta = game.FrameMeta {
+		0,
+		rl.GetFrameTime(),
+		cast(f32)rl.GetScreenWidth(),
+		cast(f32)rl.GetScreenHeight(),
+	}
+	new_input.keyboard.left_down = rl.IsKeyDown(.LEFT)
+	new_input.keyboard.right_down = rl.IsKeyDown(.RIGHT)
+	new_input.keyboard.space_down = rl.IsKeyDown(.SPACE)
+
+	new_input.mouse.pos = cast(math.Vector2f32)(rl.GetMousePosition())
+	new_input.mouse.left_down = rl.IsMouseButtonDown(.LEFT)
+	new_input.mouse.right_down = rl.IsMouseButtonDown(.RIGHT)
+
+	return new_input
 }
 
 ///// Private
@@ -79,23 +99,4 @@ raylib_begin_drawing_2d :: proc(camera: game.Camera2D) {
 
 raylib_end_drawing_2d :: proc() {
 	rl.EndMode2D()
-}
-
-@(private)
-current_frame_input :: proc() -> (new_input: game.UserInput) {
-	new_input.meta = game.FrameMeta {
-		0,
-		rl.GetFrameTime(),
-		cast(f32)rl.GetScreenWidth(),
-		cast(f32)rl.GetScreenHeight(),
-	}
-	new_input.keyboard.left_down = rl.IsKeyDown(.LEFT)
-	new_input.keyboard.right_down = rl.IsKeyDown(.RIGHT)
-	new_input.keyboard.space_down = rl.IsKeyDown(.SPACE)
-
-	new_input.mouse.pos = cast(math.Vector2f32)(rl.GetMousePosition())
-	new_input.mouse.left_down = rl.IsMouseButtonDown(.LEFT)
-	new_input.mouse.right_down = rl.IsMouseButtonDown(.RIGHT)
-
-	return new_input
 }
