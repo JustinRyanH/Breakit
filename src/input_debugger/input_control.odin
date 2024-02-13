@@ -283,7 +283,7 @@ gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 		}
 
 		if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
-			state.playback.state = VcrPlayback{0, false}
+			v.current_index = 0
 		}
 
 	case VcrLoop:
@@ -330,7 +330,7 @@ gui_playback_controls :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
 		}
 
 		if mu.button(ctx, "RESTART", .NONE) == {.SUBMIT} {
-			state.playback.state = VcrPlayback{0, false}
+			v.current_index = v.start_index
 		}
 	}
 }
