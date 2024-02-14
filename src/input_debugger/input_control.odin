@@ -1,9 +1,10 @@
 package input
 
 import "core:fmt"
-import "core:math"
+import math "core:math/linalg"
 import "core:os"
 import "core:strings"
+import "core:testing"
 import "core:time"
 
 import game "../game"
@@ -169,7 +170,10 @@ input_debugger_query_current_frame :: proc(
 	return
 }
 
-input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
+input_debugger_load_next_frame :: proc(
+	state: ^InputDebuggerState,
+	input: game.UserInput,
+) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
 		s.current_frame = game.frame_next(s.current_frame, input)
