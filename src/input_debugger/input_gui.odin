@@ -5,7 +5,6 @@ import "core:fmt"
 import "core:math"
 import "core:os"
 
-
 import mu "../microui"
 
 input_debugger_mui :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {

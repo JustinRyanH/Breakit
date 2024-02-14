@@ -36,7 +36,6 @@ PlaybackState :: union {
 	VcrLoop,
 }
 
-
 VcrState :: struct {
 	frame_history:           FrameHistory,
 	state:                   PlaybackState,

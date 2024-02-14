@@ -17,18 +17,6 @@ ScreenHeight :: 450
 
 input_reps: [dynamic]ButtonInputRep
 
-// We are going to write out the frames into a file, the zeroth iteration will
-// follow bad form, and not even write in a header with a version, however, after
-// this we will immediately resovle this problem before bringing it to the game
-// [x] Write the inputs to a file 
-// [x] Hitting input displays on the screen which input from Kenney assets, it will color gray is not hit, red if hit
-// [x] Display the same keys being hit on the playback side
-// [x] Set up Playback tools to loop, pause, and replay
-// [x] Create a mui list of files in the logs directory
-// [x] Allow selecting a file to play back
-// [ ] Keep the loop setting
-// [ ] Refactor and Extract
-
 
 main :: proc() {
 	default_allocator := context.allocator
