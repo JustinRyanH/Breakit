@@ -151,45 +151,6 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputE
 }
 
 
-//////////////////////
-// Private Procs
-//////////////////////
-
-@(private)
-playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
-	if !state.playback.has_loaded_all_playback {
-		for i := 0; i < 30; i += 1 {
-			new_frame, err := input_file_read_input(&state.ifs)
-			if err == .NoMoreFrames {
-				state.playback.has_loaded_all_playback = true
-				break
-			} else if err != nil {
-				return nil
-			} else {
-				append(&state.playback.frame_history, new_frame)
-			}
-		}
-		loop, ok := &state.playback.state.(VcrLoop)
-		if ok {
-			loop.end_index = len(state.playback.frame_history) - 1
-			state.playback.loop_max = cast(mu.Real)loop.end_index
-		}
-	}
-	#partial switch v in &state.playback.state {
-	case VcrPlayback:
-		if !v.active {
-			return nil
-		}
-		step_playback(state, &v)
-	case VcrLoop:
-		if !v.active {
-			return nil
-		}
-		step_loop(state, &v)
-	}
-
-	return nil
-}
 ////////////////////////
 // InputFileSystem
 ////////////////////////
@@ -339,3 +300,38 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 	}
 }
 
+@(private)
+playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
+	if !state.playback.has_loaded_all_playback {
+		for i := 0; i < 30; i += 1 {
+			new_frame, err := input_file_read_input(&state.ifs)
+			if err == .NoMoreFrames {
+				state.playback.has_loaded_all_playback = true
+				break
+			} else if err != nil {
+				return nil
+			} else {
+				append(&state.playback.frame_history, new_frame)
+			}
+		}
+		loop, ok := &state.playback.state.(VcrLoop)
+		if ok {
+			loop.end_index = len(state.playback.frame_history) - 1
+			state.playback.loop_max = cast(mu.Real)loop.end_index
+		}
+	}
+	#partial switch v in &state.playback.state {
+	case VcrPlayback:
+		if !v.active {
+			return nil
+		}
+		step_playback(state, &v)
+	case VcrLoop:
+		if !v.active {
+			return nil
+		}
+		step_loop(state, &v)
+	}
+
+	return nil
+}
