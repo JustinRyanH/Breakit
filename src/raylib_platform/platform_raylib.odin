@@ -3,6 +3,7 @@ package platform_raylib
 import "core:fmt"
 import math "core:math/linalg"
 
+import mu "../microui"
 import rl "vendor:raylib"
 
 import "../game"
@@ -12,6 +13,8 @@ new_context :: proc() -> ^game.Context {
 
 	input := get_current_user_input()
 	ctx.frame = game.frame_next(ctx.frame, input)
+
+	mu.init(&ctx.mui)
 
 	setup_raylib_platform(&ctx.cmds)
 	setup_raylib_draw_cmds(&ctx.draw_cmds)
@@ -53,12 +56,12 @@ setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 	draw.begin_drawing = cast(proc())(rl.BeginDrawing)
 	draw.begin_drawing_2d = raylib_begin_drawing_2d
+	draw.draw_mui = render_mui
 	draw.end_drawing = cast(proc())(rl.EndDrawing)
 	draw.end_drawing_2d = raylib_end_drawing_2d
 	draw.clear = raylib_clear_background
 	draw.draw_text = raylib_draw_text
 	draw.draw_shape = raylib_draw_shape
-
 }
 
 @(private)

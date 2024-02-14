@@ -28,6 +28,8 @@ main :: proc() {
 
 	ctx := rl_platform.new_context()
 	defer rl_platform.deinit_game_context(ctx)
+	rl_platform.setup_raylib_mui(&ctx.mui)
+	defer rl_platform.destroy_raylib_mui()
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
@@ -48,6 +50,7 @@ main :: proc() {
 			game_api.setup(ctx)
 		}
 
+		rl_platform.load_input(&ctx.mui)
 		input := rl_platform.get_current_user_input()
 
 		ctx.frame = game.frame_next(ctx.frame, input)
@@ -59,6 +62,8 @@ main :: proc() {
 		}
 
 		game_api.draw(&ctx.draw_cmds)
+
+		rl_platform.render_mui(&ctx.mui)
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time

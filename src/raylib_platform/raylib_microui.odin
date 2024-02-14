@@ -108,7 +108,7 @@ load_input :: proc(ctx: ^mu.Context) {
 	}
 }
 
-render_ui :: proc(ctx: ^mu.Context) {
+render_mui :: proc(ctx: ^mu.Context) {
 	texture := atlas
 	render_texture :: proc "contextless" (
 		rect: mu.Rect,

@@ -1,5 +1,6 @@
 package game
 
+import mu "../microui"
 import math "core:math/linalg"
 
 //////////////////////////
@@ -61,6 +62,7 @@ PlatformCommands :: struct {
 PlatformDrawCommands :: struct {
 	begin_drawing:    proc(),
 	begin_drawing_2d: proc(camera: Camera2D),
+	draw_mui:         proc(mui: ^mu.Context),
 	end_drawing_2d:   proc(),
 	end_drawing:      proc(),
 	clear:            proc(color: Color),

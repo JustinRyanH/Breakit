@@ -3,7 +3,7 @@ package game
 import "core:fmt"
 import math "core:math/linalg"
 
-import rl "vendor:raylib"
+import mu "../microui"
 
 Vec2 :: math.Vector2f32
 
@@ -217,8 +217,16 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		platform_draw.draw_shape(brick.rect, ORANGE)
 	}
 
-
 	game_draw_debug(platform_draw)
+
+	{
+		mui_ctx := &game.ctx.mui
+		mu.begin(mui_ctx)
+		defer mu.end(mui_ctx)
+
+		mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
+	}
+	platform_draw.draw_mui(&game.ctx.mui)
 }
 
 game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
