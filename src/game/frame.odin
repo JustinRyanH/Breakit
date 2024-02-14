@@ -58,83 +58,93 @@ frame_toggle_debug :: proc(frame: ^FrameInput) {
 	frame.debug = !frame.debug
 }
 
-frame_query_debug :: proc(input: FrameInput) -> bool {
-	return input.debug
+frame_query_debug :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.debug
 }
 
 // Get the amount of time for this frame
-frame_query_delta :: proc(input: FrameInput) -> f32 {
-	return input.current_frame.meta.frame_delta
+frame_query_delta :: proc(frame_input: FrameInput) -> f32 {
+	return frame_input.current_frame.meta.frame_delta
 }
 
 // Returns width and height of the current frame
-frame_query_dimensions :: proc(input: FrameInput) -> (width, height: f32) {
-	return input.current_frame.meta.screen_width, input.current_frame.meta.screen_height
+frame_query_dimensions :: proc(frame_input: FrameInput) -> (width, height: f32) {
+	return frame_input.current_frame.meta.screen_width,
+		frame_input.current_frame.meta.screen_height
 }
 
 // Get the mouse position this frame
-input_mouse_position :: proc(input: FrameInput) -> math.Vector2f32 {
-	return input.current_frame.mouse.pos
+input_mouse_position :: proc(frame_input: FrameInput) -> math.Vector2f32 {
+	return frame_input.current_frame.mouse.pos
 }
 
 // Get the delta of the mouse position from the last frame
-input_mouse_delta :: proc(input: FrameInput) -> math.Vector2f32 {
-	return input.current_frame.mouse.pos - input.last_frame.mouse.pos
+input_mouse_delta :: proc(frame_input: FrameInput) -> math.Vector2f32 {
+	return frame_input.current_frame.mouse.pos - frame_input.last_frame.mouse.pos
 }
 
 // Is the Left Mouse Button down this frame
-input_is_left_mouse_down :: proc(input: FrameInput) -> bool {
-	return input.current_frame.mouse.left_down
+input_is_left_mouse_down :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.current_frame.mouse.left_down
 }
 
 // Was the Left Mouse Button pressed the frame before, not this frame
-input_was_left_mouse_pressed :: proc(input: FrameInput) -> bool {
-	return was_pressed(input.last_frame.mouse.left_down, input.current_frame.mouse.left_down)
+input_was_left_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
+	return was_pressed(
+		frame_input.last_frame.mouse.left_down,
+		frame_input.current_frame.mouse.left_down,
+	)
 }
 
 // Is the Right Mouse Button down this frame
-input_is_right_mouse_down :: proc(input: FrameInput) -> bool {
-	return input.current_frame.mouse.right_down
+input_is_right_mouse_down :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.current_frame.mouse.right_down
 }
 
 // Was the Right Mouse Button pressed the frame before, not this frame
-input_was_right_mouse_pressed :: proc(input: FrameInput) -> bool {
-	return was_pressed(input.last_frame.mouse.right_down, input.current_frame.mouse.right_down)
+input_was_right_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
+	return was_pressed(
+		frame_input.last_frame.mouse.right_down,
+		frame_input.current_frame.mouse.right_down,
+	)
 }
 
 // Is the Right Arrow down this frame
-input_is_right_arrow_down :: proc(input: FrameInput) -> bool {
-	return input.current_frame.keyboard.right_down
+input_is_right_arrow_down :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.current_frame.keyboard.right_down
 }
 
 // Was the Right Arrow pressed the framae before, not this frame
-input_was_right_arrow_pressed :: proc(input: FrameInput) -> bool {
+input_was_right_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
 	return was_pressed(
-		input.last_frame.keyboard.right_down,
-		input.current_frame.keyboard.right_down,
+		frame_input.last_frame.keyboard.right_down,
+		frame_input.current_frame.keyboard.right_down,
 	)
 }
 
 // Is the Left Arrow down this frame
-input_is_left_arrow_down :: proc(input: FrameInput) -> bool {
-	return input.current_frame.keyboard.left_down
+input_is_left_arrow_down :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.current_frame.keyboard.left_down
 }
 
 // Was the Left Arrow pressed the frame before, not this frame
-input_was_left_arrow_pressed :: proc(input: FrameInput) -> bool {
-	return was_pressed(input.last_frame.keyboard.left_down, input.current_frame.keyboard.left_down)
+input_was_left_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
+	return was_pressed(
+		frame_input.last_frame.keyboard.left_down,
+		frame_input.current_frame.keyboard.left_down,
+	)
 }
 
 // Is the Space key down this frame
-input_is_space_down :: proc(input: FrameInput) -> bool {
-	return input.current_frame.keyboard.space_down
+input_is_space_down :: proc(frame_input: FrameInput) -> bool {
+	return frame_input.current_frame.keyboard.space_down
 }
 
 // Was the Space key pressed the frame before, not this frame
-input_was_space_pressed :: proc(input: FrameInput) -> bool {
+input_was_space_pressed :: proc(frame_input: FrameInput) -> bool {
 	return was_pressed(
-		input.last_frame.keyboard.space_down,
-		input.current_frame.keyboard.space_down,
+		frame_input.last_frame.keyboard.space_down,
+		frame_input.current_frame.keyboard.space_down,
 	)
 }
 
