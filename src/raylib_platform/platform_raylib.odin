@@ -31,9 +31,13 @@ update_frame :: proc(
 	new_frame.current_frame = user_input
 	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
 	if (rl.IsKeyPressed(.F1)) {
-		new_frame.debug = !new_frame.debug
+		toggle_debug(&new_frame)
 	}
 	return new_frame
+}
+
+toggle_debug :: proc(frame: ^game.FrameInput) {
+	frame.debug = !frame.debug
 }
 
 
