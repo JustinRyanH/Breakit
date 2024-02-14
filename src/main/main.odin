@@ -51,7 +51,7 @@ main :: proc() {
 		input := rl_platform.get_current_user_input()
 
 		ctx.frame = game.frame_next(ctx.frame, input)
-		game.frame_toggle_debug(&ctx.frame)
+		if (rl.IsKeyPressed(.F1)) {game.frame_toggle_debug(&ctx.frame)}
 
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
