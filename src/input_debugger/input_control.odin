@@ -47,78 +47,6 @@ InputFileSystem :: struct {
 	io:           GameInputIO,
 }
 
-// We are going to free the previous file,
-// so let's start with a copy of empty string instead of a static
-input_file_setup :: proc(ifs: ^InputFileSystem) {
-	ifs.current_file = strings.clone("")
-}
-
-input_file_new_file :: proc(ifs: ^InputFileSystem) {
-	old_str := ifs.current_file
-	now := time.to_unix_seconds(time.now())
-	log_name := fmt.tprintf("logs/file-%d.ilog", now)
-	ifs.current_file = strings.clone(log_name)
-	delete(old_str)
-}
-
-input_file_set_new_file :: proc(ifs: ^InputFileSystem, new_file: string) {
-	delete(ifs.current_file)
-	ifs.current_file = strings.clone(new_file)
-}
-
-input_file_begin_write :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	writer: GameInputWriter,
-	err: GameInputError,
-) {
-	game_input_close(&ifs.io)
-
-	new_writer := game_input_writer_create(ifs.current_file)
-	err = game_input_writer_open(&new_writer)
-	ifs.io = new_writer
-	return new_writer, err
-}
-
-input_file_begin_read :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	reader: GameInputReader,
-	err: GameInputError,
-) {
-	game_input_close(&ifs.io)
-
-	new_reader := game_input_reader_create(ifs.current_file)
-	err = game_input_reader_open(&new_reader)
-	ifs.io = new_reader
-	return
-}
-
-input_file_write_frame :: proc(
-	ifs: ^InputFileSystem,
-	new_frame: game.FrameInput,
-) -> GameInputError {
-	writer, ok := ifs.io.(GameInputWriter)
-	if ok {
-		return game_input_writer_insert_frame(&writer, new_frame)
-	}
-	return .NotInReadMode
-}
-
-input_file_read_input :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	input: game.UserInput,
-	err: GameInputError,
-) {
-	reader, ok := ifs.io.(GameInputReader)
-	if ok {
-		return game_input_reader_read_input(&reader)
-	}
-	return game.UserInput{}, .NotInWriteMode
-}
-
-
 InputDebuggerState :: struct {
 	ifs:      InputFileSystem,
 	playback: VcrState,
@@ -284,6 +212,82 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 		v.current_index = v.start_index
 	}
 }
+
+////////////////////////
+// InputFileSystem
+////////////////////////
+
+// We are going to free the previous file,
+// so let's start with a copy of empty string instead of a static
+input_file_setup :: proc(ifs: ^InputFileSystem) {
+	ifs.current_file = strings.clone("")
+}
+
+input_file_new_file :: proc(ifs: ^InputFileSystem) {
+	old_str := ifs.current_file
+	now := time.to_unix_seconds(time.now())
+	log_name := fmt.tprintf("logs/file-%d.ilog", now)
+	ifs.current_file = strings.clone(log_name)
+	delete(old_str)
+}
+
+input_file_set_new_file :: proc(ifs: ^InputFileSystem, new_file: string) {
+	delete(ifs.current_file)
+	ifs.current_file = strings.clone(new_file)
+}
+
+input_file_begin_write :: proc(
+	ifs: ^InputFileSystem,
+) -> (
+	writer: GameInputWriter,
+	err: GameInputError,
+) {
+	game_input_close(&ifs.io)
+
+	new_writer := game_input_writer_create(ifs.current_file)
+	err = game_input_writer_open(&new_writer)
+	ifs.io = new_writer
+	return new_writer, err
+}
+
+input_file_begin_read :: proc(
+	ifs: ^InputFileSystem,
+) -> (
+	reader: GameInputReader,
+	err: GameInputError,
+) {
+	game_input_close(&ifs.io)
+
+	new_reader := game_input_reader_create(ifs.current_file)
+	err = game_input_reader_open(&new_reader)
+	ifs.io = new_reader
+	return
+}
+
+input_file_write_frame :: proc(
+	ifs: ^InputFileSystem,
+	new_frame: game.FrameInput,
+) -> GameInputError {
+	writer, ok := ifs.io.(GameInputWriter)
+	if ok {
+		return game_input_writer_insert_frame(&writer, new_frame)
+	}
+	return .NotInReadMode
+}
+
+input_file_read_input :: proc(
+	ifs: ^InputFileSystem,
+) -> (
+	input: game.UserInput,
+	err: GameInputError,
+) {
+	reader, ok := ifs.io.(GameInputReader)
+	if ok {
+		return game_input_reader_read_input(&reader)
+	}
+	return game.UserInput{}, .NotInWriteMode
+}
+
 
 @(private)
 toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
