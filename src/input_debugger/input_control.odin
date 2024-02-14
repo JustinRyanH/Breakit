@@ -6,8 +6,6 @@ import "core:os"
 import "core:strings"
 import "core:time"
 
-import rl "vendor:raylib"
-
 import game "../game"
 import mu "../microui"
 import rl_platform "../raylib_platform"
@@ -200,28 +198,13 @@ input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.U
 		if err != nil {
 			return nil
 		}
-		rl.DrawText("Recording", 10, 30, 20, rl.RED)
 		return nil
 	case VcrPlayback:
 		if state.playback.has_loaded_all_playback {
-			rl.DrawText("Playback Loaded", 10, 30, 20, rl.RED)
 		} else {
-			rl.DrawText("Playback Loading", 10, 30, 20, rl.RED)
 		}
 		return playback_input(state)
 	case VcrLoop:
-		rl.DrawText(
-			fmt.ctprintf(
-				"Looping from %d to %d: frame %d",
-				s.start_index,
-				s.end_index,
-				s.current_index,
-			),
-			10,
-			30,
-			20,
-			rl.RED,
-		)
 		return playback_input(state)
 	}
 	return nil
@@ -230,26 +213,11 @@ input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.U
 input_debugger_draw :: proc(state: ^InputDebuggerState) {
 	switch s in state.playback.state {
 	case VcrRecording:
-		rl.DrawText("Recording", 10, 30, 20, rl.RED)
 	case VcrPlayback:
 		if state.playback.has_loaded_all_playback {
-			rl.DrawText("Playback Loaded", 10, 30, 20, rl.RED)
 		} else {
-			rl.DrawText("Playback Loading", 10, 30, 20, rl.RED)
 		}
 	case VcrLoop:
-		rl.DrawText(
-			fmt.ctprintf(
-				"Looping from %d to %d: frame %d",
-				s.start_index,
-				s.end_index,
-				s.current_index,
-			),
-			10,
-			30,
-			20,
-			rl.RED,
-		)
 	}
 
 }

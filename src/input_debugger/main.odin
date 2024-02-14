@@ -86,8 +86,6 @@ main :: proc() {
 			input_rep_record_input(&input_reps[i], current_frame)
 			input_rep_draw_all(&input_reps[i])
 		}
-		input_debugger_draw(db_state)
-
 		rl_platform.render_ui(mu_ctx)
 
 		free_all(context.temp_allocator)
