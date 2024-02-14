@@ -52,6 +52,10 @@ InputDebuggerState :: struct {
 	playback: VcrState,
 }
 
+////////////////////////////////
+// Input Debugger
+////////////////////////////////
+
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
 	state.playback.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
 	state.playback.state = VcrRecording{}
@@ -111,7 +115,6 @@ input_debugger_query_current_frame :: proc(
 	}
 	return
 }
-
 
 input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
 	switch s in &state.playback.state {
