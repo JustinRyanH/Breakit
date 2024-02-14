@@ -77,7 +77,7 @@ main :: proc() {
 		}
 
 		input := rl_platform.get_current_user_input()
-		err := read_write_frame(db_state, input)
+		err := input_debugger_load_next_frame(db_state, input)
 		if err != nil {
 			fmt.printf("Error: %v", err)
 			return

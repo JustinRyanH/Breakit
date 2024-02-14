@@ -193,7 +193,7 @@ input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 }
 
 
-read_write_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
+input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
 		s.current_frame = rl_platform.update_frame(s.current_frame, input)
