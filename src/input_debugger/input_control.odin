@@ -1,12 +1,12 @@
 package input
 
-///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 // The Reason the Input Debugger is not in `game` package
 //  is because I will mainly be calling out to this from the
 //  platform since it is where I can get the new frames.
 //  instead we will likely add some methods on the
 //  Platform Context to change different modes from the game.
-///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 import "core:fmt"
 import math "core:math/linalg"
@@ -510,7 +510,7 @@ frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput 
 
 	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
 	current_frame := state.playback.frame_history[idx]
-	return game.FrameInput{previous_frame, current_frame, false}
+	return game.FrameInput{previous_frame, current_frame, false, false}
 }
 
 

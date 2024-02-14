@@ -51,7 +51,6 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc(ctx: ^Context) {
-
 	meta := ctx.frame.current_frame.meta
 	screen_width, screen_height := frame_query_dimensions(ctx.frame)
 
@@ -170,8 +169,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 		}
 		rect_evt, did_collide := shape_check_collision(ball^, brick.rect)
 		if (did_collide) {
-			// TODO: Remove me, debug code
-			platform_debug_draw_collision(rect_evt)
+			if (ctx.frame.debug_draw) {platform_debug_draw_collision(rect_evt)}
 			brick.alive = false
 			normal := rect_evt.normal
 			game.ball.pos += normal * rect_evt.depth
@@ -202,6 +200,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 @(export)
 game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
+	frame := game.ctx.frame
 
 	platform_draw.begin_drawing()
 	defer platform_draw.end_drawing()
@@ -224,14 +223,17 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 		mu.begin(mui_ctx)
 		defer mu.end(mui_ctx)
 
-		mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
+		if (frame.debug) {
+			mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
+		}
+
 	}
 	platform_draw.draw_mui(&game.ctx.mui)
 }
 
 game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
-	if (!frame_query_debug(game.ctx.frame)) {
+	if (!game.ctx.frame.debug_draw) {
 		return
 	}
 
@@ -264,24 +266,6 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 		platform_draw.draw_shape(edge, GREEN)
 	}
 
-	mouse_pos := input_mouse_position(game.ctx.frame)
-	mouse_circle := Circle{mouse_pos, 10}
-	platform_draw.draw_shape(mouse_circle, WHITE)
-
-	evt, did_collide := shape_check_collision(mouse_circle, game.ball)
-	if did_collide {
-		platform_debug_draw_collision(evt)
-	}
-	evt, did_collide = shape_check_collision(mouse_circle, game.paddle)
-	if did_collide {
-		platform_debug_draw_collision(evt)
-	}
-	for brick in game.bricks {
-		evt, did_collide = shape_check_collision(mouse_circle, brick.rect)
-		if did_collide {
-			platform_debug_draw_collision(evt)
-		}
-	}
 	for i := 0; i < len(world_edges); i += 1 {
 		edge_normal := shape_line_normal(world_edges[i])
 		edge := world_edges[i]
@@ -293,11 +277,6 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 		edge.end = edge.end - (edge_normal * 10)
 
 		platform_draw.draw_shape(edge, GREEN)
-
-		evt, did_collide := shape_check_collision(mouse_circle, edge)
-		if did_collide {
-			platform_debug_draw_collision(evt)
-		}
 	}
 }
 
