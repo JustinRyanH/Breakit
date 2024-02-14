@@ -210,20 +210,8 @@ input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.U
 	return nil
 }
 
-input_debugger_draw :: proc(state: ^InputDebuggerState) {
-	switch s in state.playback.state {
-	case VcrRecording:
-	case VcrPlayback:
-		if state.playback.has_loaded_all_playback {
-		} else {
-		}
-	case VcrLoop:
-	}
-
-}
-
 input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputError {
-	switch s in state.playback.state {
+	switch _ in state.playback.state {
 	case VcrRecording:
 		return toggle_playback(state)
 	case VcrPlayback:
