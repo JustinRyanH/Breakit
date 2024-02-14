@@ -390,6 +390,79 @@ game_input_reader_read_input :: proc(
 	return
 }
 
+////////////////////////////////
+// GameInputWriter functions
+////////////////////////////////
+
+// Create Input Reader, does not open the file
+game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
+	writer.file_path = file_path
+	writer.header.version = 1
+	writer.header.header_size = size_of(InputFileHeader)
+	return
+}
+
+// Oepn the Handle to the Writer
+game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
+	handle, err := os.open(
+		writer.file_path,
+		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
+		0o644,
+	)
+	if err == os.ERROR_NONE {
+		writer.file_handle = handle
+		writer.is_open = true
+		write_size, err := os.write_ptr(writer.file_handle, &writer.header, size_of(writer.header))
+		if err != os.ERROR_NONE {
+			return .SystemError
+		}
+
+		if write_size != size_of(writer.header) {
+			return .MismatchWriteSize
+		}
+		return nil
+	}
+
+	return .SystemError
+}
+
+// Return true if the file was closed successfully
+game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
+	when ODIN_OS == .Darwin {
+		success := os.close(writer.file_handle)
+		if (success) {
+			writer.is_open = false
+		}
+		return true
+	} else when ODIN_OS == .Windows {
+		err := os.close(writer.file_handle)
+		if (err != os.ERROR_NONE) {
+			writer.is_open = false
+			return true
+		}
+	}
+	return false
+}
+
+game_input_writer_insert_frame :: proc(
+	writer: ^GameInputWriter,
+	frame: game.FrameInput,
+) -> GameInputError {
+	if !writer.is_open {
+		return .FileNotOpen
+	}
+	current_frame := frame.current_frame
+
+	write_size, err := os.write_ptr(writer.file_handle, &current_frame, size_of(current_frame))
+	if err != os.ERROR_NONE {
+		return .SystemError
+	}
+
+	if write_size != size_of(current_frame) {
+		return .MismatchWriteSize
+	}
+	return nil
+}
 
 ////////////////////////////////
 // Private Functions
