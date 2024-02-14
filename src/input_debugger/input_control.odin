@@ -190,29 +190,6 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 
 	return nil
 }
-
-step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
-	len_of_history := frame_history_len(state)
-	if len_of_history == 0 {
-		return
-	}
-	v.current_index += 1
-	if v.current_index >= len_of_history {
-		v.current_index = 0
-		v.active = false
-	}
-}
-step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
-	len_of_history := frame_history_len(state)
-	if len_of_history == 0 {
-		return
-	}
-	v.current_index += 1
-	if v.current_index > v.end_index {
-		v.current_index = v.start_index
-	}
-}
-
 ////////////////////////
 // InputFileSystem
 ////////////////////////
@@ -289,6 +266,10 @@ input_file_read_input :: proc(
 }
 
 
+////////////////////////////////
+// Private Functions
+////////////////////////////////
+
 @(private)
 toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	input_file_new_file(&state.ifs)
@@ -327,7 +308,34 @@ frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput 
 }
 
 
-@(private = "file")
+@(private)
 frame_history_len :: proc(state: ^InputDebuggerState) -> int {
 	return len(state.playback.frame_history)
 }
+
+
+@(private)
+step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
+	len_of_history := frame_history_len(state)
+	if len_of_history == 0 {
+		return
+	}
+	v.current_index += 1
+	if v.current_index >= len_of_history {
+		v.current_index = 0
+		v.active = false
+	}
+}
+
+@(private)
+step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
+	len_of_history := frame_history_len(state)
+	if len_of_history == 0 {
+		return
+	}
+	v.current_index += 1
+	if v.current_index > v.end_index {
+		v.current_index = v.start_index
+	}
+}
+
