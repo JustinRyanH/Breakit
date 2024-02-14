@@ -196,7 +196,7 @@ input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 input_debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
-		s.current_frame = rl_platform.update_frame(s.current_frame, input)
+		s.current_frame = game.frame_next(s.current_frame, input)
 		err := input_file_write_frame(&state.ifs, s.current_frame)
 		if err != nil {
 			return nil
@@ -336,7 +336,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = input_file_begin_write(&state.ifs)
 
 	input := rl_platform.get_current_user_input()
-	new_frame := rl_platform.update_frame(game.FrameInput{}, input)
+	new_frame := game.frame_next(game.FrameInput{}, input)
 	clear_frame_history(state)
 	state.playback.state = VcrRecording{new_frame}
 	return

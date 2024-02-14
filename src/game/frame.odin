@@ -43,6 +43,21 @@ FrameInput :: struct {
 // User Input Functions
 ///////////////////////////////////////////
 
+
+frame_next :: proc(previous_frame: FrameInput, user_input: UserInput) -> FrameInput {
+	new_frame := FrameInput{}
+	new_frame.debug = previous_frame.debug
+	new_frame.last_frame = previous_frame.current_frame
+	new_frame.current_frame = user_input
+	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
+	return new_frame
+}
+
+
+frame_toggle_debug :: proc(frame: ^FrameInput) {
+	frame.debug = !frame.debug
+}
+
 frame_query_debug :: proc(input: FrameInput) -> bool {
 	return input.debug
 }
