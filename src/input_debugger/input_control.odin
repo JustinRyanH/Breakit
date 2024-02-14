@@ -10,6 +10,28 @@ import game "../game"
 import mu "../microui"
 import rl_platform "../raylib_platform"
 
+InputParsingError :: enum {
+	BadHeader,
+	InvalidHeaderVersion,
+	InvalidHeaderSize,
+	NoMoreFrames,
+}
+
+GameInputFileError :: enum {
+	HandleClosedOrReadOnly,
+	FileNotOpen,
+	NoAccess,
+	MismatchWriteSize,
+	NotInReadMode,
+	NotInWriteMode,
+	SystemError,
+}
+
+GameInputError :: union {
+	InputParsingError,
+	GameInputFileError,
+}
+
 FrameHistory :: [dynamic]game.UserInput
 
 VcrRecording :: struct {
@@ -51,6 +73,37 @@ InputDebuggerState :: struct {
 	ifs:      InputFileSystem,
 	playback: VcrState,
 }
+
+InputFileHeader :: struct {
+	version:     u16le,
+	header_size: u32le,
+	did_finish:  bool,
+	frame_count: u64le,
+}
+
+GameInputReader :: struct {
+	file_path:   string,
+	file_handle: os.Handle,
+	is_open:     bool,
+
+	// Meta Data about file
+	header:      InputFileHeader,
+}
+
+GameInputWriter :: struct {
+	file_path:   string,
+	file_handle: os.Handle,
+	is_open:     bool,
+
+	// Meta Data about file
+	header:      InputFileHeader,
+}
+
+GameInputIO :: union {
+	GameInputReader,
+	GameInputWriter,
+}
+
 
 ////////////////////////////////
 // Input Debugger

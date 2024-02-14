@@ -7,58 +7,6 @@ import "core:testing"
 
 import game "../game"
 
-InputFileHeader :: struct {
-	version:     u16le,
-	header_size: u32le,
-	did_finish:  bool,
-	frame_count: u64le,
-}
-
-InputParsingError :: enum {
-	BadHeader,
-	InvalidHeaderVersion,
-	InvalidHeaderSize,
-	NoMoreFrames,
-}
-
-GameInputFileError :: enum {
-	HandleClosedOrReadOnly,
-	FileNotOpen,
-	NoAccess,
-	MismatchWriteSize,
-	NotInReadMode,
-	NotInWriteMode,
-	SystemError,
-}
-
-GameInputError :: union {
-	InputParsingError,
-	GameInputFileError,
-}
-
-GameInputReader :: struct {
-	file_path:   string,
-	file_handle: os.Handle,
-	is_open:     bool,
-
-	// Meta Data about file
-	header:      InputFileHeader,
-}
-
-GameInputWriter :: struct {
-	file_path:   string,
-	file_handle: os.Handle,
-	is_open:     bool,
-
-	// Meta Data about file
-	header:      InputFileHeader,
-}
-
-GameInputIO :: union {
-	GameInputReader,
-	GameInputWriter,
-}
-
 game_input_close :: proc(io: ^GameInputIO) {
 	switch v in io {
 	case GameInputWriter:
