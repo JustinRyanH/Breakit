@@ -65,7 +65,6 @@ main :: proc() {
 
 	for {
 		rl_platform.load_input(mu_ctx)
-
 		input_debugger_mui(mu_ctx, db_state)
 
 		if rl.IsKeyPressed(.F5) {
