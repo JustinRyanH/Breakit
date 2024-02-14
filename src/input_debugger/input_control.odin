@@ -469,115 +469,6 @@ game_input_writer_insert_frame :: proc(
 }
 
 ////////////////////////////////
-// Private Functions
-////////////////////////////////
-
-@(private)
-toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	input_file_new_file(&state.ifs)
-	_, err = input_file_begin_write(&state.ifs)
-
-	clear_frame_history(state)
-	state.playback.state = VcrRecording{game.FrameInput{}}
-	return
-}
-
-@(private)
-clear_frame_history :: proc(state: ^InputDebuggerState) {
-	clear(&state.playback.frame_history)
-	state.playback.has_loaded_all_playback = false
-}
-
-@(private)
-toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	_, err = input_file_begin_read(&state.ifs)
-	new_frame := game.UserInput{}
-
-	state.playback.state = VcrPlayback{0, false}
-	return
-}
-
-
-@(private = "file")
-frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput {
-	if frame_history_len(state) == 0 {
-		return game.FrameInput{}
-	}
-
-	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
-	current_frame := state.playback.frame_history[idx]
-	return game.FrameInput{previous_frame, current_frame, false}
-}
-
-
-@(private)
-frame_history_len :: proc(state: ^InputDebuggerState) -> int {
-	return len(state.playback.frame_history)
-}
-
-
-@(private)
-step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
-	len_of_history := frame_history_len(state)
-	if len_of_history == 0 {
-		return
-	}
-	v.current_index += 1
-	if v.current_index >= len_of_history {
-		v.current_index = 0
-		v.active = false
-	}
-}
-
-@(private)
-step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
-	len_of_history := frame_history_len(state)
-	if len_of_history == 0 {
-		return
-	}
-	v.current_index += 1
-	if v.current_index > v.end_index {
-		v.current_index = v.start_index
-	}
-}
-
-@(private)
-playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
-	if !state.playback.has_loaded_all_playback {
-		for i := 0; i < 30; i += 1 {
-			new_frame, err := input_file_read_input(&state.ifs)
-			if err == .NoMoreFrames {
-				state.playback.has_loaded_all_playback = true
-				break
-			} else if err != nil {
-				return nil
-			} else {
-				append(&state.playback.frame_history, new_frame)
-			}
-		}
-		loop, ok := &state.playback.state.(VcrLoop)
-		if ok {
-			loop.end_index = len(state.playback.frame_history) - 1
-			state.playback.loop_max = cast(mu.Real)loop.end_index
-		}
-	}
-	#partial switch v in &state.playback.state {
-	case VcrPlayback:
-		if !v.active {
-			return nil
-		}
-		step_playback(state, &v)
-	case VcrLoop:
-		if !v.active {
-			return nil
-		}
-		step_loop(state, &v)
-	}
-
-	return nil
-}
-
-////////////////////////////////
 // GUI
 ////////////////////////////////
 
@@ -724,6 +615,115 @@ input_debugger_playback :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 			v.current_index = v.start_index
 		}
 	}
+}
+
+////////////////////////////////
+// Private Functions
+////////////////////////////////
+
+@(private)
+toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	input_file_new_file(&state.ifs)
+	_, err = input_file_begin_write(&state.ifs)
+
+	clear_frame_history(state)
+	state.playback.state = VcrRecording{game.FrameInput{}}
+	return
+}
+
+@(private)
+clear_frame_history :: proc(state: ^InputDebuggerState) {
+	clear(&state.playback.frame_history)
+	state.playback.has_loaded_all_playback = false
+}
+
+@(private)
+toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
+	_, err = input_file_begin_read(&state.ifs)
+	new_frame := game.UserInput{}
+
+	state.playback.state = VcrPlayback{0, false}
+	return
+}
+
+
+@(private = "file")
+frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput {
+	if frame_history_len(state) == 0 {
+		return game.FrameInput{}
+	}
+
+	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
+	current_frame := state.playback.frame_history[idx]
+	return game.FrameInput{previous_frame, current_frame, false}
+}
+
+
+@(private)
+frame_history_len :: proc(state: ^InputDebuggerState) -> int {
+	return len(state.playback.frame_history)
+}
+
+
+@(private)
+step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
+	len_of_history := frame_history_len(state)
+	if len_of_history == 0 {
+		return
+	}
+	v.current_index += 1
+	if v.current_index >= len_of_history {
+		v.current_index = 0
+		v.active = false
+	}
+}
+
+@(private)
+step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
+	len_of_history := frame_history_len(state)
+	if len_of_history == 0 {
+		return
+	}
+	v.current_index += 1
+	if v.current_index > v.end_index {
+		v.current_index = v.start_index
+	}
+}
+
+@(private)
+playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
+	if !state.playback.has_loaded_all_playback {
+		for i := 0; i < 30; i += 1 {
+			new_frame, err := input_file_read_input(&state.ifs)
+			if err == .NoMoreFrames {
+				state.playback.has_loaded_all_playback = true
+				break
+			} else if err != nil {
+				return nil
+			} else {
+				append(&state.playback.frame_history, new_frame)
+			}
+		}
+		loop, ok := &state.playback.state.(VcrLoop)
+		if ok {
+			loop.end_index = len(state.playback.frame_history) - 1
+			state.playback.loop_max = cast(mu.Real)loop.end_index
+		}
+	}
+	#partial switch v in &state.playback.state {
+	case VcrPlayback:
+		if !v.active {
+			return nil
+		}
+		step_playback(state, &v)
+	case VcrLoop:
+		if !v.active {
+			return nil
+		}
+		step_loop(state, &v)
+	}
+
+	return nil
 }
 
 ////////////////////////////////
