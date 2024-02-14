@@ -22,8 +22,8 @@ input_debugger_mui :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 			   {.NO_CLOSE},
 		   ) {
 
-			input_debugger_files(ctx, state)
 			input_debugger_playback(ctx, state)
+			input_debugger_files(ctx, state)
 		}
 	}
 }
@@ -76,6 +76,9 @@ input_debugger_playback :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 
 	#partial switch v in &state.playback.state {
 	case VcrPlayback:
+		mu.layout_row(ctx, {-1})
+		mu.label(ctx, fmt.tprintf("Single Playback Frame(%d)", v.current_index))
+
 		mu.layout_row(ctx, {50, 50, 50, 50})
 		if mu.button(ctx, "LOOP", .NONE) == {.SUBMIT} {
 
@@ -100,8 +103,10 @@ input_debugger_playback :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 		}
 
 	case VcrLoop:
-		mu.layout_row(ctx, {50, 75, 75, 50, 50, 50})
+		mu.layout_row(ctx, {-1})
+		mu.label(ctx, fmt.tprintf("Loop Playback Frame( %d )", v.current_index))
 
+		mu.layout_row(ctx, {50, 75, 75, 50, 50, 50})
 		if mu.button(ctx, "Back", .NONE) == {.SUBMIT} {
 			state.playback.state = VcrPlayback{v.current_index, v.active}
 		}

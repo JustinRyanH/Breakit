@@ -302,10 +302,8 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	input_file_new_file(&state.ifs)
 	_, err = input_file_begin_write(&state.ifs)
 
-	input := rl_platform.get_current_user_input()
-	new_frame := game.frame_next(game.FrameInput{}, input)
 	clear_frame_history(state)
-	state.playback.state = VcrRecording{new_frame}
+	state.playback.state = VcrRecording{game.FrameInput{}}
 	return
 }
 
