@@ -50,6 +50,8 @@ main :: proc() {
 
 		input := rl_platform.get_current_user_input()
 		ctx.frame = rl_platform.update_frame(ctx.frame, input)
+		rl_platform.toggle_debug(&ctx.frame)
+
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break

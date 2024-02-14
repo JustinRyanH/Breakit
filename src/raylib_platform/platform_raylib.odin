@@ -30,9 +30,6 @@ update_frame :: proc(
 	new_frame.last_frame = previous_frame.current_frame
 	new_frame.current_frame = user_input
 	new_frame.current_frame.meta.frame_id = previous_frame.last_frame.meta.frame_id + 1
-	if (rl.IsKeyPressed(.F1)) {
-		toggle_debug(&new_frame)
-	}
 	return new_frame
 }
 
