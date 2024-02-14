@@ -8,8 +8,29 @@ import "core:os"
 
 import mu "../microui"
 
+input_debugger_mui :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
+	mu.begin(ctx)
+	defer mu.end(ctx)
 
-input_gui_file_explorer :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
+	window_width: i32 = 400
+	window_height: i32 = 450
+
+	if !input_debugger_query_if_recording(state) {
+		if mu.window(
+			   ctx,
+			   "Input Recording",
+			   {800 - window_width, 0, window_width, window_height},
+			   {.NO_CLOSE},
+		   ) {
+
+			input_debugger_files(ctx, state)
+			input_debugger_playback(ctx, state)
+		}
+	}
+}
+
+
+input_debugger_files :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 	mu.layout_row(ctx, {-1})
 	mu.label(ctx, fmt.tprintf("Loaded File: %s", state.ifs.current_file))
 
@@ -47,7 +68,7 @@ input_gui_file_explorer :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 	}
 }
 
-input_gui_playback :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
+input_debugger_playback :: proc(ctx: ^mu.Context, state: ^InputDebuggerState) {
 	res := mu.header(ctx, "Playback Controls", {.EXPANDED})
 	if .ACTIVE not_in res {
 		return

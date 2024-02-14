@@ -192,28 +192,6 @@ input_get_frame_history :: proc(state: ^InputDebuggerState) -> FrameHistory {
 	return state.playback.frame_history
 }
 
-input_debugger_gui :: proc(state: ^InputDebuggerState, ctx: ^mu.Context) {
-
-	mu.begin(ctx)
-	defer mu.end(ctx)
-
-	window_width: i32 = 400
-	window_height: i32 = 450
-
-	if !input_debugger_query_if_recording(state) {
-		if mu.window(
-			   ctx,
-			   "Input Recording",
-			   {800 - window_width, 0, window_width, window_height},
-			   {.NO_CLOSE},
-		   ) {
-
-			input_gui_file_explorer(ctx, state)
-			input_gui_playback(ctx, state)
-		}
-	}
-}
-
 
 read_write_frame :: proc(state: ^InputDebuggerState, input: game.UserInput) -> GameInputError {
 	switch s in &state.playback.state {

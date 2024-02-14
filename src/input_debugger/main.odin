@@ -66,7 +66,7 @@ main :: proc() {
 	for {
 		rl_platform.load_input(mu_ctx)
 
-		input_debugger_gui(db_state, mu_ctx)
+		input_debugger_mui(mu_ctx, db_state)
 
 		if rl.IsKeyPressed(.F5) {
 			err := input_debugger_toggle_playback(db_state)
