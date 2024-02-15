@@ -39,6 +39,12 @@ main :: proc() {
 	rl_platform.setup_raylib_mui(&ctx.mui)
 	defer rl_platform.destroy_raylib_mui()
 
+
+	foo :: proc() {
+		fmt.printf("foo")
+	}
+	ctx.debug_cmds.replay_current_game = foo
+
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
 	if !game_api_ok {

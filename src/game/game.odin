@@ -225,6 +225,12 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 		if (frame.debug) {
 			mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
+			mu.layout_row(mui_ctx, {100})
+			res := mu.button(mui_ctx, "Replay")
+
+			if .SUBMIT in res {
+				game.ctx.debug_cmds.replay_current_game()
+			}
 		}
 
 	}

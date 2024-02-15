@@ -3,8 +3,9 @@ package game
 
 import mu "../microui"
 Context :: struct {
-	mui:       mu.Context,
-	frame:     FrameInput,
-	cmds:      PlatformCommands,
-	draw_cmds: PlatformDrawCommands,
+	mui:        mu.Context,
+	frame:      FrameInput,
+	cmds:       PlatformCommands,
+	draw_cmds:  PlatformDrawCommands,
+	debug_cmds: PlatformDebugCommnds,
 }

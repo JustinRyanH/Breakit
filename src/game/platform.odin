@@ -69,3 +69,7 @@ PlatformDrawCommands :: struct {
 	draw_text:        proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
 	draw_shape:       proc(shape: Shape, color: Color),
 }
+
+PlatformDebugCommnds :: struct {
+	replay_current_game: proc(),
+}
