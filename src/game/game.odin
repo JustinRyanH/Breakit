@@ -101,21 +101,21 @@ game_update :: proc(ctx: ^Context) -> bool {
 	cmds := game.ctx.cmds
 	dt := input.frame_query_delta(ctx.frame)
 
-	mouse_pos := input.input_mouse_position(ctx.frame)
+	mouse_pos := input.mouse_position(ctx.frame)
 	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
 	ball := &game.ball
 	paddle := &game.paddle
 
 
-	if input.input_is_right_arrow_down(ctx.frame) {
+	if input.is_right_arrow_down(ctx.frame) {
 		game.paddle_velocity.x = 1
-	} else if input.input_is_left_arrow_down(ctx.frame) {
+	} else if input.is_left_arrow_down(ctx.frame) {
 		game.paddle_velocity.x = -1
 	} else {
 		game.paddle_velocity.x = 0
 	}
 
-	if input.input_was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
+	if input.was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
 		game.ball_direction = math.normalize(Vec2{0, 0.9})
 		game.ball_state = BallState.Moving
 	}
