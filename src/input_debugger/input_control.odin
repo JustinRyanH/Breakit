@@ -209,6 +209,12 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputE
 	return nil
 }
 
+input_debugger_start_write :: proc(state: ^InputDebuggerState) {
+	input_file_setup(&state.ifs)
+	input_file_new_file(&state.ifs)
+	input_file_begin_write(&state.ifs)
+}
+
 
 ////////////////////////
 // InputFileSystem

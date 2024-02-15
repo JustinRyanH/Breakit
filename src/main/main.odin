@@ -10,6 +10,7 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
+import idb "../input_debugger"
 import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 
@@ -21,6 +22,13 @@ main :: proc() {
 	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
 	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
+	idb_state := new(idb.InputDebuggerState)
+	defer free(idb_state)
+
+	idb.input_debugger_setup(idb_state)
+	defer idb.input_debugger_teardown(idb_state)
+
+	idb.input_debugger_start_write(idb_state)
 
 	rl.InitWindow(800, 600, "Breakit")
 	rl.SetTargetFPS(60.0)
@@ -30,6 +38,7 @@ main :: proc() {
 	defer rl_platform.deinit_game_context(ctx)
 	rl_platform.setup_raylib_mui(&ctx.mui)
 	defer rl_platform.destroy_raylib_mui()
+
 
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
