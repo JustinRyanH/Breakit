@@ -296,6 +296,17 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
 }
 
+@(export)
+game_copy_memory :: proc() -> rawptr {
+	return g_mem
+}
+
+@(export)
+game_delete_copy :: proc(mem: ^GameMemory) {
+	delete(mem.bricks)
+	free(mem)
+}
+
 
 //////////////////////////////////////////
 // Game Functions

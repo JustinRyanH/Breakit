@@ -29,6 +29,8 @@ GameAPI :: struct {
 	shutdown:     proc(),
 	memory:       proc() -> rawptr,
 	hot_reloaded: proc(_: rawptr),
+	copy_memory:  proc() -> rawptr,
+	delete_copy:  proc(_: rawptr),
 
 
 	// DLL specific items
@@ -129,6 +131,20 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil)
 	if api.init == nil {
 		fmt.println("game_hot_reloaded not found in dll")
+		return {}, false
+
+	}
+	api.copy_memory =
+	cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_copy_memory") or_else nil)
+	if api.copy_memory == nil {
+		fmt.println("game_copy_memory not found in dll")
+		return {}, false
+	}
+
+	api.delete_copy =
+	cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_delete_copy") or_else nil)
+	if api.copy_memory == nil {
+		fmt.println("game_delete_copy not found in dll")
 		return {}, false
 	}
 
