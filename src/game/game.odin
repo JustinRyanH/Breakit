@@ -97,103 +97,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 	g_mem.ctx = ctx
 	game := g_mem
 
-	ctx := game.ctx
-	cmds := game.ctx.cmds
-	dt := input.frame_query_delta(ctx.frame)
-
-	mouse_pos := input.mouse_position(ctx.frame)
-	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
-	ball := &game.ball
-	paddle := &game.paddle
-
-
-	if input.is_right_arrow_down(ctx.frame) {
-		game.paddle_velocity.x = 1
-	} else if input.is_left_arrow_down(ctx.frame) {
-		game.paddle_velocity.x = -1
-	} else {
-		game.paddle_velocity.x = 0
-	}
-
-	if input.was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
-		game.ball_direction = math.normalize(Vec2{0, 0.9})
-		game.ball_state = BallState.Moving
-	}
-
-	game.paddle.pos += game.paddle_velocity * game.paddle_speed * dt
-	switch game.ball_state {
-	case .OnPaddle:
-		ball.pos.x = paddle.pos.x
-		ball.pos.y = paddle.pos.y - paddle.size.y / 2 - ball.radius
-	case .Moving:
-		game.ball.pos += game.ball_direction * game.ball_speed * dt
-	}
-
-	_, did_collide := shape_check_collision(ball^, game.paddle)
-	if (did_collide) {
-		if (game.ball_direction.y > 0.0) {
-			game.ball_direction.y = -game.ball_direction.y
-		}
-		game.ball_direction.x = (ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
-		game.ball_direction = math.normalize(game.ball_direction)
-	}
-
-	world := Rectangle {
-		Vec2{screen_width / 2, screen_height / 2},
-		Vec2{screen_width, screen_height},
-		0.0,
-	}
-	world_edges := shape_get_rect_lines(world)
-	for i := 0; i < len(world_edges); i += 1 {
-		edge := world_edges[i]
-		edge = shape_invert_line(edge)
-		edge.thickness = 2
-
-		contact_evt, did_collide := shape_check_collision(ball^, edge)
-		if (did_collide) {
-			platform_debug_draw_collision(contact_evt)
-			normal := contact_evt.normal
-			if (math.abs(normal.x) > 0) {
-				game.ball_direction.x = -game.ball_direction.x
-				break
-			}
-			if (normal.y > 0) {
-				game.ball_direction.y = -game.ball_direction.y
-				break
-			}
-		}
-	}
-
-	for i := 0; i < len(game.bricks); i += 1 {
-		brick := &game.bricks[i]
-		if (!brick.alive) {
-			continue
-		}
-		rect_evt, did_collide := shape_check_collision(ball^, brick.rect)
-		if (did_collide) {
-			if (ctx.frame.debug_draw) {platform_debug_draw_collision(rect_evt)}
-			brick.alive = false
-			normal := rect_evt.normal
-			game.ball.pos += normal * rect_evt.depth
-			if (math.abs(normal.x) > 0) {
-				game.ball_direction.x = -game.ball_direction.x
-				break
-			}
-			if (math.abs(normal.y) > 0) {
-				game.ball_direction.y = -game.ball_direction.y
-				break
-			}
-		}
-	}
-
-
-	if (ball.pos.y - ball.radius * 2 > screen_height) {
-		reset_ball()
-	}
-
-	paddle.pos.x = math.clamp(paddle.pos.x, paddle.size.x / 2, screen_width - paddle.size.x / 2)
-	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
-	ball.pos.y = math.max(ball.pos.y, ball.radius)
+	main_game(ctx)
 
 
 	return ctx.cmds.should_close_game()
@@ -318,11 +222,105 @@ game_delete_copy :: proc(mem: ^GameMemory) {
 // Game Functions
 //////////////////////////////////////////
 
-
-update_game_normal :: proc() {
+main_game :: proc(ctx: ^Context) {
 	game := g_mem
+	dt := input.frame_query_delta(ctx.frame)
+	cmds := game.ctx.cmds
 
+	mouse_pos := input.mouse_position(ctx.frame)
+	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
+	ball := &game.ball
+	paddle := &game.paddle
+
+
+	if input.is_right_arrow_down(ctx.frame) {
+		game.paddle_velocity.x = 1
+	} else if input.is_left_arrow_down(ctx.frame) {
+		game.paddle_velocity.x = -1
+	} else {
+		game.paddle_velocity.x = 0
+	}
+
+	if input.was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
+		game.ball_direction = math.normalize(Vec2{0, 0.9})
+		game.ball_state = BallState.Moving
+	}
+
+	game.paddle.pos += game.paddle_velocity * game.paddle_speed * dt
+	switch game.ball_state {
+	case .OnPaddle:
+		ball.pos.x = paddle.pos.x
+		ball.pos.y = paddle.pos.y - paddle.size.y / 2 - ball.radius
+	case .Moving:
+		game.ball.pos += game.ball_direction * game.ball_speed * dt
+	}
+
+	_, did_collide := shape_check_collision(ball^, game.paddle)
+	if (did_collide) {
+		if (game.ball_direction.y > 0.0) {
+			game.ball_direction.y = -game.ball_direction.y
+		}
+		game.ball_direction.x = (ball.pos.x - game.paddle.pos.x) / (game.paddle.size.x / 2)
+		game.ball_direction = math.normalize(game.ball_direction)
+	}
+
+	world := Rectangle {
+		Vec2{screen_width / 2, screen_height / 2},
+		Vec2{screen_width, screen_height},
+		0.0,
+	}
+	world_edges := shape_get_rect_lines(world)
+	for i := 0; i < len(world_edges); i += 1 {
+		edge := world_edges[i]
+		edge = shape_invert_line(edge)
+		edge.thickness = 2
+
+		contact_evt, did_collide := shape_check_collision(ball^, edge)
+		if (did_collide) {
+			platform_debug_draw_collision(contact_evt)
+			normal := contact_evt.normal
+			if (math.abs(normal.x) > 0) {
+				game.ball_direction.x = -game.ball_direction.x
+				break
+			}
+			if (normal.y > 0) {
+				game.ball_direction.y = -game.ball_direction.y
+				break
+			}
+		}
+	}
+
+	for i := 0; i < len(game.bricks); i += 1 {
+		brick := &game.bricks[i]
+		if (!brick.alive) {
+			continue
+		}
+		rect_evt, did_collide := shape_check_collision(ball^, brick.rect)
+		if (did_collide) {
+			if (ctx.frame.debug_draw) {platform_debug_draw_collision(rect_evt)}
+			brick.alive = false
+			normal := rect_evt.normal
+			game.ball.pos += normal * rect_evt.depth
+			if (math.abs(normal.x) > 0) {
+				game.ball_direction.x = -game.ball_direction.x
+				break
+			}
+			if (math.abs(normal.y) > 0) {
+				game.ball_direction.y = -game.ball_direction.y
+				break
+			}
+		}
+	}
+
+	if (ball.pos.y - ball.radius * 2 > screen_height) {
+		reset_ball()
+	}
+
+	paddle.pos.x = math.clamp(paddle.pos.x, paddle.size.x / 2, screen_width - paddle.size.x / 2)
+	ball.pos.x = math.clamp(ball.pos.x, ball.radius, screen_width - ball.radius)
+	ball.pos.y = math.max(ball.pos.y, ball.radius)
 }
+
 
 reset_ball :: proc() {
 	meta := g_mem.ctx.frame.current_frame.meta
