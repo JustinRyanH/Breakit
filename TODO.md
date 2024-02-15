@@ -13,6 +13,7 @@ There are the tasks I want to work on next
 
 ## Nice to Haves
 
+[ ] Crash on hot reload if the memory structure changes
 [ ] Input Recording, Stream Compress/Decompress
 [ ] Start Menu
 [ ] Start Menu with Keyboard Selectable Options
@@ -48,3 +49,7 @@ push the ball out, maybe adjust the velocity a bit too
   to be able to loop from a give frame. I did manage it in
   my test input debugger, but now I want to use this in the
   game proper.
+- **Crash on hot reload if the memory structure changes**
+  Write a program that reads through `GameMemory` and all of the types below. return Sha of all the types,
+  and have a function that returns the sha from the DLL. If main.odin sees the sha change just crash the app
+  Once future me gets annoyed with a crash I will then try to use the playback loop to re-create the memory
