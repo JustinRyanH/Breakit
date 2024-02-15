@@ -22,6 +22,7 @@ main :: proc() {
 	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
 	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
+	// TODO: let's just throw this on global
 	idb_state := new(idb.InputDebuggerState)
 	defer free(idb_state)
 
