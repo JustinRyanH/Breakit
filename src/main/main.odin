@@ -10,7 +10,7 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
-import idb "../input_debugger"
+import idb "../game/input"
 import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 

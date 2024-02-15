@@ -15,7 +15,7 @@ import "core:strings"
 import "core:testing"
 import "core:time"
 
-import game "../game"
+import game ".."
 
 InputParsingError :: enum {
 	BadHeader,
