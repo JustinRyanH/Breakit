@@ -68,7 +68,6 @@ main :: proc() {
 		old_frame := ctx.frame
 		ctx.frame = idb.input_debugger_query_current_frame(idb_state)
 
-
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
 			break
