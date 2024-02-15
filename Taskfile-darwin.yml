@@ -38,6 +38,7 @@ tasks:
   test:
     cmds:
       - odin test src/game -out:bin/game_test
+      - odin test src/game/input -out:bin/game_input_test
       - odin test src/main -out:bin/platform_test
     aliases:
       - t
