@@ -26,6 +26,7 @@ There are the tasks I want to work on next
 push the ball out, maybe adjust the velocity a bit too
 [ ] Make a MicroUI style/atlas editor
 [ ] Move main.odin to src
+[ ] Propertly close out the debug logs, and compress them
 
 ## DONE
 
