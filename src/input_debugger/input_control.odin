@@ -75,8 +75,12 @@ InputFileSystem :: struct {
 }
 
 InputDebuggerState :: struct {
-	ifs:      InputFileSystem,
-	playback: VcrState,
+	ifs:           InputFileSystem,
+	playback:      VcrState,
+
+	// General Debug Settings
+	general_debug: bool,
+	draw_debug:    bool,
 }
 
 InputFileHeader :: struct {
@@ -167,10 +171,12 @@ input_debugger_query_current_frame :: proc(
 	case VcrRecording:
 		frame_input = v.current_frame
 	case VcrPlayback:
-		return frame_at_index(state, v.current_index)
+		frame_input = frame_at_index(state, v.current_index)
 	case VcrLoop:
-		return frame_at_index(state, v.current_index)
+		frame_input = frame_at_index(state, v.current_index)
 	}
+	frame_input.debug = state.general_debug
+	frame_input.debug_draw = state.draw_debug
 	return
 }
 

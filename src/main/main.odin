@@ -58,17 +58,16 @@ main :: proc() {
 			game_api.setup(ctx)
 		}
 
+		if (rl.IsKeyReleased(.F1)) {idb_state.general_debug = !idb_state.general_debug}
+		if (rl.IsKeyReleased(.F2)) {idb_state.draw_debug = !idb_state.draw_debug}
+
 		rl_platform.load_input(&ctx.mui)
 		input := rl_platform.get_current_user_input()
 		err := idb.input_debugger_load_next_frame(idb_state, input)
 
 		old_frame := ctx.frame
 		ctx.frame = idb.input_debugger_query_current_frame(idb_state)
-		ctx.frame.debug = old_frame.debug
-		ctx.frame.debug_draw = old_frame.debug_draw
 
-		if (rl.IsKeyReleased(.F1)) {game.frame_toggle_debug(&ctx.frame)}
-		if (rl.IsKeyReleased(.F2)) {game.frame_toggle_draw_debug(&ctx.frame)}
 
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
