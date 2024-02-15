@@ -11,6 +11,8 @@ There are the tasks I want to work on next
 
 ## Core
 
+[ ] Refactor the CTX to not be part of game memory
+
 ## Nice to Haves
 
 [ ] Crash on hot reload if the memory structure changes
@@ -50,6 +52,14 @@ push the ball out, maybe adjust the velocity a bit too
   my test input debugger, but now I want to use this in the
   game proper.
 - **Crash on hot reload if the memory structure changes**
-  Write a program that reads through `GameMemory` and all of the types below. return Sha of all the types,
-  and have a function that returns the sha from the DLL. If main.odin sees the sha change just crash the app
-  Once future me gets annoyed with a crash I will then try to use the playback loop to re-create the memory
+  Write a program that reads through `GameMemory` and
+  all of the types below. return Sha of all the types,
+  and have a function that returns the sha from the DLL.
+  If main.odin sees the sha change just crash the app
+  Once future me gets annoyed with a crash I will then
+  try to use the playback loop to re-create the memory
+- **Refactor the CTX to not be part of game memory**
+  The Context from frame is orthogonal from the Context
+  Game Memory is the state of the game after the input from the frames
+  and this is inserted into the the game.dll every frame. So we shouldn't
+  leave this weird dangling context on the memory state
