@@ -39,7 +39,6 @@ main :: proc() {
 	rl_platform.setup_raylib_mui(&ctx.mui)
 	defer rl_platform.destroy_raylib_mui()
 
-
 	game_api, game_api_ok := game_api_load(0, "game", "./bin")
 
 	if !game_api_ok {
@@ -61,8 +60,13 @@ main :: proc() {
 
 		rl_platform.load_input(&ctx.mui)
 		input := rl_platform.get_current_user_input()
+		err := idb.input_debugger_load_next_frame(idb_state, input)
 
-		ctx.frame = game.frame_next(ctx.frame, input)
+		old_frame := ctx.frame
+		ctx.frame = idb.input_debugger_query_current_frame(idb_state)
+		ctx.frame.debug = old_frame.debug
+		ctx.frame.debug_draw = old_frame.debug_draw
+
 		if (rl.IsKeyReleased(.F1)) {game.frame_toggle_debug(&ctx.frame)}
 		if (rl.IsKeyReleased(.F2)) {game.frame_toggle_draw_debug(&ctx.frame)}
 
