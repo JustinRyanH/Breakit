@@ -22,7 +22,7 @@ There are the tasks I want to work on next
 [ ] If paddle overlaps ball,
 push the ball out, maybe adjust the velocity a bit too
 [ ] Make a MicroUI style/atlas editor
-[ ] Move main.odin and input_debugger/main.odin to src
+[ ] Move main.odin to src
 
 ## DONE
 
