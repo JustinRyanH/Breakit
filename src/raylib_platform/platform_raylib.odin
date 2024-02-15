@@ -7,12 +7,13 @@ import mu "../microui"
 import rl "vendor:raylib"
 
 import "../game"
+import "../game/input"
 
 new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
 
-	input := get_current_user_input()
-	ctx.frame = game.frame_next(ctx.frame, input)
+	user_input := get_current_user_input()
+	ctx.frame = input.frame_next(ctx.frame, user_input)
 
 	mu.init(&ctx.mui)
 
@@ -27,8 +28,8 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 
 
 // Returns the current user input, frame id is zero
-get_current_user_input :: proc() -> (new_input: game.UserInput) {
-	new_input.meta = game.FrameMeta {
+get_current_user_input :: proc() -> (new_input: input.UserInput) {
+	new_input.meta = input.FrameMeta {
 		0,
 		rl.GetFrameTime(),
 		cast(f32)rl.GetScreenWidth(),

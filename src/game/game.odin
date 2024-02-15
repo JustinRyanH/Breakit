@@ -3,6 +3,8 @@ package game
 import "core:fmt"
 import math "core:math/linalg"
 
+import "./input"
+
 import mu "../microui"
 
 Vec2 :: math.Vector2f32
@@ -52,7 +54,7 @@ game_init :: proc() {
 @(export)
 game_setup :: proc(ctx: ^Context) {
 	meta := ctx.frame.current_frame.meta
-	screen_width, screen_height := frame_query_dimensions(ctx.frame)
+	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
 
 
 	g_mem.camera.zoom = 1
@@ -97,23 +99,23 @@ game_update :: proc(ctx: ^Context) -> bool {
 
 	ctx := game.ctx
 	cmds := game.ctx.cmds
-	dt := frame_query_delta(ctx.frame)
+	dt := input.frame_query_delta(ctx.frame)
 
-	mouse_pos := input_mouse_position(ctx.frame)
-	screen_width, screen_height := frame_query_dimensions(ctx.frame)
+	mouse_pos := input.input_mouse_position(ctx.frame)
+	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
 	ball := &game.ball
 	paddle := &game.paddle
 
 
-	if input_is_right_arrow_down(ctx.frame) {
+	if input.input_is_right_arrow_down(ctx.frame) {
 		game.paddle_velocity.x = 1
-	} else if input_is_left_arrow_down(ctx.frame) {
+	} else if input.input_is_left_arrow_down(ctx.frame) {
 		game.paddle_velocity.x = -1
 	} else {
 		game.paddle_velocity.x = 0
 	}
 
-	if input_was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
+	if input.input_was_space_pressed(ctx.frame) && game.ball_state == .OnPaddle {
 		game.ball_direction = math.normalize(Vec2{0, 0.9})
 		game.ball_state = BallState.Moving
 	}
@@ -243,7 +245,7 @@ game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 		return
 	}
 
-	screen_width, screen_height := frame_query_dimensions(game.ctx.frame)
+	screen_width, screen_height := input.frame_query_dimensions(game.ctx.frame)
 
 	world := Rectangle {
 		Vec2{screen_width / 2, screen_height / 2},

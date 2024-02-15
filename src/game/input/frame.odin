@@ -1,4 +1,4 @@
-package game
+package input
 
 import math "core:math/linalg"
 import "core:testing"

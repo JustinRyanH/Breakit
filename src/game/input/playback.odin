@@ -5,7 +5,7 @@ package input
 //  is because I will mainly be calling out to this from the
 //  platform since it is where I can get the new frames.
 //  instead we will likely add some methods on the
-//  Platform Context to change different modes from the game.
+//  Platform Context to change different modes from the 
 //////////////////////////////////////////////////////////////
 
 import "core:fmt"
@@ -14,8 +14,6 @@ import "core:os"
 import "core:strings"
 import "core:testing"
 import "core:time"
-
-import game ".."
 
 InputParsingError :: enum {
 	BadHeader,
@@ -39,10 +37,10 @@ GameInputError :: union {
 	GameInputFileError,
 }
 
-FrameHistory :: [dynamic]game.UserInput
+FrameHistory :: [dynamic]UserInput
 
 VcrRecording :: struct {
-	current_frame: game.FrameInput,
+	current_frame: FrameInput,
 }
 
 VcrPlayback :: struct {
@@ -119,7 +117,7 @@ GameInputIO :: union {
 ////////////////////////////////
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
-	state.playback.frame_history = make([dynamic]game.UserInput, 0, 1024 * 128)
+	state.playback.frame_history = make([dynamic]UserInput, 0, 1024 * 128)
 	state.playback.state = VcrRecording{}
 }
 
@@ -165,7 +163,7 @@ input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
 input_debugger_query_current_frame :: proc(
 	state: ^InputDebuggerState,
 ) -> (
-	frame_input: game.FrameInput,
+	frame_input: FrameInput,
 ) {
 	switch v in state.playback.state {
 	case VcrRecording:
@@ -182,11 +180,11 @@ input_debugger_query_current_frame :: proc(
 
 input_debugger_load_next_frame :: proc(
 	state: ^InputDebuggerState,
-	input: game.UserInput,
+	input: UserInput,
 ) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
-		s.current_frame = game.frame_next(s.current_frame, input)
+		s.current_frame = frame_next(s.current_frame, input)
 		err := input_file_write_frame(&state.ifs, s.current_frame)
 		if err != nil {
 			return nil
@@ -273,10 +271,7 @@ input_file_begin_read :: proc(
 	return
 }
 
-input_file_write_frame :: proc(
-	ifs: ^InputFileSystem,
-	new_frame: game.FrameInput,
-) -> GameInputError {
+input_file_write_frame :: proc(ifs: ^InputFileSystem, new_frame: FrameInput) -> GameInputError {
 	writer, ok := ifs.io.(GameInputWriter)
 	if ok {
 		return game_input_writer_insert_frame(&writer, new_frame)
@@ -284,17 +279,12 @@ input_file_write_frame :: proc(
 	return .NotInReadMode
 }
 
-input_file_read_input :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	input: game.UserInput,
-	err: GameInputError,
-) {
+input_file_read_input :: proc(ifs: ^InputFileSystem) -> (input: UserInput, err: GameInputError) {
 	reader, ok := ifs.io.(GameInputReader)
 	if ok {
 		return game_input_reader_read_input(&reader)
 	}
-	return game.UserInput{}, .NotInWriteMode
+	return UserInput{}, .NotInWriteMode
 }
 
 
@@ -372,7 +362,7 @@ game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
 game_input_reader_read_input :: proc(
 	reader: ^GameInputReader,
 ) -> (
-	new_frame: game.UserInput,
+	new_frame: UserInput,
 	err: GameInputError,
 ) {
 	if !reader.is_open {
@@ -380,7 +370,7 @@ game_input_reader_read_input :: proc(
 		return
 	}
 
-	read_size, read_err := os.read_ptr(reader.file_handle, &new_frame, size_of(game.UserInput))
+	read_size, read_err := os.read_ptr(reader.file_handle, &new_frame, size_of(UserInput))
 	if read_err != os.ERROR_NONE {
 		when ODIN_OS == .Darwin {
 			if read_err == os.EBADF {
@@ -466,7 +456,7 @@ game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 
 game_input_writer_insert_frame :: proc(
 	writer: ^GameInputWriter,
-	frame: game.FrameInput,
+	frame: FrameInput,
 ) -> GameInputError {
 	if !writer.is_open {
 		return .FileNotOpen
@@ -494,7 +484,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = input_file_begin_write(&state.ifs)
 
 	clear_frame_history(state)
-	state.playback.state = VcrRecording{game.FrameInput{}}
+	state.playback.state = VcrRecording{FrameInput{}}
 	return
 }
 
@@ -507,7 +497,7 @@ clear_frame_history :: proc(state: ^InputDebuggerState) {
 @(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = input_file_begin_read(&state.ifs)
-	new_frame := game.UserInput{}
+	new_frame := UserInput{}
 
 	state.playback.state = VcrPlayback{0, false}
 	return
@@ -515,14 +505,14 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 
 
 @(private = "file")
-frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> game.FrameInput {
+frame_at_index :: proc(state: ^InputDebuggerState, idx: int) -> FrameInput {
 	if frame_history_len(state) == 0 {
-		return game.FrameInput{}
+		return FrameInput{}
 	}
 
-	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else game.UserInput{}
+	previous_frame := state.playback.frame_history[idx - 1] if idx > 0 else UserInput{}
 	current_frame := state.playback.frame_history[idx]
-	return game.FrameInput{previous_frame, current_frame, false, false}
+	return FrameInput{previous_frame, current_frame, false, false}
 }
 
 
@@ -598,7 +588,7 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 
 @(test)
 test_input_writer :: proc(t: ^testing.T) {
-	current_frame := game.UserInput{}
+	current_frame := UserInput{}
 	current_frame.meta.frame_id = 1
 	current_frame.meta.frame_delta = 1 / 60
 	current_frame.meta.screen_width = 100
@@ -606,7 +596,7 @@ test_input_writer :: proc(t: ^testing.T) {
 	current_frame.mouse.pos = math.Vector2f32{15, 15}
 	current_frame.keyboard.space_down = true
 
-	frame_input := game.FrameInput{}
+	frame_input := FrameInput{}
 	frame_input.current_frame = current_frame
 
 	writer := game_input_writer_create("bin/test.log")

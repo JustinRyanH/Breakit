@@ -1,10 +1,11 @@
 package game
 
+import "input"
 
 import mu "../microui"
 Context :: struct {
 	mui:        mu.Context,
-	frame:      FrameInput,
+	frame:      input.FrameInput,
 	cmds:       PlatformCommands,
 	draw_cmds:  PlatformDrawCommands,
 	debug_cmds: PlatformDebugCommnds,
