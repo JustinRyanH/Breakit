@@ -116,6 +116,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 
 	}
 
+	game.last_frame_id = frame_id(ctx)
 	return ctx.cmds.should_close_game()
 }
 
@@ -226,6 +227,10 @@ game_delete_copy :: proc(mem: ^GameMemory) {
 
 main_game :: proc(ctx: ^Context) {
 	game := g_mem
+	if (frame_id(ctx) == game.last_frame_id) {
+		return
+	}
+
 	dt := input.frame_query_delta(ctx.frame)
 	cmds := game.ctx.cmds
 

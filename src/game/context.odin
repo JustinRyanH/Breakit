@@ -21,3 +21,7 @@ Context :: struct {
 	cmds:      PlatformCommands,
 	draw_cmds: PlatformDrawCommands,
 }
+
+frame_id :: proc(ctx: ^Context) -> int {
+	return ctx.frame.current_frame.meta.frame_id
+}
