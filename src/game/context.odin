@@ -4,9 +4,8 @@ import "input"
 
 import mu "../microui"
 Context :: struct {
-	mui:        mu.Context,
-	frame:      input.FrameInput,
-	cmds:       PlatformCommands,
-	draw_cmds:  PlatformDrawCommands,
-	debug_cmds: PlatformDebugCommnds,
+	mui:       mu.Context,
+	frame:     input.FrameInput,
+	cmds:      PlatformCommands,
+	draw_cmds: PlatformDrawCommands,
 }
