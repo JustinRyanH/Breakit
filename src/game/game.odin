@@ -25,6 +25,8 @@ InitialDownOffset :: 50.0
 
 GameMemory :: struct {
 	ctx:              ^Context,
+	last_frame_id:    int,
+
 	// Entities
 	paddle:           Rectangle,
 	paddle_direction: Vec2,
@@ -99,6 +101,20 @@ game_update :: proc(ctx: ^Context) -> bool {
 
 	main_game(ctx)
 
+	{
+		mui_ctx := &game.ctx.mui
+		mu.begin(mui_ctx)
+		defer mu.end(mui_ctx)
+
+		if (ctx.frame.debug) {
+			mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
+			mu.layout_row(mui_ctx, {100})
+			res := mu.button(mui_ctx, "Replay")
+
+			if .SUBMIT in res {}
+		}
+
+	}
 
 	return ctx.cmds.should_close_game()
 }
@@ -124,20 +140,6 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	game_draw_debug(platform_draw)
 
-	{
-		mui_ctx := &game.ctx.mui
-		mu.begin(mui_ctx)
-		defer mu.end(mui_ctx)
-
-		if (frame.debug) {
-			mu.window(mui_ctx, "Window", {200, 200, 200, 200}, {.NO_CLOSE})
-			mu.layout_row(mui_ctx, {100})
-			res := mu.button(mui_ctx, "Replay")
-
-			if .SUBMIT in res {}
-		}
-
-	}
 	platform_draw.draw_mui(&game.ctx.mui)
 }
 
@@ -335,4 +337,8 @@ reset_ball :: proc() {
 	for _, i in g_mem.bricks {
 		g_mem.bricks[i].alive = true
 	}
+}
+
+frame_changed :: proc(ctx: ^Context) -> bool {
+	return g_mem.last_frame_id != ctx.frame.current_frame.meta.frame_id
 }

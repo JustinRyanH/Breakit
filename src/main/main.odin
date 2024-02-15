@@ -52,6 +52,15 @@ main :: proc() {
 
 	for {
 		defer free_all(context.temp_allocator)
+		if (ctx.frame_cmd != nil) {
+			switch cmd in ctx.frame_cmd {
+			case game.PauseGame:
+				idb.input_debugger_pause(idb_state)
+			case game.ResumeGame:
+				idb.input_debugger_unpause(idb_state)
+			}
+			ctx.frame_cmd = nil
+		}
 
 		if (rl.IsKeyReleased(.F5)) {
 			game_api.shutdown()
@@ -59,7 +68,15 @@ main :: proc() {
 			game_api.setup(ctx)
 		}
 
-		if (rl.IsKeyReleased(.F1)) {idb_state.general_debug = !idb_state.general_debug}
+		if (rl.IsKeyReleased(.F1)) {
+			idb_state.general_debug = !idb_state.general_debug
+			if (idb_state.general_debug) {
+				ctx.frame_cmd = game.PauseGame{}
+			} else {
+				ctx.frame_cmd = game.ResumeGame{}
+			}
+		}
+
 		if (rl.IsKeyReleased(.F2)) {idb_state.draw_debug = !idb_state.draw_debug}
 
 		rl_platform.load_input(&ctx.mui)
@@ -80,6 +97,8 @@ main :: proc() {
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
+
+		rl.DrawFPS(10, 10)
 
 		if reload {
 			game_api = game_api_hot_load(game_api)

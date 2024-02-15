@@ -41,6 +41,7 @@ FrameHistory :: [dynamic]UserInput
 
 VcrRecording :: struct {
 	current_frame: FrameInput,
+	active:        bool,
 }
 
 VcrPlayback :: struct {
@@ -118,7 +119,7 @@ GameInputIO :: union {
 
 input_debugger_setup :: proc(state: ^InputDebuggerState) {
 	state.playback.frame_history = make([dynamic]UserInput, 0, 1024 * 128)
-	state.playback.state = VcrRecording{}
+	state.playback.state = VcrRecording{FrameInput{}, true}
 }
 
 input_debugger_teardown :: proc(state: ^InputDebuggerState) {
@@ -184,6 +185,9 @@ input_debugger_load_next_frame :: proc(
 ) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
+		if !s.active {
+			return nil
+		}
 		s.current_frame = frame_next(s.current_frame, input)
 		err := input_file_write_frame(&state.ifs, s.current_frame)
 		if err != nil {
@@ -217,6 +221,29 @@ input_debugger_start_write :: proc(state: ^InputDebuggerState) {
 	input_file_setup(&state.ifs)
 	input_file_new_file(&state.ifs)
 	input_file_begin_write(&state.ifs)
+}
+
+input_debugger_pause :: proc(state: ^InputDebuggerState) {
+	switch v in &state.playback.state {
+	case VcrRecording:
+		v.active = false
+	case VcrPlayback:
+		v.active = false
+	case VcrLoop:
+		v.active = false
+	}
+}
+
+
+input_debugger_unpause :: proc(state: ^InputDebuggerState) {
+	switch v in &state.playback.state {
+	case VcrRecording:
+		v.active = true
+	case VcrPlayback:
+		v.active = true
+	case VcrLoop:
+		v.active = true
+	}
 }
 
 
@@ -484,7 +511,7 @@ toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = input_file_begin_write(&state.ifs)
 
 	clear_frame_history(state)
-	state.playback.state = VcrRecording{FrameInput{}}
+	state.playback.state = VcrRecording{FrameInput{}, true}
 	return
 }
 
