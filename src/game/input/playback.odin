@@ -117,22 +117,17 @@ GameInputIO :: union {
 // Input Debugger
 ////////////////////////////////
 
-input_debugger_setup :: proc(state: ^InputDebuggerState) {
+debugger_setup :: proc(state: ^InputDebuggerState) {
 	state.playback.frame_history = make([dynamic]UserInput, 0, 1024 * 128)
 	state.playback.state = VcrRecording{FrameInput{}, true}
 }
 
-input_debugger_teardown :: proc(state: ^InputDebuggerState) {
+debugger_teardown :: proc(state: ^InputDebuggerState) {
 	delete(state.playback.frame_history)
 }
 
-input_debugger_load_file :: proc(
-	state: ^InputDebuggerState,
-	file: string,
-) -> (
-	err: GameInputError,
-) {
-	input_file_set_new_file(&state.ifs, file)
+debugger_load_file :: proc(state: ^InputDebuggerState, file: string) -> (err: GameInputError) {
+	file_set_new_file(&state.ifs, file)
 	clear_frame_history(state)
 	clear(&state.playback.frame_history)
 	state.playback.has_loaded_all_playback = false
@@ -141,13 +136,13 @@ input_debugger_load_file :: proc(
 	case VcrRecording:
 		return .NotInReadMode
 	case VcrPlayback:
-		_, err = input_file_begin_read(&state.ifs)
+		_, err = file_begin_read(&state.ifs)
 		if err != nil {
 			return
 		}
 		state.playback.state = VcrPlayback{0, v.active}
 	case VcrLoop:
-		_, err = input_file_begin_read(&state.ifs)
+		_, err = file_begin_read(&state.ifs)
 		if err != nil {
 			return
 		}
@@ -156,16 +151,12 @@ input_debugger_load_file :: proc(
 	return
 }
 
-input_debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
+debugger_query_if_recording :: proc(state: ^InputDebuggerState) -> bool {
 	_, ok := state.playback.state.(VcrRecording)
 	return ok
 }
 
-input_debugger_query_current_frame :: proc(
-	state: ^InputDebuggerState,
-) -> (
-	frame_input: FrameInput,
-) {
+debugger_query_current_frame :: proc(state: ^InputDebuggerState) -> (frame_input: FrameInput) {
 	switch v in state.playback.state {
 	case VcrRecording:
 		frame_input = v.current_frame
@@ -179,17 +170,14 @@ input_debugger_query_current_frame :: proc(
 	return
 }
 
-input_debugger_load_next_frame :: proc(
-	state: ^InputDebuggerState,
-	input: UserInput,
-) -> GameInputError {
+debugger_load_next_frame :: proc(state: ^InputDebuggerState, input: UserInput) -> GameInputError {
 	switch s in &state.playback.state {
 	case VcrRecording:
 		if !s.active {
 			return nil
 		}
 		s.current_frame = frame_next(s.current_frame, input)
-		err := input_file_write_frame(&state.ifs, s.current_frame)
+		err := file_write_frame(&state.ifs, s.current_frame)
 		if err != nil {
 			return nil
 		}
@@ -205,7 +193,7 @@ input_debugger_load_next_frame :: proc(
 	return nil
 }
 
-input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputError {
+debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputError {
 	switch _ in state.playback.state {
 	case VcrRecording:
 		return toggle_playback(state)
@@ -217,13 +205,13 @@ input_debugger_toggle_playback :: proc(state: ^InputDebuggerState) -> GameInputE
 	return nil
 }
 
-input_debugger_start_write :: proc(state: ^InputDebuggerState) {
-	input_file_setup(&state.ifs)
-	input_file_new_file(&state.ifs)
-	input_file_begin_write(&state.ifs)
+debugger_start_write :: proc(state: ^InputDebuggerState) {
+	file_setup(&state.ifs)
+	file_new_file(&state.ifs)
+	file_begin_write(&state.ifs)
 }
 
-input_debugger_pause :: proc(state: ^InputDebuggerState) {
+debugger_pause :: proc(state: ^InputDebuggerState) {
 	switch v in &state.playback.state {
 	case VcrRecording:
 		v.active = false
@@ -235,7 +223,7 @@ input_debugger_pause :: proc(state: ^InputDebuggerState) {
 }
 
 
-input_debugger_unpause :: proc(state: ^InputDebuggerState) {
+debugger_unpause :: proc(state: ^InputDebuggerState) {
 	switch v in &state.playback.state {
 	case VcrRecording:
 		v.active = true
@@ -253,11 +241,11 @@ input_debugger_unpause :: proc(state: ^InputDebuggerState) {
 
 // We are going to free the previous file,
 // so let's start with a copy of empty string instead of a static
-input_file_setup :: proc(ifs: ^InputFileSystem) {
+file_setup :: proc(ifs: ^InputFileSystem) {
 	ifs.current_file = strings.clone("")
 }
 
-input_file_new_file :: proc(ifs: ^InputFileSystem) {
+file_new_file :: proc(ifs: ^InputFileSystem) {
 	old_str := ifs.current_file
 	now := time.to_unix_seconds(time.now())
 	log_name := fmt.tprintf("logs/file-%d.ilog", now)
@@ -265,51 +253,41 @@ input_file_new_file :: proc(ifs: ^InputFileSystem) {
 	delete(old_str)
 }
 
-input_file_set_new_file :: proc(ifs: ^InputFileSystem, new_file: string) {
+file_set_new_file :: proc(ifs: ^InputFileSystem, new_file: string) {
 	delete(ifs.current_file)
 	ifs.current_file = strings.clone(new_file)
 }
 
-input_file_begin_write :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	writer: GameInputWriter,
-	err: GameInputError,
-) {
-	game_input_close(&ifs.io)
+file_begin_write :: proc(ifs: ^InputFileSystem) -> (writer: GameInputWriter, err: GameInputError) {
+	game_close(&ifs.io)
 
-	new_writer := game_input_writer_create(ifs.current_file)
-	err = game_input_writer_open(&new_writer)
+	new_writer := game_writer_create(ifs.current_file)
+	err = game_writer_open(&new_writer)
 	ifs.io = new_writer
 	return new_writer, err
 }
 
-input_file_begin_read :: proc(
-	ifs: ^InputFileSystem,
-) -> (
-	reader: GameInputReader,
-	err: GameInputError,
-) {
-	game_input_close(&ifs.io)
+file_begin_read :: proc(ifs: ^InputFileSystem) -> (reader: GameInputReader, err: GameInputError) {
+	game_close(&ifs.io)
 
-	new_reader := game_input_reader_create(ifs.current_file)
-	err = game_input_reader_open(&new_reader)
+	new_reader := game_reader_create(ifs.current_file)
+	err = game_reader_open(&new_reader)
 	ifs.io = new_reader
 	return
 }
 
-input_file_write_frame :: proc(ifs: ^InputFileSystem, new_frame: FrameInput) -> GameInputError {
+file_write_frame :: proc(ifs: ^InputFileSystem, new_frame: FrameInput) -> GameInputError {
 	writer, ok := ifs.io.(GameInputWriter)
 	if ok {
-		return game_input_writer_insert_frame(&writer, new_frame)
+		return game_writer_insert_frame(&writer, new_frame)
 	}
 	return .NotInReadMode
 }
 
-input_file_read_input :: proc(ifs: ^InputFileSystem) -> (input: UserInput, err: GameInputError) {
+file_read_input :: proc(ifs: ^InputFileSystem) -> (input: UserInput, err: GameInputError) {
 	reader, ok := ifs.io.(GameInputReader)
 	if ok {
-		return game_input_reader_read_input(&reader)
+		return game_reader_read_input(&reader)
 	}
 	return UserInput{}, .NotInWriteMode
 }
@@ -319,12 +297,12 @@ input_file_read_input :: proc(ifs: ^InputFileSystem) -> (input: UserInput, err: 
 // GameInputIO functions
 ////////////////////////////////
 
-game_input_close :: proc(io: ^GameInputIO) {
+game_close :: proc(io: ^GameInputIO) {
 	switch v in io {
 	case GameInputWriter:
-		game_input_writer_close(&v)
+		game_writer_close(&v)
 	case GameInputReader:
-		game_input_reader_close(&v)
+		game_reader_close(&v)
 	}
 }
 
@@ -334,12 +312,12 @@ game_input_close :: proc(io: ^GameInputIO) {
 ////////////////////////////////
 
 
-game_input_reader_create :: proc(file_path: string) -> (reader: GameInputReader) {
+game_reader_create :: proc(file_path: string) -> (reader: GameInputReader) {
 	reader.file_path = file_path
 	return
 }
 
-game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
+game_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
 	handle, err := os.open(reader.file_path, os.O_RDONLY)
 	if err == os.ERROR_NONE {
 		reader.file_handle = handle
@@ -368,7 +346,7 @@ game_input_reader_open :: proc(reader: ^GameInputReader) -> GameInputError {
 
 }
 
-game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
+game_reader_close :: proc(reader: ^GameInputReader) -> bool {
 	when ODIN_OS == .Darwin {
 		success := os.close(reader.file_handle)
 		if (success) {
@@ -386,7 +364,7 @@ game_input_reader_close :: proc(reader: ^GameInputReader) -> bool {
 	return false
 }
 
-game_input_reader_read_input :: proc(
+game_reader_read_input :: proc(
 	reader: ^GameInputReader,
 ) -> (
 	new_frame: UserInput,
@@ -432,7 +410,7 @@ game_input_reader_read_input :: proc(
 ////////////////////////////////
 
 // Create Input Reader, does not open the file
-game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
+game_writer_create :: proc(file_path: string) -> (writer: GameInputWriter) {
 	writer.file_path = file_path
 	writer.header.version = 1
 	writer.header.header_size = size_of(InputFileHeader)
@@ -440,7 +418,7 @@ game_input_writer_create :: proc(file_path: string) -> (writer: GameInputWriter)
 }
 
 // Oepn the Handle to the Writer
-game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
+game_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 	handle, err := os.open(
 		writer.file_path,
 		os.O_WRONLY | os.O_APPEND | os.O_CREATE | os.O_TRUNC,
@@ -464,7 +442,7 @@ game_input_writer_open :: proc(writer: ^GameInputWriter) -> GameInputError {
 }
 
 // Return true if the file was closed successfully
-game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
+game_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 	when ODIN_OS == .Darwin {
 		success := os.close(writer.file_handle)
 		if (success) {
@@ -481,10 +459,7 @@ game_input_writer_close :: proc(writer: ^GameInputWriter) -> bool {
 	return false
 }
 
-game_input_writer_insert_frame :: proc(
-	writer: ^GameInputWriter,
-	frame: FrameInput,
-) -> GameInputError {
+game_writer_insert_frame :: proc(writer: ^GameInputWriter, frame: FrameInput) -> GameInputError {
 	if !writer.is_open {
 		return .FileNotOpen
 	}
@@ -507,8 +482,8 @@ game_input_writer_insert_frame :: proc(
 
 @(private)
 toggle_recording :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	input_file_new_file(&state.ifs)
-	_, err = input_file_begin_write(&state.ifs)
+	file_new_file(&state.ifs)
+	_, err = file_begin_write(&state.ifs)
 
 	clear_frame_history(state)
 	state.playback.state = VcrRecording{FrameInput{}, true}
@@ -523,7 +498,7 @@ clear_frame_history :: proc(state: ^InputDebuggerState) {
 
 @(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
-	_, err = input_file_begin_read(&state.ifs)
+	_, err = file_begin_read(&state.ifs)
 	new_frame := UserInput{}
 
 	state.playback.state = VcrPlayback{0, false}
@@ -578,7 +553,7 @@ step_loop :: proc(state: ^InputDebuggerState, v: ^VcrLoop) {
 playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 	if !state.playback.has_loaded_all_playback {
 		for i := 0; i < 30; i += 1 {
-			new_frame, err := input_file_read_input(&state.ifs)
+			new_frame, err := file_read_input(&state.ifs)
 			if err == .NoMoreFrames {
 				state.playback.has_loaded_all_playback = true
 				break
@@ -614,7 +589,7 @@ playback_input :: proc(state: ^InputDebuggerState) -> GameInputError {
 ////////////////////////////////
 
 @(test)
-test_input_writer :: proc(t: ^testing.T) {
+test_writer :: proc(t: ^testing.T) {
 	current_frame := UserInput{}
 	current_frame.meta.frame_id = 1
 	current_frame.meta.frame_delta = 1 / 60
@@ -626,18 +601,18 @@ test_input_writer :: proc(t: ^testing.T) {
 	frame_input := FrameInput{}
 	frame_input.current_frame = current_frame
 
-	writer := game_input_writer_create("bin/test.log")
-	reader := game_input_reader_create("bin/test.log")
-	err := game_input_writer_open(&writer)
+	writer := game_writer_create("bin/test.log")
+	reader := game_reader_create("bin/test.log")
+	err := game_writer_open(&writer)
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
 
 	defer {
 		if writer.is_open {
-			game_input_writer_close(&writer)
+			game_writer_close(&writer)
 			testing.expect(t, writer.is_open == false, "Expected Writer to be Closed")
 		}
 		if reader.is_open {
-			game_input_reader_close(&reader)
+			game_reader_close(&reader)
 			testing.expect(t, writer.is_open == false, "Expected Reader to be Closed")
 		}
 	}
@@ -652,12 +627,12 @@ test_input_writer :: proc(t: ^testing.T) {
 
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Go Error: %v", err))
 
-	err = game_input_writer_insert_frame(&writer, frame_input)
+	err = game_writer_insert_frame(&writer, frame_input)
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
 
-	game_input_writer_close(&writer)
+	game_writer_close(&writer)
 
-	err = game_input_reader_open(&reader)
+	err = game_reader_open(&reader)
 	testing.expect(t, err == nil, fmt.tprintf("Expected No Error, Got: %v", err))
 	testing.expect(t, reader.header.version == 1, "Expected Version to be 1")
 	testing.expect(
@@ -670,7 +645,7 @@ test_input_writer :: proc(t: ^testing.T) {
 		),
 	)
 
-	input, read_err := game_input_reader_read_input(&reader)
+	input, read_err := game_reader_read_input(&reader)
 	testing.expect(t, read_err == nil, fmt.tprintf("Expected No Error, Got: %v", read_err))
 	testing.expect(t, input == current_frame, "Expected Frame to be the same")
 }
