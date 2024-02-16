@@ -47,7 +47,7 @@ Camera2D :: struct {
 
 platform_debug_draw_collision :: proc(ce: ContactEvent) {
 	line := Line{ce.start, ce.end, 2}
-	g_mem.ctx.draw_cmds.draw_shape(line, PINK)
+	ctx.draw_cmds.draw_shape(line, PINK)
 }
 
 //////////////////////////

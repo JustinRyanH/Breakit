@@ -24,7 +24,6 @@ BricksPerLine :: 5
 InitialDownOffset :: 50.0
 
 GameMemory :: struct {
-	ctx:              ^Context,
 	last_frame_id:    int,
 
 	// Entities
@@ -46,6 +45,7 @@ GameMemory :: struct {
 }
 
 
+ctx: ^Context
 g_mem: ^GameMemory
 
 @(export)
@@ -54,7 +54,9 @@ game_init :: proc() {
 }
 
 @(export)
-game_setup :: proc(ctx: ^Context) {
+game_setup :: proc(incoming_ctx: ^Context) {
+	ctx = incoming_ctx
+
 	meta := ctx.frame.current_frame.meta
 	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
 
@@ -96,13 +98,12 @@ game_setup :: proc(ctx: ^Context) {
 // - Constraints
 @(export)
 game_update :: proc(ctx: ^Context) -> bool {
-	g_mem.ctx = ctx
 	game := g_mem
 
 	main_game(ctx)
 
 	{
-		mui_ctx := &game.ctx.mui
+		mui_ctx := &ctx.mui
 		mu.begin(mui_ctx)
 		defer mu.end(mui_ctx)
 
@@ -125,7 +126,7 @@ game_update :: proc(ctx: ^Context) -> bool {
 @(export)
 game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
-	frame := game.ctx.frame
+	frame := ctx.frame
 
 	platform_draw.begin_drawing()
 	defer platform_draw.end_drawing()
@@ -143,16 +144,16 @@ game_draw :: proc(platform_draw: ^PlatformDrawCommands) {
 
 	game_draw_debug(platform_draw)
 
-	platform_draw.draw_mui(&game.ctx.mui)
+	platform_draw.draw_mui(&ctx.mui)
 }
 
 game_draw_debug :: proc(platform_draw: ^PlatformDrawCommands) {
 	game := g_mem
-	if (!game.ctx.frame.debug_draw) {
+	if (!ctx.frame.debug_draw) {
 		return
 	}
 
-	screen_width, screen_height := input.frame_query_dimensions(game.ctx.frame)
+	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
 
 	world := Rectangle {
 		Vec2{screen_width / 2, screen_height / 2},
@@ -240,7 +241,7 @@ main_game :: proc(ctx: ^Context) {
 	}
 
 	dt := input.frame_query_delta(ctx.frame)
-	cmds := game.ctx.cmds
+	cmds := ctx.cmds
 
 	mouse_pos := input.mouse_position(ctx.frame)
 	screen_width, screen_height := input.frame_query_dimensions(ctx.frame)
@@ -338,7 +339,7 @@ main_game :: proc(ctx: ^Context) {
 
 
 reset_ball :: proc() {
-	meta := g_mem.ctx.frame.current_frame.meta
+	meta := ctx.frame.current_frame.meta
 
 	g_mem.ball = Circle{Vec2{meta.screen_width / 2.0, meta.screen_height / 2.0}, 10}
 	g_mem.ball_direction = math.vector_normalize(Vec2{100, 100})

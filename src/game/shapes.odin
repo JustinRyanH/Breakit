@@ -267,7 +267,7 @@ shape_is_line_colliding_rect :: proc(
 	evt: ContactEvent,
 	is_colliding: bool,
 ) {
-	draw := g_mem.ctx.draw_cmds
+	draw := ctx.draw_cmds
 	i: int = 0
 	c_points: [2]Vec2
 	c_lines: [2]Line
