@@ -3,6 +3,125 @@ package input
 import math "core:math/linalg"
 import "core:testing"
 
+KeyboardKey :: enum {
+	// Alphanumeric keys
+	APOSTROPH, // Key: '
+	COMMA, // Key: ,
+	MINUS, // Key: -
+	PERIOD, // Key: .
+	SLASH, // Key: /
+	ZERO, // Key: 0
+	ONE, // Key: 1
+	TWO, // Key: 2
+	THREE, // Key: 3
+	FOUR, // Key: 4
+	FIVE, // Key: 5
+	SIX, // Key: 6
+	SEVEN, // Key: 7
+	EIGHT, // Key: 8
+	NINE, // Key: 9
+	SEMICOLON, // Key: ;
+	EQUAL, // Key: =
+	A, // Key: A | a
+	B, // Key: B | b
+	C, // Key: C | c
+	D, // Key: D | d
+	E, // Key: E | e
+	F, // Key: F | f
+	G, // Key: G | g
+	H, // Key: H | h
+	I, // Key: I | i
+	J, // Key: J | j
+	K, // Key: K | k
+	L, // Key: L | l
+	M, // Key: M | m
+	N, // Key: N | n
+	O, // Key: O | o
+	P, // Key: P | p
+	Q, // Key: Q | q
+	R, // Key: R | r
+	S, // Key: S | s
+	T, // Key: T | t
+	U, // Key: U | u
+	V, // Key: V | v
+	W, // Key: W | w
+	X, // Key: X | x
+	Y, // Key: Y | y
+	Z, // Key: Z | z
+	LEFT_BRACKET, // Key: [
+	BACKSLASH, // Key: '\'
+	RIGHT_BRACKET, // Key: ]
+	GRAVE, // Key: `
+
+	// Function keys
+	SPACE, // Key: Space
+	ESCAPE, // Key: Esc
+	ENTER, // Key: Enter
+	TAB, // Key: Tab
+	BACKSPACE, // Key: Backspace
+	INSERT, // Key: Ins
+	DELETE, // Key: Del
+	RIGHT, // Key: Cursor right
+	LEFT, // Key: Cursor left
+	DOWN, // Key: Cursor down
+	UP, // Key: Cursor up
+	PAGE_UP, // Key: Page up
+	PAGE_DOWN, // Key: Page down
+	HOME, // Key: Home
+	END, // Key: End
+	CAPS_LOCK, // Key: Caps lock
+	SCROLL_LOCK, // Key: Scroll down
+	NUM_LOCK, // Key: Num lock
+	PRINT_SCREEN, // Key: Print screen
+	PAUSE, // Key: Pause
+	F1, // Key: F1
+	F2, // Key: F2
+	F3, // Key: F3
+	F4, // Key: F4
+	F5, // Key: F5
+	F6, // Key: F6
+	F7, // Key: F7
+	F8, // Key: F8
+	F9, // Key: F9
+	F10, // Key: F10
+	F11, // Key: F11
+	F12, // Key: F12
+	LEFT_SHIFT, // Key: Shift left
+	LEFT_CONTROL, // Key: Control left
+	LEFT_ALT, // Key: Alt left
+	LEFT_SUPER, // Key: Super left
+	RIGHT_SHIFT, // Key: Shift right
+	RIGHT_CONTROL, // Key: Control right
+	RIGHT_ALT, // Key: Alt right
+	RIGHT_SUPER, // Key: Super right
+	KB_MENU, // Key: KB menu
+
+	// Keypad keys
+	KP_0, // Key: Keypad 0
+	KP_1, // Key: Keypad 1
+	KP_2, // Key: Keypad 2
+	KP_3, // Key: Keypad 3
+	KP_4, // Key: Keypad 4
+	KP_5, // Key: Keypad 5
+	KP_6, // Key: Keypad 6
+	KP_7, // Key: Keypad 7
+	KP_8, // Key: Keypad 8
+	KP_9, // Key: Keypad 9
+	KP_DECIMAL, // Key: Keypad .
+	KP_DIVIDE, // Key: Keypad /
+	KP_MULTIPLY, // Key: Keypad *
+	KP_SUBTRACT, // Key: Keypad -
+	KP_ADD, // Key: Keypad +
+	KP_ENTER, // Key: Keypad Enter
+	KP_EQUAL, // Key: Keypad =
+
+	// Android key buttons
+	BACK, // Key: Android back button
+	MENU, // Key: Android menu button
+	VOLUME_UP, // Key: Android volume up button
+	VOLUME_DOWN, // Key: Android volume down button
+}
+
 FrameMeta :: struct {
 	frame_id:      int,
 	frame_delta:   f32,
@@ -26,7 +145,7 @@ KeyboardInput :: struct {
 UserInput :: struct {
 	meta:     FrameMeta,
 	mouse:    MouseInput,
-	keyboard: KeyboardInput,
+	keyboard: bit_set[KeyboardKey],
 }
 
 
@@ -103,41 +222,32 @@ was_right_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
 
 // Is the Right Arrow down this frame
 is_right_arrow_down :: proc(frame_input: FrameInput) -> bool {
-	return frame_input.current_frame.keyboard.right_down
+	return .RIGHT in frame_input.current_frame.keyboard
 }
 
 // Was the Right Arrow pressed the framae before, not this frame
 was_right_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_pressed(
-		frame_input.last_frame.keyboard.right_down,
-		frame_input.current_frame.keyboard.right_down,
-	)
+	return was_just_released(.RIGHT, frame_input)
 }
 
 // Is the Left Arrow down this frame
 is_left_arrow_down :: proc(frame_input: FrameInput) -> bool {
-	return frame_input.current_frame.keyboard.left_down
+	return .LEFT in frame_input.current_frame.keyboard
 }
 
 // Was the Left Arrow pressed the frame before, not this frame
 was_left_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_pressed(
-		frame_input.last_frame.keyboard.left_down,
-		frame_input.current_frame.keyboard.left_down,
-	)
+	return was_just_released(.LEFT, frame_input)
 }
 
 // Is the Space key down this frame
 is_space_down :: proc(frame_input: FrameInput) -> bool {
-	return frame_input.current_frame.keyboard.space_down
+	return .SPACE in frame_input.current_frame.keyboard
 }
 
 // Was the Space key pressed the frame before, not this frame
 was_space_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_pressed(
-		frame_input.last_frame.keyboard.space_down,
-		frame_input.current_frame.keyboard.space_down,
-	)
+	return was_just_released(.SPACE, frame_input)
 }
 
 ///////////////////////////////////////////
@@ -149,6 +259,11 @@ was_pressed :: #force_inline proc(previous_state, current_state: bool) -> bool {
 	return !current_state && previous_state
 }
 
+@(private = "file")
+was_just_released :: #force_inline proc(key: KeyboardKey, frame: FrameInput) -> bool {
+	return !(key in frame.current_frame.keyboard) && key in frame.last_frame.keyboard
+}
+
 
 ///////////////////////////////////////////
 // Testing
@@ -158,11 +273,8 @@ was_pressed :: #force_inline proc(previous_state, current_state: bool) -> bool {
 test_is_key_down :: proc(t: ^testing.T) {
 	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
 
-	keyboard_p := KeyboardInput{false, false, false}
-	keyboard_c := KeyboardInput{false, true, false}
-
-	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
-	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
+	last_frame := UserInput{meta, MouseInput{}, {}}
+	current_frame := UserInput{meta, MouseInput{}, {.RIGHT}}
 
 	input := FrameInput{current_frame, last_frame}
 
@@ -179,8 +291,8 @@ test_was_key_pressed :: proc(t: ^testing.T) {
 	keyboard_p := KeyboardInput{false, true, true}
 	keyboard_c := KeyboardInput{false, false, true}
 
-	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
-	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
+	last_frame := UserInput{meta, MouseInput{}, {.RIGHT, .SPACE}}
+	current_frame := UserInput{meta, MouseInput{}, {.SPACE}}
 
 	input := FrameInput{current_frame, last_frame}
 
@@ -196,8 +308,8 @@ test_is_mouse_button_ressed :: proc(t: ^testing.T) {
 	mouse_c := MouseInput{math.Vector2f32{}, true, false}
 	mouse_p := MouseInput{math.Vector2f32{}, false, false}
 
-	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
-	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
+	last_frame := UserInput{meta, mouse_p, {}}
+	current_frame := UserInput{meta, mouse_c, {}}
 	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, is_left_mouse_down(input), "Left mouse button is pressed")
@@ -210,8 +322,8 @@ test_was_mouse_button_pressed :: proc(t: ^testing.T) {
 	mouse_c := MouseInput{math.Vector2f32{}, false, false}
 	mouse_p := MouseInput{math.Vector2f32{}, true, false}
 
-	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
-	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
+	last_frame := UserInput{meta, mouse_p, {}}
+	current_frame := UserInput{meta, mouse_c, {}}
 	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, was_left_mouse_pressed(input), "Left mouse button was pressed")
@@ -224,8 +336,8 @@ test_mouse_position :: proc(t: ^testing.T) {
 	mouse_c := MouseInput{math.Vector2f32{10, 10}, false, false}
 	mouse_p := MouseInput{math.Vector2f32{20, 20}, false, false}
 
-	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
-	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
+	last_frame := UserInput{meta, mouse_p, {}}
+	current_frame := UserInput{meta, mouse_c, {}}
 	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(

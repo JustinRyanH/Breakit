@@ -36,9 +36,6 @@ game_update :: proc() -> bool {
 @(export)
 game_draw :: proc() {
 	draw_cmds := &ctx.draw_cmds
-	draw_cmds.begin_drawing()
-	defer draw_cmds.end_drawing()
-
 	draw_cmds.clear(BLACK)
 }
 
