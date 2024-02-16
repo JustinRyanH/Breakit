@@ -99,7 +99,6 @@ main :: proc() {
 		user_input := rl_platform.get_current_user_input()
 		err := input.debugger_load_next_frame(idb, user_input)
 
-		old_frame := ctx.frame
 		ctx.frame = input.debugger_query_current_frame(idb)
 
 		should_exit := game_api.update(ctx)
