@@ -68,13 +68,8 @@ main :: proc() {
 			game_api.draw()
 
 			rl.DrawFPS(10, 10)
-			rl.DrawText(
-				fmt.ctprintf("%v %v", user_input.keyboard, user_input.mouse.buttons),
-				10,
-				40,
-				8,
-				rl.RAYWHITE,
-			)
+			rl.DrawText(fmt.ctprintf("%v", user_input.keyboard), 10, 40, 8, rl.RAYWHITE)
+			rl.DrawText(fmt.ctprintf("%v", user_input.mouse), 10, 60, 8, rl.RAYWHITE)
 			rl_platform.render_mui(&ctx.mui)
 		}
 
