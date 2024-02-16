@@ -21,7 +21,7 @@ tasks:
     generates:
       - bin/Breakit
     sources:
-      - ./src/main/**/*.odin
+      - ./src/**/*.odin
 
   game:
     deps: [test]
