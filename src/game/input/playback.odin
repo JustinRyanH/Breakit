@@ -499,8 +499,6 @@ clear_frame_history :: proc(state: ^InputDebuggerState) {
 @(private)
 toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = file_begin_read(&state.ifs)
-	new_frame := UserInput{}
-
 	state.playback.state = VcrPlayback{0, true}
 	return
 }
@@ -532,7 +530,6 @@ step_playback :: proc(state: ^InputDebuggerState, v: ^VcrPlayback) {
 	}
 	v.current_index += 1
 	if v.current_index >= len_of_history {
-		v.current_index = 0
 		v.active = false
 	}
 }
