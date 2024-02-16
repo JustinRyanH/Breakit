@@ -4,20 +4,22 @@ import fmt "core:fmt"
 import math "core:math/linalg"
 import "core:testing"
 
+Vector2 :: math.Vector2f32
+
 Rectangle :: struct {
-	pos:      Vec2,
-	size:     Vec2,
+	pos:      Vector2,
+	size:     Vector2,
 	rotation: f32,
 }
 
 Circle :: struct {
-	pos:    Vec2,
+	pos:    Vector2,
 	radius: f32,
 }
 
 Line :: struct {
-	start:     Vec2,
-	end:       Vec2,
+	start:     Vector2,
+	end:       Vector2,
 	thickness: f32,
 }
 
@@ -29,9 +31,9 @@ Shape :: union {
 
 
 ContactEvent :: struct {
-	start:  Vec2,
-	end:    Vec2,
-	normal: Vec2,
+	start:  Vector2,
+	end:    Vector2,
+	normal: Vector2,
 	depth:  f32,
 }
 
@@ -255,7 +257,7 @@ shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> 
 }
 
 // returns true if two lines intersect
-shape_are_lines_colliding :: proc(a, b: Line) -> (Vec2, bool) {
+shape_are_lines_colliding :: proc(a, b: Line) -> (Vector2, bool) {
 	return shape_get_line_intersection(a, b)
 }
 
@@ -269,7 +271,7 @@ shape_is_line_colliding_rect :: proc(
 ) {
 	draw := ctx.draw_cmds
 	i: int = 0
-	c_points: [2]Vec2
+	c_points: [2]Vector2
 	c_lines: [2]Line
 	lines := shape_get_rect_lines(rect)
 	for l in lines {
@@ -316,7 +318,7 @@ shape_rectangle_seperation :: proc(
 ) -> (
 	seperation: f32,
 	axis: Line,
-	pen_point: Vec2,
+	pen_point: Vector2,
 ) {
 	seperation = min(f32)
 	rect_a_lines := shape_get_rect_lines(rect_a)
@@ -327,7 +329,7 @@ shape_rectangle_seperation :: proc(
 		line_n := shape_line_normal(line_a)
 
 		smallest_sep := max(f32)
-		min_vertex: Vec2
+		min_vertex: Vector2
 
 		for line_b in rect_b_lines {
 			projected_point := math.dot(line_b.start - line_a.start, line_n)
@@ -348,7 +350,7 @@ shape_rectangle_seperation :: proc(
 	return
 }
 
-shape_get_closest_line :: proc(point: Vec2, rectangle: Rectangle) -> (closest_line: Line) {
+shape_get_closest_line :: proc(point: Vector2, rectangle: Rectangle) -> (closest_line: Line) {
 	rect_lines := shape_get_rect_lines(rectangle)
 	chosen_line_distance := max(f32)
 	for rect_line in rect_lines {
@@ -371,14 +373,14 @@ shape_get_rect_extends :: proc(rect: Rectangle) -> (math.Vector2f32, math.Vector
 }
 
 // Get the vertices around a rectangle, clockwise
-shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vec2) {
+shape_get_rect_vertices :: proc(rect: Rectangle) -> (vertices: [4]Vector2) {
 	len := math.length(rect.size) / 2
 	nm_v := math.normalize(rect.size)
-	normalized_points := [4]Vec2 {
+	normalized_points := [4]Vector2 {
 		-nm_v,
-		Vec2{nm_v.x, -nm_v.y},
-		Vec2{nm_v.x, nm_v.y},
-		Vec2{-nm_v.x, nm_v.y},
+		Vector2{nm_v.x, -nm_v.y},
+		Vector2{nm_v.x, nm_v.y},
+		Vector2{-nm_v.x, nm_v.y},
 	}
 
 	rad := math.to_radians(rect.rotation)
@@ -408,15 +410,15 @@ shape_get_rect_lines :: proc(rect: Rectangle) -> (lines: [4]Line) {
 }
 
 // Returns the intersection point, second argument is if there is an interaction or not
-shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
+shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vector2, bool) {
 	an := a.end - a.start
 	bn := b.end - b.start
 
-	bn_flip := Vec2{bn.y, -bn.x}
+	bn_flip := Vector2{bn.y, -bn.x}
 	an_bn_dot := math.dot(bn_flip, an)
 
 	if (an_bn_dot == 0) {
-		return Vec2{}, false
+		return Vector2{}, false
 	}
 
 	s_cross := -an.y * (a.start.x - b.start.x) + an.x * (a.start.y - b.start.y)
@@ -428,21 +430,21 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vec2, bool) {
 	if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
 		x := a.start.x + (t * an.x)
 		y := a.start.y + (t * an.y)
-		return Vec2{x, y}, true
+		return Vector2{x, y}, true
 
 	}
 
-	return Vec2{}, false
+	return Vector2{}, false
 }
 
 // Rotates the Vector 90 counter clockwise, normalized
-shape_get_vector_normal :: proc(vec: Vec2) -> Vec2 {
+shape_get_vector_normal :: proc(vec: Vector2) -> Vector2 {
 	v := math.normalize(vec)
 	l := math.length(vec)
-	return Vec2{-v.y, v.x}
+	return Vector2{-v.y, v.x}
 }
 
-shape_line_mid_point :: proc(line: Line) -> Vec2 {
+shape_line_mid_point :: proc(line: Line) -> Vector2 {
 	line_at_origin := line.end - line.start
 	normalized_direction := math.length(line_at_origin)
 
@@ -450,11 +452,11 @@ shape_line_mid_point :: proc(line: Line) -> Vec2 {
 	return normalized_mid_point + line.start
 }
 
-shape_line_normal :: proc(line: Line) -> Vec2 {
+shape_line_normal :: proc(line: Line) -> Vector2 {
 	return shape_get_vector_normal(line.start - line.end)
 }
 
-shape_point_projected_to_line :: #force_inline proc(point: Vec2, line: Line) -> Vec2 {
+shape_point_projected_to_line :: #force_inline proc(point: Vector2, line: Line) -> Vector2 {
 	se := line.end - line.start
 	se_len := math.length(se)
 	pd := point - line.start
@@ -472,7 +474,7 @@ shape_invert_line :: #force_inline proc(line: Line) -> (new_line: Line) {
 }
 
 @(private = "file")
-shape_get_corner_vertices :: proc(p: Vec2, l: Line) -> (Vec2, Vec2, bool) {
+shape_get_corner_vertices :: proc(p: Vector2, l: Line) -> (Vector2, Vector2, bool) {
 	v1 := p - l.start
 	v2 := l.end - l.start
 	dot := math.dot(v1, v2)
@@ -482,7 +484,7 @@ shape_get_corner_vertices :: proc(p: Vec2, l: Line) -> (Vec2, Vec2, bool) {
 	dot = math.dot(v1, v2)
 	if (dot < 0) {return v1, v2, true}
 
-	return Vec2{}, Vec2{}, false
+	return Vector2{}, Vector2{}, false
 }
 
 /////////////////////////////
@@ -491,25 +493,25 @@ shape_get_corner_vertices :: proc(p: Vec2, l: Line) -> (Vec2, Vec2, bool) {
 
 @(test)
 test_shape_get_vector_normal :: proc(t: ^testing.T) {
-	v := Vec2{3, 4}
+	v := Vector2{3, 4}
 	n := shape_get_vector_normal(v)
-	testing.expect(t, math.normalize(Vec2{-4, 3}) == n, "Normal of Vector")
+	testing.expect(t, math.normalize(Vector2{-4, 3}) == n, "Normal of Vector")
 }
 
 @(test)
 test_shape_point_in_circle :: proc(t: ^testing.T) {
-	circle_center := Vec2{300, 400}
+	circle_center := Vector2{300, 400}
 	circle_radius: f32 = 50
 	circle := Circle{circle_center, circle_radius}
 
 	testing.expect(
 		t,
-		!shape_is_point_inside_circle(Vec2{200, 305}, circle),
+		!shape_is_point_inside_circle(Vector2{200, 305}, circle),
 		"Point should be outside of circle",
 	)
 	testing.expect(
 		t,
-		shape_is_point_inside_circle(Vec2{260, 385}, circle),
+		shape_is_point_inside_circle(Vector2{260, 385}, circle),
 		"Point should be inside of circle",
 	)
 }
@@ -517,15 +519,15 @@ test_shape_point_in_circle :: proc(t: ^testing.T) {
 @(test)
 test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 	// Return Vertices of the Rectangle in a counter clockwise pattern
-	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
+	rect := Rectangle{Vector2{0, 0}, Vector2{1, 1}, 0.0}
 
 	vertices := shape_get_rect_vertices(rect)
 
-	expected_vertices := [4]Vec2 {
-		Vec2{-0.5, -0.5},
-		Vec2{0.5, -0.5},
-		Vec2{0.5, 0.5},
-		Vec2{-0.5, 0.5},
+	expected_vertices := [4]Vector2 {
+		Vector2{-0.5, -0.5},
+		Vector2{0.5, -0.5},
+		Vector2{0.5, 0.5},
+		Vector2{-0.5, 0.5},
 	}
 
 	tolerance: f32 = 0.001
@@ -542,12 +544,22 @@ test_shape_rect_vertices_unrotated :: proc(t: ^testing.T) {
 @(test)
 test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 	// Return Lines of the Rectangle in a counter clockwise pattern
-	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
+	rect := Rectangle{Vector2{0, 0}, Vector2{1, 1}, 0.0}
 
 	lines := shape_get_rect_lines(rect)
 
-	expected_starts := [4]Vec2{Vec2{-0.5, -0.5}, Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}}
-	expected_ends := [4]Vec2{Vec2{0.5, -0.5}, Vec2{0.5, 0.5}, Vec2{-0.5, 0.5}, Vec2{-0.5, -0.5}}
+	expected_starts := [4]Vector2 {
+		Vector2{-0.5, -0.5},
+		Vector2{0.5, -0.5},
+		Vector2{0.5, 0.5},
+		Vector2{-0.5, 0.5},
+	}
+	expected_ends := [4]Vector2 {
+		Vector2{0.5, -0.5},
+		Vector2{0.5, 0.5},
+		Vector2{-0.5, 0.5},
+		Vector2{-0.5, -0.5},
+	}
 
 	tolerance: f32 = 0.001
 	for _, i in lines {
@@ -576,32 +588,32 @@ test_shape_rect_lines_unrotated :: proc(t: ^testing.T) {
 
 @(test)
 test_shape_rect_extends_unrotated :: proc(t: ^testing.T) {
-	rect := Rectangle{Vec2{0, 0}, Vec2{1, 1}, 0.0}
+	rect := Rectangle{Vector2{0, 0}, Vector2{1, 1}, 0.0}
 	min, max := shape_get_rect_extends(rect)
 
 	testing.expect(
 		t,
-		min == Vec2{-0.5, -0.5},
+		min == Vector2{-0.5, -0.5},
 		"origin is at zero so minimum extends is half width, left of origin",
 	)
 	testing.expect(
 		t,
-		max == Vec2{0.5, 0.5},
+		max == Vector2{0.5, 0.5},
 		"origin is at zero so maximum extends is half width, right of origin",
 	)
 }
 
 @(test)
 test_shape_get_line_intersection :: proc(t: ^testing.T) {
-	line_a := Line{Vec2{-1, 0}, Vec2{1, 0}, 0.0}
-	line_b := Line{Vec2{-1, 1}, Vec2{1, 1}, 0.0}
-	line_c := Line{Vec2{-1, 0}, Vec2{1, 0}, 0.0}
-	line_d := Line{Vec2{0, -1}, Vec2{0, 1}, 0.0}
+	line_a := Line{Vector2{-1, 0}, Vector2{1, 0}, 0.0}
+	line_b := Line{Vector2{-1, 1}, Vector2{1, 1}, 0.0}
+	line_c := Line{Vector2{-1, 0}, Vector2{1, 0}, 0.0}
+	line_d := Line{Vector2{0, -1}, Vector2{0, 1}, 0.0}
 
 	point, did_intersect := shape_get_line_intersection(line_a, line_b)
 	testing.expect(t, !did_intersect, "Parallel lines do not intersect")
 
 	point, did_intersect = shape_get_line_intersection(line_c, line_d)
 	testing.expect(t, did_intersect, "Overlapping Lines intersect")
-	testing.expect(t, point == Vec2{}, "This case intersects at origin")
+	testing.expect(t, point == Vector2{}, "This case intersects at origin")
 }

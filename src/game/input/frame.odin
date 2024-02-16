@@ -35,8 +35,6 @@ UserInput :: struct {
 FrameInput :: struct {
 	current_frame: UserInput,
 	last_frame:    UserInput,
-	debug:         bool,
-	debug_draw:    bool,
 }
 
 
@@ -47,8 +45,6 @@ FrameInput :: struct {
 
 frame_next :: proc(previous_frame: FrameInput, user_input: UserInput) -> FrameInput {
 	new_frame := FrameInput{}
-	new_frame.debug = previous_frame.debug
-	new_frame.debug_draw = previous_frame.debug_draw
 
 	new_frame.last_frame = previous_frame.current_frame
 	new_frame.current_frame = user_input
@@ -57,16 +53,6 @@ frame_next :: proc(previous_frame: FrameInput, user_input: UserInput) -> FrameIn
 	return new_frame
 }
 
-
-// This opens the Debug Menu, used for Replay and Other in game debugging tools
-frame_toggle_debug :: proc(frame: ^FrameInput) {
-	frame.debug = !frame.debug
-}
-
-// This Toggles the Draw Debug, collision boxes and items such as that
-frame_toggle_draw_debug :: proc(frame: ^FrameInput) {
-	frame.debug_draw = !frame.debug_draw
-}
 
 // Get the amount of time for this frame
 frame_query_delta :: proc(frame_input: FrameInput) -> f32 {
@@ -178,7 +164,7 @@ test_is_key_down :: proc(t: ^testing.T) {
 	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
 	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
 
-	input := FrameInput{current_frame, last_frame, false, false}
+	input := FrameInput{current_frame, last_frame}
 
 
 	testing.expect(t, is_right_arrow_down(input), "Right Arrow should be down")
@@ -196,7 +182,7 @@ test_was_key_pressed :: proc(t: ^testing.T) {
 	last_frame := UserInput{meta, MouseInput{}, keyboard_p}
 	current_frame := UserInput{meta, MouseInput{}, keyboard_c}
 
-	input := FrameInput{current_frame, last_frame, false, false}
+	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, was_right_arrow_pressed(input), "Right Arrow should have been pressed")
 	testing.expect(t, !was_left_arrow_pressed(input), "Left Arrow should not be pressed")
@@ -212,7 +198,7 @@ test_is_mouse_button_ressed :: proc(t: ^testing.T) {
 
 	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
 	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
-	input := FrameInput{current_frame, last_frame, false, false}
+	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, is_left_mouse_down(input), "Left mouse button is pressed")
 	testing.expect(t, !is_right_mouse_down(input), "Right mouse button is not pressed")
@@ -226,7 +212,7 @@ test_was_mouse_button_pressed :: proc(t: ^testing.T) {
 
 	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
 	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
-	input := FrameInput{current_frame, last_frame, false, false}
+	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(t, was_left_mouse_pressed(input), "Left mouse button was pressed")
 	testing.expect(t, !was_right_mouse_pressed(input), "Right mouse button was not pressed")
@@ -240,7 +226,7 @@ test_mouse_position :: proc(t: ^testing.T) {
 
 	last_frame := UserInput{meta, mouse_p, KeyboardInput{}}
 	current_frame := UserInput{meta, mouse_c, KeyboardInput{}}
-	input := FrameInput{current_frame, last_frame, false, false}
+	input := FrameInput{current_frame, last_frame}
 
 	testing.expect(
 		t,
