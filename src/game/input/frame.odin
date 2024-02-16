@@ -122,6 +122,16 @@ KeyboardKey :: enum {
 	VOLUME_DOWN, // Key: Android volume down button
 }
 
+MouseButton :: enum {
+	LEFT, // Mouse button left
+	RIGHT, // Mouse button right
+	MIDDLE, // Mouse button middle (pressed wheel)
+	SIDE, // Mouse button side (advanced mouse device)
+	EXTRA, // Mouse button extra (advanced mouse device)
+	FORWARD, // Mouse button fordward (advanced mouse device)
+	BACK, // Mouse button back (advanced mouse device)
+}
+
 FrameMeta :: struct {
 	frame_id:      int,
 	frame_delta:   f32,
@@ -130,9 +140,8 @@ FrameMeta :: struct {
 }
 
 MouseInput :: struct {
-	pos:        math.Vector2f32,
-	left_down:  bool,
-	right_down: bool,
+	pos:     math.Vector2f32,
+	buttons: bit_set[MouseButton],
 }
 
 KeyboardInput :: struct {
@@ -156,6 +165,11 @@ FrameInput :: struct {
 	last_frame:    UserInput,
 }
 
+BooleanInput :: union {
+	KeyboardKey,
+	MouseButton,
+}
+
 
 ///////////////////////////////////////////
 // User Input Functions
@@ -170,6 +184,28 @@ frame_next :: proc(previous_frame: FrameInput, user_input: UserInput) -> FrameIn
 
 	new_frame.current_frame.meta.frame_id = previous_frame.current_frame.meta.frame_id + 1
 	return new_frame
+}
+
+
+is_pressed :: proc(frame: FrameInput, key: BooleanInput) -> (res: bool) {
+	switch i in key {
+	case KeyboardKey:
+		res = i in frame.current_frame.keyboard
+	case MouseButton:
+		res = i in frame.current_frame.mouse.buttons
+	}
+	return res
+}
+
+@(private = "file")
+was_just_released :: proc(frame: FrameInput, key: BooleanInput) -> (res: bool) {
+	switch i in key {
+	case KeyboardKey:
+		res = !(i in frame.current_frame.keyboard) && i in frame.last_frame.keyboard
+	case MouseButton:
+		res = !(i in frame.current_frame.mouse.buttons) && i in frame.last_frame.mouse.buttons
+	}
+	return res
 }
 
 
@@ -196,28 +232,22 @@ mouse_delta :: proc(frame_input: FrameInput) -> math.Vector2f32 {
 
 // Is the Left Mouse Button down this frame
 is_left_mouse_down :: proc(frame_input: FrameInput) -> bool {
-	return frame_input.current_frame.mouse.left_down
+	return is_pressed(frame_input, MouseButton.LEFT)
 }
 
 // Was the Left Mouse Button pressed the frame before, not this frame
 was_left_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_pressed(
-		frame_input.last_frame.mouse.left_down,
-		frame_input.current_frame.mouse.left_down,
-	)
+	return was_just_released(frame_input, MouseButton.LEFT)
 }
 
 // Is the Right Mouse Button down this frame
 is_right_mouse_down :: proc(frame_input: FrameInput) -> bool {
-	return frame_input.current_frame.mouse.right_down
+	return is_pressed(frame_input, MouseButton.RIGHT)
 }
 
 // Was the Right Mouse Button pressed the frame before, not this frame
 was_right_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_pressed(
-		frame_input.last_frame.mouse.right_down,
-		frame_input.current_frame.mouse.right_down,
-	)
+	return was_just_released(frame_input, MouseButton.RIGHT)
 }
 
 // Is the Right Arrow down this frame
@@ -227,7 +257,7 @@ is_right_arrow_down :: proc(frame_input: FrameInput) -> bool {
 
 // Was the Right Arrow pressed the framae before, not this frame
 was_right_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(.RIGHT, frame_input)
+	return was_just_released(frame_input, KeyboardKey.RIGHT)
 }
 
 // Is the Left Arrow down this frame
@@ -237,7 +267,7 @@ is_left_arrow_down :: proc(frame_input: FrameInput) -> bool {
 
 // Was the Left Arrow pressed the frame before, not this frame
 was_left_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(.LEFT, frame_input)
+	return was_just_released(frame_input, KeyboardKey.LEFT)
 }
 
 // Is the Space key down this frame
@@ -247,7 +277,7 @@ is_space_down :: proc(frame_input: FrameInput) -> bool {
 
 // Was the Space key pressed the frame before, not this frame
 was_space_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(.SPACE, frame_input)
+	return was_just_released(frame_input, .SPACE)
 }
 
 ///////////////////////////////////////////
@@ -258,12 +288,6 @@ was_space_pressed :: proc(frame_input: FrameInput) -> bool {
 was_pressed :: #force_inline proc(previous_state, current_state: bool) -> bool {
 	return !current_state && previous_state
 }
-
-@(private = "file")
-was_just_released :: #force_inline proc(key: KeyboardKey, frame: FrameInput) -> bool {
-	return !(key in frame.current_frame.keyboard) && key in frame.last_frame.keyboard
-}
-
 
 ///////////////////////////////////////////
 // Testing
@@ -279,9 +303,9 @@ test_is_key_down :: proc(t: ^testing.T) {
 	input := FrameInput{current_frame, last_frame}
 
 
-	testing.expect(t, is_right_arrow_down(input), "Right Arrow should be down")
-	testing.expect(t, !is_left_arrow_down(input), "Left Arrow should not be down")
-	testing.expect(t, !is_space_down(input), "Space should not be down")
+	testing.expect(t, is_pressed(input, KeyboardKey.RIGHT), "Right Arrow should be down")
+	testing.expect(t, !is_pressed(input, KeyboardKey.LEFT), "Left Arrow should not be down")
+	testing.expect(t, !is_pressed(input, .SPACE), "Space should not be down")
 }
 
 @(test)
@@ -296,45 +320,57 @@ test_was_key_pressed :: proc(t: ^testing.T) {
 
 	input := FrameInput{current_frame, last_frame}
 
-	testing.expect(t, was_right_arrow_pressed(input), "Right Arrow should have been pressed")
-	testing.expect(t, !was_left_arrow_pressed(input), "Left Arrow should not be pressed")
-	testing.expect(t, !was_space_pressed(input), "Space should not be pressed")
+	testing.expect(
+		t,
+		was_just_released(input, KeyboardKey.RIGHT),
+		"Right Arrow should have been pressed",
+	)
+	testing.expect(
+		t,
+		!was_just_released(input, KeyboardKey.LEFT),
+		"Left Arrow should not be pressed",
+	)
+	testing.expect(t, !was_just_released(input, .SPACE), "Space should not be pressed")
 }
 
 @(test)
 test_is_mouse_button_ressed :: proc(t: ^testing.T) {
 	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
 
-	mouse_c := MouseInput{math.Vector2f32{}, true, false}
-	mouse_p := MouseInput{math.Vector2f32{}, false, false}
+	mouse_c := MouseInput{math.Vector2f32{}, {.LEFT}}
+	mouse_p := MouseInput{math.Vector2f32{}, {}}
 
 	last_frame := UserInput{meta, mouse_p, {}}
 	current_frame := UserInput{meta, mouse_c, {}}
 	input := FrameInput{current_frame, last_frame}
 
-	testing.expect(t, is_left_mouse_down(input), "Left mouse button is pressed")
-	testing.expect(t, !is_right_mouse_down(input), "Right mouse button is not pressed")
+	testing.expect(t, is_pressed(input, MouseButton.LEFT), "Left mouse button is pressed")
+	testing.expect(t, !is_pressed(input, MouseButton.RIGHT), "Right mouse button is not pressed")
 }
 
 @(test)
 test_was_mouse_button_pressed :: proc(t: ^testing.T) {
 	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
-	mouse_c := MouseInput{math.Vector2f32{}, false, false}
-	mouse_p := MouseInput{math.Vector2f32{}, true, false}
+	mouse_c := MouseInput{math.Vector2f32{}, {}}
+	mouse_p := MouseInput{math.Vector2f32{}, {.LEFT}}
 
 	last_frame := UserInput{meta, mouse_p, {}}
 	current_frame := UserInput{meta, mouse_c, {}}
 	input := FrameInput{current_frame, last_frame}
 
-	testing.expect(t, was_left_mouse_pressed(input), "Left mouse button was pressed")
-	testing.expect(t, !was_right_mouse_pressed(input), "Right mouse button was not pressed")
+	testing.expect(t, was_just_released(input, MouseButton.LEFT), "Left mouse button was pressed")
+	testing.expect(
+		t,
+		!was_just_released(input, MouseButton.RIGHT),
+		"Right mouse button was not pressed",
+	)
 }
 
 @(test)
 test_mouse_position :: proc(t: ^testing.T) {
 	meta := FrameMeta{0, 1.0 / 60.0, 500, 700}
-	mouse_c := MouseInput{math.Vector2f32{10, 10}, false, false}
-	mouse_p := MouseInput{math.Vector2f32{20, 20}, false, false}
+	mouse_c := MouseInput{math.Vector2f32{10, 10}, {}}
+	mouse_p := MouseInput{math.Vector2f32{20, 20}, {}}
 
 	last_frame := UserInput{meta, mouse_p, {}}
 	current_frame := UserInput{meta, mouse_c, {}}

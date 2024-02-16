@@ -14,6 +14,11 @@ RlToGameKeyMap :: struct {
 	game_key: input.KeyboardKey,
 }
 
+RlToGameMouseMap :: struct {
+	rl_btn:   rl.MouseButton,
+	game_btn: input.MouseButton,
+}
+
 keys_to_check :: [?]RlToGameKeyMap {
 	{.COMMA, .COMMA},
 	{.MINUS, .MINUS},
@@ -126,6 +131,16 @@ keys_to_check :: [?]RlToGameKeyMap {
 	// {.APOSTROPH, .APOSTROPH},
 }
 
+mouse_btn_to_check :: [?]RlToGameMouseMap {
+	{.LEFT, .LEFT},
+	{.RIGHT, .RIGHT},
+	{.MIDDLE, .MIDDLE},
+	{.SIDE, .SIDE},
+	{.EXTRA, .EXTRA},
+	{.FORWARD, .FORWARD},
+	{.BACK, .BACK},
+}
+
 new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
 
@@ -162,8 +177,11 @@ get_current_user_input :: proc() -> (new_input: input.UserInput) {
 	}
 
 	new_input.mouse.pos = cast(math.Vector2f32)(rl.GetMousePosition())
-	new_input.mouse.left_down = rl.IsMouseButtonDown(.LEFT)
-	new_input.mouse.right_down = rl.IsMouseButtonDown(.RIGHT)
+	for btn in mouse_btn_to_check {
+		if rl.IsMouseButtonDown(btn.rl_btn) {
+			new_input.mouse.buttons += {btn.game_btn}
+		}
+	}
 
 	return new_input
 }
