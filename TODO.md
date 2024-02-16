@@ -4,14 +4,7 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Recording, Pause/Resume in Main Game
-[ ] Open up a menu, select a previous frame, and
-[ ] Playback From start of Main Game
-[ ]
-
 ## Core
-
-[ ] Refactor the CTX to not be part of game memory
 
 ## Nice to Haves
 
