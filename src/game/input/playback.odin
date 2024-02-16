@@ -501,7 +501,7 @@ toggle_playback :: proc(state: ^InputDebuggerState) -> (err: GameInputError) {
 	_, err = file_begin_read(&state.ifs)
 	new_frame := UserInput{}
 
-	state.playback.state = VcrPlayback{0, false}
+	state.playback.state = VcrPlayback{0, true}
 	return
 }
 

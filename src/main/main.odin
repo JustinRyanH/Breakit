@@ -68,6 +68,12 @@ main :: proc() {
 				game_api.hot_reloaded(frame_zero)
 
 				frame_zero = game_api.copy_memory()
+				err := input.debugger_toggle_playback(idb)
+				if err != nil {
+					fmt.printf("Err: %v", err)
+					return
+				}
+				idb.general_debug = false
 			}
 			ctx.frame_cmd = nil
 		}
