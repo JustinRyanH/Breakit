@@ -10,7 +10,7 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
-import  "../game/input"
+import "../game/input"
 import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 
@@ -25,13 +25,13 @@ main :: proc() {
 	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
 	// TODO: let's just throw this on global
-	idb_state := new(input.InputDebuggerState)
-	defer free(idb_state)
+	idb := new(input.InputDebuggerState)
+	defer free(idb)
 
-	input.debugger_setup(idb_state)
-	defer input.debugger_teardown(idb_state)
+	input.debugger_setup(idb)
+	defer input.debugger_teardown(idb)
 
-	input.debugger_start_write(idb_state)
+	input.debugger_start_write(idb)
 
 	rl.InitWindow(800, 600, "Breakit")
 	rl.SetTargetFPS(60.0)
@@ -60,9 +60,9 @@ main :: proc() {
 		if (ctx.frame_cmd != nil) {
 			switch cmd in ctx.frame_cmd {
 			case game.PauseCmd:
-				input.debugger_pause(idb_state)
+				input.debugger_pause(idb)
 			case game.ResumeCmd:
-				input.debugger_unpause(idb_state)
+				input.debugger_unpause(idb)
 			case game.ReplayCmd:
 				game_api.shutdown()
 				game_api.hot_reloaded(frame_zero)
@@ -79,22 +79,22 @@ main :: proc() {
 		}
 
 		if (rl.IsKeyReleased(.F1)) {
-			idb_state.general_debug = !idb_state.general_debug
-			if (idb_state.general_debug) {
+			idb.general_debug = !idb.general_debug
+			if (idb.general_debug) {
 				ctx.frame_cmd = game.PauseCmd{}
 			} else {
 				ctx.frame_cmd = game.ResumeCmd{}
 			}
 		}
 
-		if (rl.IsKeyReleased(.F2)) {idb_state.draw_debug = !idb_state.draw_debug}
+		if (rl.IsKeyReleased(.F2)) {idb.draw_debug = !idb.draw_debug}
 
 		rl_platform.load_input(&ctx.mui)
 		user_input := rl_platform.get_current_user_input()
-		err := input.debugger_load_next_frame(idb_state, user_input)
+		err := input.debugger_load_next_frame(idb, user_input)
 
 		old_frame := ctx.frame
-		ctx.frame = input.debugger_query_current_frame(idb_state)
+		ctx.frame = input.debugger_query_current_frame(idb)
 
 		should_exit := game_api.update(ctx)
 		if (should_exit) {
