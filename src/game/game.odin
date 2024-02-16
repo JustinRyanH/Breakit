@@ -15,6 +15,10 @@ GameMemory :: struct {
 ctx: ^Context
 g_mem: ^GameMemory
 
+current_input :: #force_inline proc() -> input.UserInput {
+	return ctx.frame.current_frame
+}
+
 @(export)
 game_init :: proc() {
 	g_mem = new(GameMemory)
@@ -37,6 +41,9 @@ game_update :: proc() -> bool {
 game_draw :: proc() {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
+
+	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
+	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
 }
 
 

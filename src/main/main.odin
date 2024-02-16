@@ -16,6 +16,11 @@ import ta "../tracking_alloc"
 
 frame_zero: rawptr = nil
 
+update_frame :: proc(ctx: ^game.Context) {
+	user_input := rl_platform.get_current_user_input()
+	ctx.frame = input.frame_next(ctx.frame, user_input)
+}
+
 
 main :: proc() {
 	default_allocator := context.allocator
@@ -44,7 +49,6 @@ main :: proc() {
 	game_api.setup()
 
 
-	user_input: input.UserInput
 	for {
 		defer free_all(context.temp_allocator)
 
@@ -55,9 +59,7 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 
-		last_frame := user_input
-		user_input = rl_platform.get_current_user_input()
-
+		update_frame(ctx)
 		game_api.update_ctx(ctx)
 		should_exit := game_api.update()
 		{
@@ -68,8 +70,6 @@ main :: proc() {
 			game_api.draw()
 
 			rl.DrawFPS(10, 10)
-			rl.DrawText(fmt.ctprintf("%v", user_input.keyboard), 10, 40, 8, rl.RAYWHITE)
-			rl.DrawText(fmt.ctprintf("%v", user_input.mouse), 10, 60, 8, rl.RAYWHITE)
 			rl_platform.render_mui(&ctx.mui)
 		}
 
