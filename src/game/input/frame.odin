@@ -230,56 +230,6 @@ mouse_delta :: proc(frame_input: FrameInput) -> math.Vector2f32 {
 	return frame_input.current_frame.mouse.pos - frame_input.last_frame.mouse.pos
 }
 
-// Is the Left Mouse Button down this frame
-is_left_mouse_down :: proc(frame_input: FrameInput) -> bool {
-	return is_pressed(frame_input, MouseButton.LEFT)
-}
-
-// Was the Left Mouse Button pressed the frame before, not this frame
-was_left_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(frame_input, MouseButton.LEFT)
-}
-
-// Is the Right Mouse Button down this frame
-is_right_mouse_down :: proc(frame_input: FrameInput) -> bool {
-	return is_pressed(frame_input, MouseButton.RIGHT)
-}
-
-// Was the Right Mouse Button pressed the frame before, not this frame
-was_right_mouse_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(frame_input, MouseButton.RIGHT)
-}
-
-// Is the Right Arrow down this frame
-is_right_arrow_down :: proc(frame_input: FrameInput) -> bool {
-	return .RIGHT in frame_input.current_frame.keyboard
-}
-
-// Was the Right Arrow pressed the framae before, not this frame
-was_right_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(frame_input, KeyboardKey.RIGHT)
-}
-
-// Is the Left Arrow down this frame
-is_left_arrow_down :: proc(frame_input: FrameInput) -> bool {
-	return .LEFT in frame_input.current_frame.keyboard
-}
-
-// Was the Left Arrow pressed the frame before, not this frame
-was_left_arrow_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(frame_input, KeyboardKey.LEFT)
-}
-
-// Is the Space key down this frame
-is_space_down :: proc(frame_input: FrameInput) -> bool {
-	return .SPACE in frame_input.current_frame.keyboard
-}
-
-// Was the Space key pressed the frame before, not this frame
-was_space_pressed :: proc(frame_input: FrameInput) -> bool {
-	return was_just_released(frame_input, .SPACE)
-}
-
 ///////////////////////////////////////////
 // Helpers
 ///////////////////////////////////////////
