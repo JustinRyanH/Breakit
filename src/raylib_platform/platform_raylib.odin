@@ -144,9 +144,6 @@ mouse_btn_to_check :: [?]RlToGameMouseMap {
 new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
 
-	user_input := get_current_user_input()
-	ctx.frame = input.frame_next(ctx.frame, user_input)
-
 	mu.init(&ctx.mui)
 
 	setup_raylib_platform(&ctx.cmds)

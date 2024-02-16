@@ -13,10 +13,11 @@ GameMemory :: struct {
 
 
 ctx: ^Context
+g_input: input.FrameInput
 g_mem: ^GameMemory
 
 current_input :: #force_inline proc() -> input.UserInput {
-	return ctx.frame.current_frame
+	return g_input.current_frame
 }
 
 @(export)
@@ -33,7 +34,8 @@ game_update_context :: proc(new_ctx: ^Context) {
 }
 
 @(export)
-game_update :: proc() -> bool {
+game_update :: proc(frame_input: input.FrameInput) -> bool {
+	g_input = frame_input
 	return ctx.cmds.should_close_game()
 }
 

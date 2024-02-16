@@ -16,12 +16,6 @@ import ta "../tracking_alloc"
 
 frame_zero: rawptr = nil
 
-update_frame :: proc(ctx: ^game.Context) {
-	user_input := rl_platform.get_current_user_input()
-	ctx.frame = input.frame_next(ctx.frame, user_input)
-}
-
-
 main :: proc() {
 	default_allocator := context.allocator
 	tracking_allocator: ta.Tracking_Allocator
@@ -49,6 +43,8 @@ main :: proc() {
 	game_api.setup()
 
 
+	current_frame := input.frame_next(input.FrameInput{}, rl_platform.get_current_user_input())
+
 	for {
 		defer free_all(context.temp_allocator)
 
@@ -59,9 +55,11 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 
-		update_frame(ctx)
+		user_input := rl_platform.get_current_user_input()
+		current_frame = input.frame_next(current_frame, user_input)
+
 		game_api.update_ctx(ctx)
-		should_exit := game_api.update()
+		should_exit := game_api.update(current_frame)
 		{
 			rl.BeginDrawing()
 			defer rl.EndDrawing()

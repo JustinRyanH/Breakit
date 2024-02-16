@@ -9,6 +9,7 @@ import "core:path/filepath"
 import rl "vendor:raylib"
 
 import "../game"
+import "../game/input"
 
 
 when ODIN_OS == .Darwin {
@@ -25,7 +26,7 @@ GameAPI :: struct {
 	init:         proc(),
 	setup:        proc(),
 	update_ctx:   proc(ctx: ^game.Context),
-	update:       proc() -> bool,
+	update:       proc(_: input.FrameInput) -> bool,
 	draw:         proc(),
 	shutdown:     proc(),
 	memory:       proc() -> rawptr,
@@ -104,7 +105,8 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 		return {}, false
 	}
 
-	api.update = cast(proc() -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
+	api.update =
+	cast(proc(_: input.FrameInput) -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
 	if api.init == nil {
 		fmt.println("game_update not found in dll")
 		return {}, false
