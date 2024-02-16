@@ -53,7 +53,6 @@ main :: proc() {
 	game_api.setup(ctx)
 
 	frame_zero = game_api.copy_memory()
-	defer game_api.delete_copy(frame_zero)
 
 
 	for {
@@ -115,6 +114,7 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 	}
+	game_api.delete_copy(frame_zero)
 
 	game_api.shutdown()
 	game_api_unload(game_api)
