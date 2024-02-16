@@ -3,12 +3,14 @@ package game
 import "input"
 
 
-PauseGame :: struct {}
-ResumeGame :: struct {}
+PauseCmd :: struct {}
+ResumeCmd :: struct {}
+ReplayCmd :: struct {}
 
 FrameCommand :: union {
-	PauseGame,
-	ResumeGame,
+	PauseCmd,
+	ResumeCmd,
+	ReplayCmd,
 }
 
 import mu "../microui"

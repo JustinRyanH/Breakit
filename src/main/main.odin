@@ -14,6 +14,8 @@ import idb "../game/input"
 import rl_platform "../raylib_platform"
 import ta "../tracking_alloc"
 
+frame_zero: rawptr = nil
+
 
 main :: proc() {
 	default_allocator := context.allocator
@@ -50,14 +52,23 @@ main :: proc() {
 	game_api.init()
 	game_api.setup(ctx)
 
+	frame_zero = game_api.copy_memory()
+	defer game_api.delete_copy(frame_zero)
+
+
 	for {
 		defer free_all(context.temp_allocator)
 		if (ctx.frame_cmd != nil) {
 			switch cmd in ctx.frame_cmd {
-			case game.PauseGame:
+			case game.PauseCmd:
 				idb.input_debugger_pause(idb_state)
-			case game.ResumeGame:
+			case game.ResumeCmd:
 				idb.input_debugger_unpause(idb_state)
+			case game.ReplayCmd:
+				game_api.shutdown()
+				game_api.hot_reloaded(frame_zero)
+
+				frame_zero = game_api.copy_memory()
 			}
 			ctx.frame_cmd = nil
 		}
@@ -71,9 +82,9 @@ main :: proc() {
 		if (rl.IsKeyReleased(.F1)) {
 			idb_state.general_debug = !idb_state.general_debug
 			if (idb_state.general_debug) {
-				ctx.frame_cmd = game.PauseGame{}
+				ctx.frame_cmd = game.PauseCmd{}
 			} else {
-				ctx.frame_cmd = game.ResumeGame{}
+				ctx.frame_cmd = game.ResumeCmd{}
 			}
 		}
 

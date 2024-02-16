@@ -111,7 +111,9 @@ game_update :: proc(ctx: ^Context) -> bool {
 			mu.layout_row(mui_ctx, {100})
 			res := mu.button(mui_ctx, "Replay")
 
-			if .SUBMIT in res {}
+			if .SUBMIT in res {
+				ctx.frame_cmd = ReplayCmd{}
+			}
 		}
 
 	}
@@ -211,7 +213,13 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 
 @(export)
 game_copy_memory :: proc() -> rawptr {
-	return g_mem
+	new_mem := new(GameMemory)
+	new_mem^ = g_mem^
+	new_mem.bricks = make([]Brick, len(g_mem.bricks))
+	copy(new_mem.bricks, g_mem.bricks)
+
+
+	return new_mem
 }
 
 @(export)
