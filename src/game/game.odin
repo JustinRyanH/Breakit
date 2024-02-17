@@ -107,6 +107,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	case .LockedToPaddle:
 		ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
 	case .Free:
+		ball.direction = math.normalize(ball.direction)
 		ball.shape.pos += ball.direction * ball.speed * dt
 
 		evt, is_colliding := shape_check_collision(
@@ -168,7 +169,13 @@ game_draw :: proc() {
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
-	draw_cmds.draw_text(fmt.ctprintf("%v", g_mem.ball), 10, 84, 12, RAYWHITE)
+	draw_cmds.draw_text(
+		fmt.ctprintf("index: %v", current_input().meta.frame_id),
+		10,
+		84,
+		12,
+		RAYWHITE,
+	)
 }
 
 
