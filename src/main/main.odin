@@ -83,7 +83,12 @@ main :: proc() {
 			switch _ in ctx.playback {
 			case input.Recording:
 				game_api.setup()
-				ctx.playback = input.Replay{0, len(input_stream) - 1}
+
+				replay := input.Replay{}
+				replay.last_frame_index = len(input_stream) - 1
+				replay.active = true
+
+				ctx.playback = replay
 			case input.Replay:
 				clear(&input_stream)
 				ctx.playback = input.Recording{0}
@@ -128,7 +133,10 @@ main :: proc() {
 		case input.Recording:
 			pb.index += 1
 		case input.Replay:
-			pb.index += 1
+			if pb.active {
+
+				pb.index += 1
+			}
 			if pb.index >= len(input_stream) {
 				pb.index = 0
 				game_api.setup()

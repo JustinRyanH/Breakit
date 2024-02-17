@@ -42,6 +42,7 @@ GameMemory :: struct {
 ctx: ^Context
 g_input: input.FrameInput
 g_mem: ^GameMemory
+last_frame_id: int
 
 current_input :: #force_inline proc() -> input.UserInput {
 	return g_input.current_frame
@@ -84,7 +85,9 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	case input.Recording:
 		update_gameplay(frame_input)
 	case input.Replay:
-		update_gameplay(frame_input)
+		if (pb.active || last_frame_id != get_frame_id(frame_input)) {
+			update_gameplay(frame_input)
+		}
 	}
 
 	{
@@ -92,7 +95,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		mu.begin(mui_ctx)
 		defer mu.end(mui_ctx)
 
-		rp, is_replay := ctx.playback.(input.Replay)
+		rp, is_replay := &ctx.playback.(input.Replay)
 		if is_replay {
 			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 100})
 			mu.layout_row(mui_ctx, {-1})
@@ -106,10 +109,23 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 				"%.0f",
 				{.NO_INTERACT},
 			)
+
+			if (rp.active) {
+				mu.layout_row(mui_ctx, {75})
+				mu.checkbox(mui_ctx, "Active", &rp.active)
+			} else {
+				mu.layout_row(mui_ctx, {75, 50})
+				mu.checkbox(mui_ctx, "Active", &rp.active)
+				res := mu.button(mui_ctx, "Step")
+				if .SUBMIT in res {
+					rp.index += 1
+				}
+			}
 		}
 
 	}
 
+	last_frame_id = get_frame_id(frame_input)
 	return ctx.cmds.should_close_game()
 }
 
@@ -230,4 +246,9 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
+}
+
+
+get_frame_id :: proc(frame_input: input.FrameInput) -> int {
+	return frame_input.current_frame.meta.frame_id
 }

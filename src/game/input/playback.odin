@@ -7,6 +7,7 @@ Recording :: struct {
 Replay :: struct {
 	index:            int,
 	last_frame_index: int,
+	active:           bool,
 }
 
 Playback :: union {
