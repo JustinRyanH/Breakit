@@ -78,6 +78,7 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 
+		rl_platform.load_input(&ctx.mui)
 		if rl.IsKeyPressed(.F2) {
 			switch _ in ctx.playback {
 			case input.Recording:

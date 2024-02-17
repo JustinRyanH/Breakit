@@ -82,6 +82,18 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 	update_gameplay(frame_input)
 
+	{
+		mui_ctx := &ctx.mui
+		mu.begin(mui_ctx)
+		defer mu.end(mui_ctx)
+
+		_, is_replay := ctx.playback.(input.Replay)
+		if is_replay {
+			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 100})
+		}
+
+	}
+
 	return ctx.cmds.should_close_game()
 }
 
