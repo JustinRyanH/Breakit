@@ -17,11 +17,14 @@ ContextEvents :: union {
 
 import mu "../microui"
 Context :: struct {
-	mui:       mu.Context,
-	playback:  input.Playback,
-	events:    [dynamic]ContextEvents,
+	mui:           mu.Context,
+	playback:      input.Playback,
+	events:        [dynamic]ContextEvents,
 
 	// Draw Commands
-	cmds:      PlatformCommands,
-	draw_cmds: PlatformDrawCommands,
+	cmds:          PlatformCommands,
+	draw_cmds:     PlatformDrawCommands,
+
+	// Debug Info
+	last_frame_id: int,
 }

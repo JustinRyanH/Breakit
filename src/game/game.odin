@@ -42,7 +42,6 @@ GameMemory :: struct {
 ctx: ^Context
 g_input: input.FrameInput
 g_mem: ^GameMemory
-last_frame_id: int
 
 current_input :: #force_inline proc() -> input.UserInput {
 	return g_input.current_frame
@@ -85,7 +84,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	case input.Recording:
 		update_gameplay(frame_input)
 	case input.Replay:
-		if (last_frame_id != get_frame_id(frame_input)) {
+		if (ctx.last_frame_id != get_frame_id(frame_input)) {
 			update_gameplay(frame_input)
 		}
 	}
@@ -155,7 +154,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 	}
 
-	last_frame_id = get_frame_id(frame_input)
+	ctx.last_frame_id = get_frame_id(frame_input)
 	return ctx.cmds.should_close_game()
 }
 

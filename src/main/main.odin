@@ -86,6 +86,7 @@ main :: proc() {
 			switch _ in ctx.playback {
 			case input.Recording:
 				game_api.setup()
+				ctx.last_frame_id = 0
 
 				replay := input.Replay{}
 				replay.last_frame_index = len(input_stream) - 1
@@ -94,6 +95,7 @@ main :: proc() {
 				ctx.playback = replay
 			case input.Replay:
 				clear(&input_stream)
+				ctx.last_frame_id = 0
 				ctx.playback = input.Recording{0}
 				game_api.setup()
 			}
@@ -142,6 +144,7 @@ main :: proc() {
 				}
 			case game.JumpToFrame:
 				game_api.setup()
+				ctx.last_frame_id = 0
 				for idx in 0 ..= evt.frame_idx {
 					temp_frame, err := get_current_frame(idx)
 					if err != nil {
