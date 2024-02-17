@@ -39,6 +39,7 @@ main :: proc() {
 		return
 	}
 
+	game_api.update_ctx(ctx)
 	game_api.init()
 	game_api.setup()
 
@@ -53,6 +54,10 @@ main :: proc() {
 
 		if reload {
 			game_api = game_api_hot_load(game_api)
+		}
+
+		if rl.IsKeyReleased(.F2) {
+			game_api.setup()
 		}
 
 		user_input := rl_platform.get_current_user_input()
