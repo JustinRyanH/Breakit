@@ -140,7 +140,24 @@ main :: proc() {
 				if ok {
 					pb.index += 1
 				}
+			case game.JumpToFrame:
+				game_api.setup()
+				for idx in 0 ..= evt.frame_idx {
+					temp_frame, err := get_current_frame(idx)
+					if err != nil {
+						fmt.printf("Error: %v\n", err)
+						return
+					}
+					game_api.update(temp_frame)
+
+				}
+				pb, ok := &ctx.playback.(input.Replay)
+				if ok {
+					pb.index = evt.frame_idx
+				}
+
 			}
+
 		}
 
 		switch pb in &ctx.playback {

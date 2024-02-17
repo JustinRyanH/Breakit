@@ -97,7 +97,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		rp, is_replay := &ctx.playback.(input.Replay)
 		if is_replay {
-			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 100})
+			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175})
 			mu.layout_row(mui_ctx, {-1})
 			frame := cast(mu.Real)rp.index
 			mu.slider(
@@ -121,6 +121,16 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 					append(&ctx.events, StepEvent{1})
 				}
 			}
+
+			@(static)
+			target_frame: mu.Real
+			mu.layout_row(mui_ctx, {80, 100})
+			res := mu.button(mui_ctx, "Jump to Frame")
+			if .SUBMIT in res {
+				append(&ctx.events, JumpToFrame{cast(int)target_frame})
+			}
+			mu.slider(mui_ctx, &target_frame, 0, cast(mu.Real)rp.last_frame_index, 1, "%.0f")
+
 		}
 
 	}
