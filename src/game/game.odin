@@ -124,13 +124,33 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 			@(static)
 			target_frame: mu.Real
-			mu.layout_row(mui_ctx, {80, 100})
+			mu.layout_row(mui_ctx, {80, 154})
 			res := mu.button(mui_ctx, "Jump to Frame")
 			if .SUBMIT in res {
 				append(&ctx.events, JumpToFrame{cast(int)target_frame})
 			}
 			mu.slider(mui_ctx, &target_frame, 0, cast(mu.Real)rp.last_frame_index, 1, "%.0f")
 
+			mu.layout_row(mui_ctx, {80, 75, 75})
+			res = mu.button(mui_ctx, "Loop Between")
+			@(static)
+			start_frame: mu.Real
+			@(static)
+			end_frame: mu.Real
+
+			if (end_frame == 0) {
+				end_frame = cast(mu.Real)rp.last_frame_index - 1
+			}
+
+			mu.slider(mui_ctx, &start_frame, 0, end_frame, 1, "From: %.0f")
+			mu.slider(
+				mui_ctx,
+				&end_frame,
+				start_frame,
+				cast(mu.Real)rp.last_frame_index - 1,
+				1,
+				"To: %.0f",
+			)
 		}
 
 	}
