@@ -22,9 +22,11 @@ BallState :: enum {
 }
 
 Ball :: struct {
-	shape: Circle,
-	color: Color,
-	state: BallState,
+	shape:     Circle,
+	color:     Color,
+	state:     BallState,
+	direction: Vector2,
+	speed:     Vector2,
 }
 
 GameMemory :: struct {
@@ -63,6 +65,7 @@ game_setup :: proc() {
 	g_mem.ball.shape.radius = 10
 	g_mem.ball.color = RED
 	g_mem.ball.state = .LockedToPaddle
+	g_mem.ball.speed = 350
 }
 
 @(export)
@@ -84,6 +87,11 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		paddle.shape.pos += Vector2{1, 0} * paddle.speed * dt
 	}
 
+	if (input.is_pressed(frame_input, .SPACE)) {
+		ball.state = .Free
+		ball.direction = Vector2{0, -1}
+	}
+
 	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 0) {
 		paddle.shape.pos.x = paddle.shape.size.x / 2
 	}
@@ -97,6 +105,55 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	case .LockedToPaddle:
 		ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
 	case .Free:
+		ball.shape.pos += ball.direction * ball.speed * dt
+
+		evt, is_colliding := shape_check_collision(
+			ball.shape,
+			Line{Vector2{}, Vector2{g_mem.scene_width, 0}, 1.0},
+		)
+		if (is_colliding) {
+			ball.direction.y *= -1
+			ball.shape.pos -= evt.normal * evt.depth
+		}
+
+		evt, is_colliding = shape_check_collision(
+			ball.shape,
+			Line {
+				Vector2{g_mem.scene_width, 0},
+				Vector2{g_mem.scene_width, g_mem.scene_height},
+				1.0,
+			},
+		)
+		if (is_colliding) {
+			ball.direction.x *= -1
+			ball.shape.pos -= evt.normal * evt.depth
+		}
+
+		evt, is_colliding = shape_check_collision(
+			ball.shape,
+			Line{Vector2{0, g_mem.scene_height}, Vector2{0, 0}, 1.0},
+		)
+		if (is_colliding) {
+			ball.direction.x *= -1
+			ball.shape.pos -= evt.normal * evt.depth
+		}
+
+		evt, is_colliding = shape_check_collision(
+			ball.shape,
+			Line {
+				Vector2{0, g_mem.scene_height},
+				Vector2{g_mem.scene_width, g_mem.scene_height},
+				1,
+			},
+		)
+
+
+		evt, is_colliding = shape_check_collision(ball.shape, paddle.shape)
+		if (is_colliding) {
+			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
+			ball.direction.y *= -1
+			ball.shape.pos -= evt.normal * evt.depth
+		}
 	}
 
 
