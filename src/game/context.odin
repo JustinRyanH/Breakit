@@ -17,6 +17,7 @@ import mu "../microui"
 Context :: struct {
 	mui:       mu.Context,
 	frame_cmd: FrameCommand,
+	playback:  input.Playback,
 
 	// Draw Commands
 	cmds:      PlatformCommands,

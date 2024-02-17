@@ -143,6 +143,7 @@ mouse_btn_to_check :: [?]RlToGameMouseMap {
 
 new_context :: proc() -> ^game.Context {
 	ctx := new(game.Context)
+	ctx.playback = input.Recording{0}
 
 	mu.init(&ctx.mui)
 

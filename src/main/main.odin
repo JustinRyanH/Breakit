@@ -19,7 +19,7 @@ frame_zero: rawptr = nil
 
 input_stream: [dynamic]input.UserInput
 
-get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: input.PlaybackError) {
+get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: input.InputError) {
 	if (idx >= len(input_stream)) {
 		err = .StreamOverflow
 		return
@@ -51,7 +51,6 @@ main :: proc() {
 	defer rl.CloseWindow()
 
 	input_stream = make([dynamic]input.UserInput, 0, 1024)
-	playback: input.Playback = input.Recording{}
 
 	ctx := rl_platform.new_context()
 	defer rl_platform.deinit_game_context(ctx)
@@ -79,18 +78,14 @@ main :: proc() {
 			game_api = game_api_hot_load(game_api)
 		}
 
-		if rl.IsKeyReleased(.F2) {
-			game_api.setup()
-		}
-
-		if rl.IsKeyPressed(.F3) {
-			switch _ in playback {
+		if rl.IsKeyPressed(.F2) {
+			switch _ in ctx.playback {
 			case input.Recording:
 				game_api.setup()
-				playback = input.Replay{0}
+				ctx.playback = input.Replay{0}
 			case input.Replay:
 				clear(&input_stream)
-				playback = input.Recording{0}
+				ctx.playback = input.Recording{0}
 				game_api.setup()
 			}
 		}
@@ -98,7 +93,7 @@ main :: proc() {
 		current_frame: input.FrameInput
 		err: input.InputError
 
-		switch pb in playback {
+		switch pb in ctx.playback {
 		case input.Recording:
 			add_frame()
 
@@ -107,7 +102,7 @@ main :: proc() {
 			current_frame, err = get_current_frame(pb.index)
 		}
 		if err != nil {
-			fmt.printf("Error: %v", err)
+			fmt.printf("Error: %v\n", err)
 			return
 		}
 
@@ -128,7 +123,7 @@ main :: proc() {
 		if (should_exit) {
 			break
 		}
-		switch pb in &playback {
+		switch pb in &ctx.playback {
 		case input.Recording:
 			pb.index += 1
 		case input.Replay:
