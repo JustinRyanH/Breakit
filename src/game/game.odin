@@ -80,6 +80,8 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
+	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
+
 	if (input.is_pressed(frame_input, KbKey.LEFT)) {
 		paddle.shape.pos -= Vector2{1, 0} * paddle.speed * dt
 	}
@@ -96,7 +98,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		paddle.shape.pos.x = paddle.shape.size.x / 2
 	}
 
-	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > g_mem.scene_width) {
+	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width) {
 		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2
 	}
 
@@ -109,7 +111,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		evt, is_colliding := shape_check_collision(
 			ball.shape,
-			Line{Vector2{}, Vector2{g_mem.scene_width, 0}, 1.0},
+			Line{Vector2{}, Vector2{scene_width, 0}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.y *= -1
@@ -118,11 +120,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line {
-				Vector2{g_mem.scene_width, 0},
-				Vector2{g_mem.scene_width, g_mem.scene_height},
-				1.0,
-			},
+			Line{Vector2{scene_width, 0}, Vector2{scene_width, scene_height}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.x *= -1
@@ -131,7 +129,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line{Vector2{0, g_mem.scene_height}, Vector2{0, 0}, 1.0},
+			Line{Vector2{0, scene_height}, Vector2{0, 0}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.x *= -1
@@ -140,19 +138,18 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line {
-				Vector2{0, g_mem.scene_height},
-				Vector2{g_mem.scene_width, g_mem.scene_height},
-				1,
-			},
+			Line{Vector2{0, scene_height}, Vector2{scene_width, scene_height}, 1},
 		)
-
 
 		evt, is_colliding = shape_check_collision(ball.shape, paddle.shape)
 		if (is_colliding) {
 			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
 			ball.direction.y *= -1
 			ball.shape.pos -= evt.normal * evt.depth
+		}
+
+		if (ball.shape.pos.y + ball.shape.radius > scene_height) {
+			game_setup()
 		}
 	}
 
@@ -171,7 +168,7 @@ game_draw :: proc() {
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
-	draw_cmds.draw_text(fmt.ctprintf("%v", g_mem), 10, 80, 8, RAYWHITE)
+	draw_cmds.draw_text(fmt.ctprintf("%v", g_mem.ball), 10, 84, 12, RAYWHITE)
 }
 
 
