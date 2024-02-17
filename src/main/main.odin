@@ -69,7 +69,10 @@ main :: proc() {
 	game_api.setup()
 
 	for {
-		defer free_all(context.temp_allocator)
+		defer {
+			clear(&ctx.events)
+			free_all(context.temp_allocator)
+		}
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
@@ -129,6 +132,17 @@ main :: proc() {
 		if (should_exit) {
 			break
 		}
+
+		for ctx_evt in ctx.events {
+			switch evt in ctx_evt {
+			case game.StepEvent:
+				pb, ok := &ctx.playback.(input.Replay)
+				if ok {
+					pb.index += 1
+				}
+			}
+		}
+
 		switch pb in &ctx.playback {
 		case input.Recording:
 			pb.index += 1

@@ -118,7 +118,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 				mu.checkbox(mui_ctx, "Active", &rp.active)
 				res := mu.button(mui_ctx, "Step")
 				if .SUBMIT in res {
-					rp.index += 1
+					append(&ctx.events, StepEvent{1})
 				}
 			}
 		}
