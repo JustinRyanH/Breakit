@@ -80,6 +80,54 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
+	update_gameplay(frame_input)
+
+	return ctx.cmds.should_close_game()
+}
+
+@(export)
+game_draw :: proc() {
+	game := g_mem
+	draw_cmds := &ctx.draw_cmds
+	draw_cmds.clear(BLACK)
+
+	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
+	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
+
+	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
+	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
+	draw_cmds.draw_text(
+		fmt.ctprintf("index: %v", current_input().meta.frame_id),
+		10,
+		84,
+		12,
+		RAYWHITE,
+	)
+}
+
+
+@(export)
+game_shutdown :: proc() {
+	free(g_mem)
+}
+
+@(export)
+game_memory :: proc() -> rawptr {
+	return g_mem
+}
+
+@(export)
+game_hot_reloaded :: proc(mem: ^GameMemory) {
+	g_mem = mem
+}
+
+
+update_gameplay :: proc(frame_input: input.FrameInput) {
+	dt := input.frame_query_delta(frame_input)
+	g_input = frame_input
+	paddle := &g_mem.paddle
+	ball := &g_mem.ball
+
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
 
 	if (input.is_pressed(frame_input, KbKey.LEFT)) {
@@ -154,42 +202,4 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		}
 	}
 
-
-	return ctx.cmds.should_close_game()
-}
-
-@(export)
-game_draw :: proc() {
-	game := g_mem
-	draw_cmds := &ctx.draw_cmds
-	draw_cmds.clear(BLACK)
-
-	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
-	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
-
-	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
-	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
-	draw_cmds.draw_text(
-		fmt.ctprintf("index: %v", current_input().meta.frame_id),
-		10,
-		84,
-		12,
-		RAYWHITE,
-	)
-}
-
-
-@(export)
-game_shutdown :: proc() {
-	free(g_mem)
-}
-
-@(export)
-game_memory :: proc() -> rawptr {
-	return g_mem
-}
-
-@(export)
-game_hot_reloaded :: proc(mem: ^GameMemory) {
-	g_mem = mem
 }
