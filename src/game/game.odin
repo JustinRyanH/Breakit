@@ -87,9 +87,20 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		mu.begin(mui_ctx)
 		defer mu.end(mui_ctx)
 
-		_, is_replay := ctx.playback.(input.Replay)
+		rp, is_replay := ctx.playback.(input.Replay)
 		if is_replay {
 			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 100})
+			mu.layout_row(mui_ctx, {-1})
+			frame := cast(mu.Real)rp.index
+			mu.slider(
+				mui_ctx,
+				&frame,
+				0,
+				cast(mu.Real)rp.last_frame_index,
+				1,
+				"%.0f",
+				{.NO_INTERACT},
+			)
 		}
 
 	}

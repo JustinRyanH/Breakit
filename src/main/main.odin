@@ -83,7 +83,7 @@ main :: proc() {
 			switch _ in ctx.playback {
 			case input.Recording:
 				game_api.setup()
-				ctx.playback = input.Replay{0}
+				ctx.playback = input.Replay{0, len(input_stream) - 1}
 			case input.Replay:
 				clear(&input_stream)
 				ctx.playback = input.Recording{0}
