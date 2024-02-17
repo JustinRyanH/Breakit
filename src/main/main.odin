@@ -106,6 +106,18 @@ main :: proc() {
 			game_api.setup()
 		}
 
+		if rl.IsKeyPressed(.F3) {
+			switch _ in playback {
+			case Recording:
+				game_api.setup()
+				playback = Replay{0}
+			case Replay:
+				clear(&input_stream)
+				playback = Recording{0}
+				game_api.setup()
+			}
+		}
+
 		current_frame: input.FrameInput
 		err: PlatformError
 
@@ -144,6 +156,10 @@ main :: proc() {
 			pb.index += 1
 		case Replay:
 			pb.index += 1
+			if pb.index >= len(input_stream) {
+				pb.index = 0
+				game_api.setup()
+			}
 		}
 	}
 
