@@ -80,7 +80,12 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	update_gameplay(frame_input)
+	switch pb in ctx.playback {
+	case input.Recording:
+		update_gameplay(frame_input)
+	case input.Replay:
+		update_gameplay(frame_input)
+	}
 
 	{
 		mui_ctx := &ctx.mui
