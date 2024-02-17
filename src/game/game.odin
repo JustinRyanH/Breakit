@@ -85,7 +85,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	case input.Recording:
 		update_gameplay(frame_input)
 	case input.Replay:
-		if (pb.active || last_frame_id != get_frame_id(frame_input)) {
+		if (last_frame_id != get_frame_id(frame_input)) {
 			update_gameplay(frame_input)
 		}
 	}
