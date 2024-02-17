@@ -74,7 +74,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 
 	input_stream = make([dynamic]input.UserInput, 0, 1024)
-	recording := Recording{}
+	playback: Playback = Recording{}
 
 	ctx := rl_platform.new_context()
 	defer rl_platform.deinit_game_context(ctx)
@@ -94,7 +94,6 @@ main :: proc() {
 
 	for {
 		defer free_all(context.temp_allocator)
-		defer recording.index += 1
 
 		dll_time, dll_time_err := os.last_write_time_by_name(game_api_file_path(game_api))
 		reload := dll_time_err == os.ERROR_NONE && game_api.dll_time != dll_time
@@ -107,14 +106,21 @@ main :: proc() {
 			game_api.setup()
 		}
 
-		add_frame()
+		current_frame: input.FrameInput
+		err: PlatformError
 
-		current_frame, err := get_current_frame(recording.index)
+		switch pb in playback {
+		case Recording:
+			add_frame()
+
+			current_frame, err = get_current_frame(pb.index)
+		case Replay:
+			current_frame, err = get_current_frame(pb.index)
+		}
 		if err != nil {
 			fmt.printf("Error: %v", err)
 			return
 		}
-
 
 		game_api.update_ctx(ctx)
 		should_exit := game_api.update(current_frame)
@@ -132,6 +138,12 @@ main :: proc() {
 
 		if (should_exit) {
 			break
+		}
+		switch pb in &playback {
+		case Recording:
+			pb.index += 1
+		case Replay:
+			pb.index += 1
 		}
 	}
 
