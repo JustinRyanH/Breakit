@@ -17,32 +17,9 @@ import ta "../tracking_alloc"
 frame_zero: rawptr = nil
 
 
-Recording :: struct {
-	index: int,
-}
-
-Replay :: struct {
-	index: int,
-}
-
-
-Playback :: union {
-	Recording,
-	Replay,
-}
-
-InputPlaybackError :: enum {
-	StreamOverflow,
-}
-
-PlatformError :: union {
-	InputPlaybackError,
-}
-
-
 input_stream: [dynamic]input.UserInput
 
-get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: PlatformError) {
+get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: input.PlaybackError) {
 	if (idx >= len(input_stream)) {
 		err = .StreamOverflow
 		return
@@ -74,7 +51,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 
 	input_stream = make([dynamic]input.UserInput, 0, 1024)
-	playback: Playback = Recording{}
+	playback: input.Playback = input.Recording{}
 
 	ctx := rl_platform.new_context()
 	defer rl_platform.deinit_game_context(ctx)
@@ -108,25 +85,25 @@ main :: proc() {
 
 		if rl.IsKeyPressed(.F3) {
 			switch _ in playback {
-			case Recording:
+			case input.Recording:
 				game_api.setup()
-				playback = Replay{0}
-			case Replay:
+				playback = input.Replay{0}
+			case input.Replay:
 				clear(&input_stream)
-				playback = Recording{0}
+				playback = input.Recording{0}
 				game_api.setup()
 			}
 		}
 
 		current_frame: input.FrameInput
-		err: PlatformError
+		err: input.InputError
 
 		switch pb in playback {
-		case Recording:
+		case input.Recording:
 			add_frame()
 
 			current_frame, err = get_current_frame(pb.index)
-		case Replay:
+		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
 		}
 		if err != nil {
@@ -152,9 +129,9 @@ main :: proc() {
 			break
 		}
 		switch pb in &playback {
-		case Recording:
+		case input.Recording:
 			pb.index += 1
-		case Replay:
+		case input.Replay:
 			pb.index += 1
 			if pb.index >= len(input_stream) {
 				pb.index = 0
