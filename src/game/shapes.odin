@@ -219,6 +219,47 @@ shape_is_circle_colliding_rect :: proc(
 	return
 }
 
+shape_is_circle_colliding_rect_v2 :: proc(
+	circle: Circle,
+	rect: Rectangle,
+) -> (
+	event: ContactEvent,
+	is_colliding: bool,
+) {
+	closest_line := shape_get_closest_line(circle.pos, rect)
+	line_point := shape_point_projected_to_line(circle.pos, closest_line)
+	normal := shape_line_normal(closest_line)
+
+	circle_edge_point := circle.pos + -normal * circle.radius
+	center_seperation := math.dot(circle.pos - closest_line.start, normal)
+
+	circle_center_outside := center_seperation >= 0
+	if (circle_center_outside) {
+		v1, v2, at_corner := shape_get_corner_vertices(circle.pos, closest_line)
+		if (at_corner) {
+			if (math.length(v1) > circle.radius) {return}
+			event.normal = math.normalize(v1)
+			event.depth = circle.radius - math.length(v1)
+			return event, true
+		}
+		if (center_seperation > circle.radius) {return}
+		// At Edge
+		event.normal = -normal
+		event.depth = circle.radius - center_seperation
+
+		return event, true
+
+	} else {
+		// FIX: let's just guard clause this instead.
+		// Inside
+		event.normal = shape_line_normal(closest_line)
+		event.depth = circle.radius
+		return event, true
+	}
+
+	return
+}
+
 
 // Returns the collision event for a point, and the closest line to the point, 
 // returns true if line inside the rect, otherwise returns false
