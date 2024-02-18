@@ -99,33 +99,6 @@ shape_are_rects_colliding_obb :: proc(
 	event: ContactEvent,
 	is_colliding: bool,
 ) {
-	seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
-	if (seperation_a >= 0) {
-		return
-	}
-	seperation_b, axis_b, pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
-	if (seperation_b >= 0) {
-		return
-	}
-
-	if (seperation_a > seperation_b) {
-		event.depth = -seperation_a
-		event.normal = shape_line_normal(axis_a)
-	} else {
-		event.depth = -seperation_b
-		event.normal = shape_line_normal(axis_b)
-	}
-
-	return event, true
-}
-
-
-shape_are_rects_colliding_obb_v2 :: proc(
-	rect_a, rect_b: Rectangle,
-) -> (
-	event: ContactEvent,
-	is_colliding: bool,
-) {
 	event.depth = max(f32)
 	rect_a_vertices := shape_get_rect_vertices(rect_a)
 	rect_b_vertices := shape_get_rect_vertices(rect_b)
