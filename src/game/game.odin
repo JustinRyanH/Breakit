@@ -46,21 +46,6 @@ ctx: ^Context
 g_input: input.FrameInput
 g_mem: ^GameMemory
 
-
-DebugLine :: struct {
-	shape: Line,
-	color: Color,
-}
-
-DebugCircle :: struct {
-	shape: Circle,
-	color: Color,
-}
-
-debug_lines: [16]DebugLine
-mouse_circle: DebugCircle
-
-
 current_input :: #force_inline proc() -> input.UserInput {
 	return g_input.current_frame
 }
@@ -96,35 +81,6 @@ game_setup :: proc() {
 		},
 	)
 	sa.append(&g_mem.bounds, Line{Vector2{30, 30}, Vector2{30, g_mem.scene_height - 30}, 1.0})
-
-	for _, idx in debug_lines {
-		width := rand.float32_range(20, 100)
-
-		x := rand.float32_range(10, g_mem.scene_width - 10)
-		y := rand.float32_range(10, g_mem.scene_height - 10)
-		thickness := rand.float32_range(1, 10)
-
-		center := Vector2{x, y}
-
-		rand_angle := rand.float32_range(0, math.PI * 2)
-
-		v1 := shape_rotate_vector(Vector2{-1, 0}, rand_angle)
-		v2 := shape_rotate_vector(Vector2{1, 0}, rand_angle)
-
-		v1 = center + v1 * width
-		v2 = center + v2 * width
-
-
-		debug_lines[idx].shape = Line{v1, v2, thickness}
-		debug_lines[idx].color = Color {
-			cast(u8)(rand.float32() * 255),
-			cast(u8)(rand.float32() * 255),
-			cast(u8)(rand.float32() * 255),
-			127,
-		}
-	}
-	mouse_circle.shape = Circle{Vector2{}, 10}
-	mouse_circle.color = RED
 }
 
 @(export)
@@ -139,24 +95,14 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	// switch pb in ctx.playback {
-	// case input.Recording:
-	// 	update_gameplay(frame_input)
-	// case input.Replay:
-	// 	if (ctx.last_frame_id != get_frame_id(frame_input)) {
-	// 		update_gameplay(frame_input)
-	// 	}
-	// }
-
-	if (input.is_pressed(frame_input, .A)) {
-		mouse_circle.shape.radius -= 10 * dt
+	switch pb in ctx.playback {
+	case input.Recording:
+		update_gameplay(frame_input)
+	case input.Replay:
+		if (ctx.last_frame_id != get_frame_id(frame_input)) {
+			update_gameplay(frame_input)
+		}
 	}
-
-	if (input.is_pressed(frame_input, .D)) {
-		mouse_circle.shape.radius += 10 * dt
-	}
-
-	mouse_circle.shape.pos = input.mouse_position(frame_input)
 
 	{
 		mui_ctx := &ctx.mui
@@ -233,24 +179,10 @@ game_draw :: proc() {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
 
-	// draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
-	// draw_cmds.draw_shape(game.ball.shape, game.ball.color)
-	draw_cmds.draw_shape(mouse_circle.shape, mouse_circle.color)
-
-	for line in debug_lines {
-		draw_cmds.draw_shape(line.shape, line.color)
-		line_m := shape_line_mid_point(line.shape)
-		line_n := shape_line_normal(line.shape)
-
-		draw_cmds.draw_shape(Line{line_m, line_m + line_n * 10, 2}, RED)
-
-		evt, is_colliding := shape_is_circle_colliding_line(mouse_circle.shape, line.shape)
-		if is_colliding {
-			draw_cmds.draw_shape(
-				Line{mouse_circle.shape.pos, mouse_circle.shape.pos + evt.normal * 20, 5.0},
-				ORANGE,
-			)
-		}
+	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
+	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
+	for ln in sa.slice(&game.bounds) {
+		draw_cmds.draw_shape(ln, WHITE)
 	}
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
