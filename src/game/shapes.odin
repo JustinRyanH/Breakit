@@ -273,6 +273,29 @@ shape_is_circle_colliding_line :: proc(
 	return
 }
 
+shape_is_circle_colliding_line_v2 :: proc(
+	circle: Circle,
+	line: Line,
+) -> (
+	evt: ContactEvent,
+	is_colliding: bool,
+) {
+	closest_point := shape_point_projected_to_line(circle.pos, line)
+	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
+
+	if (is_point_inside_circle) {
+		evt.normal = shape_line_normal(line)
+		end := circle.pos - evt.normal * circle.radius
+		evt.depth = math.length(closest_point - end)
+
+
+		return evt, true
+	}
+
+	return
+}
+
+
 // returns true if a point is inside a circle
 shape_is_point_inside_circle :: proc(point: math.Vector2f32, circle: Circle) -> bool {
 	np_length := math.length(circle.pos - point)
