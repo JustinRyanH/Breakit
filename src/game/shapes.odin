@@ -282,7 +282,10 @@ shape_is_circle_colliding_line_v2 :: proc(
 ) {
 	closest_point := shape_point_projected_to_line(circle.pos, line)
 
-	evt, is_colliding = shape_are_circles_colliding(circle, Circle{closest_point, line.thickness})
+	evt, is_colliding = shape_are_circles_colliding(
+		circle,
+		Circle{closest_point, line.thickness / 2},
+	)
 	evt.normal *= -1
 	return
 }
@@ -307,8 +310,8 @@ shape_is_line_colliding_rect :: proc(
 	evt: ContactEvent,
 	is_colliding: bool,
 ) {
-	draw := ctx.draw_cmds
 	i: int = 0
+	draw := ctx.draw_cmds
 	c_points: [2]Vector2
 	c_lines: [2]Line
 	lines := shape_get_rect_lines(rect)

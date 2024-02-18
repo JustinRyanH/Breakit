@@ -224,6 +224,8 @@ raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 		rl.DrawRectanglePro(rl_rect, origin, s.rotation, cast(rl.Color)(color))
 	case game.Line:
 		rl.DrawLineEx(s.start, s.end, s.thickness, cast(rl.Color)(color))
+		rl.DrawCircleV(s.start, s.thickness / 2, cast(rl.Color)(color))
+		rl.DrawCircleV(s.end, s.thickness / 2, cast(rl.Color)(color))
 	}
 }
 
