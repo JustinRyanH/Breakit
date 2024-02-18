@@ -249,8 +249,6 @@ shape_is_point_inside_rect :: proc(
 }
 
 
-// returns true if a line intersects a circle
-// TODO: Handle on the edges.
 shape_is_circle_colliding_line :: proc(
 	circle: Circle,
 	line: Line,
@@ -259,29 +257,6 @@ shape_is_circle_colliding_line :: proc(
 	is_colliding: bool,
 ) {
 	closest_point := shape_point_projected_to_line(circle.pos, line)
-	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
-
-	if (is_point_inside_circle) {
-		evt.normal = shape_line_normal(line)
-		end := circle.pos - evt.normal * circle.radius
-		evt.depth = math.length(closest_point - end)
-
-
-		return evt, true
-	}
-
-	return
-}
-
-shape_is_circle_colliding_line_v2 :: proc(
-	circle: Circle,
-	line: Line,
-) -> (
-	evt: ContactEvent,
-	is_colliding: bool,
-) {
-	closest_point := shape_point_projected_to_line(circle.pos, line)
-
 	evt, is_colliding = shape_are_circles_colliding(
 		circle,
 		Circle{closest_point, line.thickness / 2},
