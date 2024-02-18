@@ -126,24 +126,60 @@ shape_are_rects_colliding_obb_v2 :: proc(
 	event: ContactEvent,
 	is_colliding: bool,
 ) {
-	seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
-	if (seperation_a >= 0) {
-		return
-	}
-	seperation_b, axis_b, pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
-	if (seperation_b >= 0) {
-		return
+	event.depth = max(f32)
+	rect_a_vertices := shape_get_rect_vertices(rect_a)
+	rect_b_vertices := shape_get_rect_vertices(rect_b)
+
+	for _, i in rect_a_vertices {
+		a := rect_a_vertices[i]
+		b := rect_a_vertices[(i + 1) % len(rect_a_vertices)]
+
+		edge := b - a
+		axis := shape_vector_normalize_perp(edge)
+
+		min_a, max_a := shape_project_vertices_to_axis(rect_a_vertices[:], axis)
+		min_b, max_b := shape_project_vertices_to_axis(rect_b_vertices[:], axis)
+
+		if min_a >= max_b || min_b >= max_a {
+			return ContactEvent{}, false
+		}
+
+		depth := math.min(max_b - min_a, max_a - min_b)
+		if (depth < event.depth) {
+			event.depth = depth
+			event.normal = axis
+		}
 	}
 
-	if (seperation_a > seperation_b) {
-		event.depth = -seperation_a
-		event.normal = shape_line_normal(axis_a)
-	} else {
-		event.depth = -seperation_b
-		event.normal = shape_line_normal(axis_b)
+	for _, i in rect_b_vertices {
+		a := rect_b_vertices[i]
+		b := rect_b_vertices[(i + 1) % len(rect_b_vertices)]
+
+		edge := b - a
+		axis := shape_vector_normalize_perp(edge)
+
+		min_a, max_a := shape_project_vertices_to_axis(rect_a_vertices[:], axis)
+		min_b, max_b := shape_project_vertices_to_axis(rect_b_vertices[:], axis)
+
+		if min_a >= max_b || min_b >= max_a {
+			return ContactEvent{}, false
+		}
+
+		depth := math.min(max_b - min_a, max_a - min_b)
+		if (depth < event.depth) {
+			event.depth = depth
+			event.normal = axis
+		}
 	}
 
-	return event, true
+	is_colliding = true
+
+	dir := rect_a.pos - rect_b.pos
+	if (math.dot(dir, event.normal) < 0) {
+		event.normal *= -1
+	}
+
+	return
 }
 
 
@@ -493,6 +529,22 @@ shape_get_corner_vertices :: proc(p: Vector2, l: Line) -> (Vector2, Vector2, boo
 	if (dot < 0) {return v1, v2, true}
 
 	return Vector2{}, Vector2{}, false
+}
+
+
+@(private = "file")
+shape_project_vertices_to_axis :: proc(vertices: []Vector2, axis: Vector2) -> (min_t, max_t: f32) {
+	min_t = max(f32)
+	max_t = min(f32)
+
+	for vertex in vertices {
+		dp := math.dot(vertex, axis)
+		max_t = math.max(dp, max_t)
+		min_t = math.min(dp, min_t)
+	}
+
+
+	return
 }
 
 /////////////////////////////
