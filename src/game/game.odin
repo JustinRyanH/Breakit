@@ -257,36 +257,19 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		ball.direction = math.normalize(ball.direction)
 		ball.shape.pos += ball.direction * ball.speed * dt
 
-		evt, is_colliding := shape_check_collision(
-			ball.shape,
-			Line{Vector2{scene_width + 30, 30}, Vector2{30, 30}, 1.0},
-		)
-		if (is_colliding) {
-			ball.direction.y *= -1
+
+		for line in sa.slice(&g_mem.bounds) {
+			evt, is_colliding := shape_check_collision(ball.shape, line)
+			if (math.abs(evt.normal.x) > 0) {
+				ball.direction.x *= -1
+			}
+			if (math.abs(evt.normal.y) > 0) {
+				ball.direction.y *= -1
+			}
+			ball.shape.pos += evt.normal * evt.depth
 		}
 
-		evt, is_colliding = shape_check_collision(
-			ball.shape,
-			Line{Vector2{scene_width - 30, scene_height - 30}, Vector2{scene_width - 30, 30}, 1.0},
-		)
-		if (is_colliding) {
-			ball.direction.x *= -1
-		}
-
-		evt, is_colliding = shape_check_collision(
-			ball.shape,
-			Line{Vector2{30, 30}, Vector2{30, scene_height - 30}, 1.0},
-		)
-		if (is_colliding) {
-			ball.direction.x *= -1
-		}
-
-		evt, is_colliding = shape_check_collision(
-			ball.shape,
-			Line{Vector2{scene_width - 30, scene_height - 30}, Vector2{30, scene_height - 30}, 1},
-		)
-
-		evt, is_colliding = shape_check_collision(ball.shape, paddle.shape)
+		evt, is_colliding := shape_check_collision(ball.shape, paddle.shape)
 		if (is_colliding) {
 			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
 			ball.direction.y *= -1
