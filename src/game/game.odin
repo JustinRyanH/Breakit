@@ -52,8 +52,13 @@ DebugBox :: struct {
 	color: Color,
 }
 
+DebugCircle :: struct {
+	shape: Circle,
+	color: Color,
+}
+
 debug_boxes: [16]DebugBox
-mouse_box: DebugBox
+mouse_circle: DebugCircle
 
 
 current_input :: #force_inline proc() -> input.UserInput {
@@ -106,8 +111,8 @@ game_setup :: proc() {
 			127,
 		}
 	}
-	mouse_box.shape = Rectangle{Vector2{}, Vector2{50, 50}, 0.0}
-	mouse_box.color = RED
+	mouse_circle.shape = Circle{Vector2{}, 10}
+	mouse_circle.color = RED
 }
 
 @(export)
@@ -132,14 +137,14 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	// }
 
 	if (input.is_pressed(frame_input, .A)) {
-		mouse_box.shape.rotation -= 30 * dt
+		mouse_circle.shape.radius -= 10 * dt
 	}
 
 	if (input.is_pressed(frame_input, .D)) {
-		mouse_box.shape.rotation += 30 * dt
+		mouse_circle.shape.radius += 10 * dt
 	}
 
-	mouse_box.shape.pos = input.mouse_position(frame_input)
+	mouse_circle.shape.pos = input.mouse_position(frame_input)
 
 	for box in &debug_boxes {
 		box.shape.rotation += 10.0 * dt
@@ -222,11 +227,7 @@ game_draw :: proc() {
 
 	// draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
 	// draw_cmds.draw_shape(game.ball.shape, game.ball.color)
-	draw_cmds.draw_shape(mouse_box.shape, mouse_box.color)
-	lns := shape_get_rect_lines(mouse_box.shape)
-	for ln in lns {
-		draw_cmds.draw_shape(ln, WHITE)
-	}
+	draw_cmds.draw_shape(mouse_circle.shape, mouse_circle.color)
 
 	for box in debug_boxes {
 		lines := shape_get_rect_lines(box.shape)
@@ -237,10 +238,10 @@ game_draw :: proc() {
 			draw_cmds.draw_shape(ln_copy, WHITE)
 
 		}
-		evt, is_colliding := shape_are_rects_colliding_obb(mouse_box.shape, box.shape)
+		evt, is_colliding := shape_is_circle_colliding_rect_v2(mouse_circle.shape, box.shape)
 		if is_colliding {
 			draw_cmds.draw_shape(
-				Line{mouse_box.shape.pos, mouse_box.shape.pos + evt.normal * 20, 5.0},
+				Line{mouse_circle.shape.pos, mouse_circle.shape.pos + evt.normal * 20, 5.0},
 				ORANGE,
 			)
 		}
