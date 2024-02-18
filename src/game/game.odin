@@ -236,7 +236,8 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		paddle.shape.pos += Vector2{1, 0} * paddle.speed * dt
 	}
 
-	if (input.is_pressed(frame_input, .SPACE)) {
+	is_locked_to_paddle := ball.state == .LockedToPaddle
+	if (is_locked_to_paddle && input.is_pressed(frame_input, .SPACE)) {
 		ball.state = .Free
 		ball.direction = Vector2{0, -1}
 	}
