@@ -3,6 +3,7 @@ package game
 import sa "core:container/small_array"
 import "core:fmt"
 import math "core:math/linalg"
+import "core:math/rand"
 
 import "./input"
 
@@ -45,6 +46,16 @@ ctx: ^Context
 g_input: input.FrameInput
 g_mem: ^GameMemory
 
+
+DebugBox :: struct {
+	shape: Rectangle,
+	color: Color,
+}
+
+debug_boxes: [16]DebugBox
+mouse_box: DebugBox
+
+
 current_input :: #force_inline proc() -> input.UserInput {
 	return g_input.current_frame
 }
@@ -80,6 +91,23 @@ game_setup :: proc() {
 		},
 	)
 	sa.append(&g_mem.bounds, Line{Vector2{30, 30}, Vector2{30, g_mem.scene_height - 30}, 1.0})
+
+	for _, idx in debug_boxes {
+		width := rand.float32_range(20, 100)
+		height := rand.float32_range(20, 100)
+
+		x := rand.float32_range(width + 10, g_mem.scene_width - 10)
+		y := rand.float32_range(height + 10, g_mem.scene_height - 10)
+		debug_boxes[idx].shape = Rectangle{Vector2{x, y}, Vector2{width, height}, 0.0}
+		debug_boxes[idx].color = Color {
+			cast(u8)(rand.float32() * 255),
+			cast(u8)(rand.float32() * 255),
+			cast(u8)(rand.float32() * 255),
+			127,
+		}
+	}
+	mouse_box.shape = Rectangle{Vector2{}, Vector2{50, 50}, 0.0}
+	mouse_box.color = RED
 }
 
 @(export)
@@ -94,13 +122,27 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	switch pb in ctx.playback {
-	case input.Recording:
-		update_gameplay(frame_input)
-	case input.Replay:
-		if (ctx.last_frame_id != get_frame_id(frame_input)) {
-			update_gameplay(frame_input)
-		}
+	// switch pb in ctx.playback {
+	// case input.Recording:
+	// 	update_gameplay(frame_input)
+	// case input.Replay:
+	// 	if (ctx.last_frame_id != get_frame_id(frame_input)) {
+	// 		update_gameplay(frame_input)
+	// 	}
+	// }
+
+	if (input.is_pressed(frame_input, .A)) {
+		mouse_box.shape.rotation -= 30 * dt
+	}
+
+	if (input.is_pressed(frame_input, .D)) {
+		mouse_box.shape.rotation += 30 * dt
+	}
+
+	mouse_box.shape.pos = input.mouse_position(frame_input)
+
+	for box in &debug_boxes {
+		box.shape.rotation += 10.0 * dt
 	}
 
 	{
@@ -110,7 +152,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 		rp, is_replay := &ctx.playback.(input.Replay)
 		if is_replay {
-			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175})
+			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175}, {.NO_CLOSE})
 			mu.layout_row(mui_ctx, {-1})
 			frame := cast(mu.Real)rp.index
 			mu.slider(
@@ -178,18 +220,22 @@ game_draw :: proc() {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
 
-	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
-	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
+	// draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
+	// draw_cmds.draw_shape(game.ball.shape, game.ball.color)
+	draw_cmds.draw_shape(mouse_box.shape, mouse_box.color)
+	lns := shape_get_rect_lines(mouse_box.shape)
+	for ln in lns {
+		draw_cmds.draw_shape(ln, WHITE)
+	}
 
-	for line in sa.slice(&game.bounds) {
-		draw_cmds.draw_shape(line, WHITE)
-		evt, is_colliding := shape_check_collision(game.ball.shape, line)
-		mid_p := shape_line_mid_point(line)
-		normal := shape_line_normal(line)
-		draw_cmds.draw_shape(Line{mid_p, mid_p + normal * 10, 1.0}, GREEN)
+	for box in debug_boxes {
+		lines := shape_get_rect_lines(box.shape)
+		draw_cmds.draw_shape(box.shape, box.color)
+		for line in lines {
+			ln_copy := line
+			ln_copy.thickness = 2
+			draw_cmds.draw_shape(ln_copy, WHITE)
 
-		if is_colliding {
-			draw_cmds.draw_shape(Line{evt.start, evt.end, 1.0}, ORANGE)
 		}
 	}
 
