@@ -117,23 +117,25 @@ main :: proc() {
 			return
 		}
 
-		game_api.update_ctx(ctx)
-		should_exit := game_api.update(current_frame)
 		{
 			rl.BeginDrawing()
 			defer rl.EndDrawing()
+
+			game_api.update_ctx(ctx)
+			should_exit := game_api.update(current_frame)
 
 
 			game_api.draw()
 
 			rl.DrawFPS(10, 10)
 			rl_platform.render_mui(&ctx.mui)
-		}
 
 
-		if (should_exit) {
-			break
+			if (should_exit) {
+				break
+			}
 		}
+
 
 		for ctx_evt in ctx.events {
 			switch evt in ctx_evt {
