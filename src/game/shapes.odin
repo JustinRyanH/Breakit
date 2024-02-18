@@ -226,36 +226,39 @@ shape_is_circle_colliding_rect_v2 :: proc(
 	event: ContactEvent,
 	is_colliding: bool,
 ) {
-	closest_line := shape_get_closest_line(circle.pos, rect)
-	line_point := shape_point_projected_to_line(circle.pos, closest_line)
-	normal := shape_line_normal(closest_line)
+	event.depth = max(f32)
+	rect_vertices := shape_get_rect_vertices(rect)
 
-	circle_edge_point := circle.pos + -normal * circle.radius
-	center_seperation := math.dot(circle.pos - closest_line.start, normal)
+	for _, i in rect_vertices {
+		a := rect_vertices[i]
+		b := rect_vertices[(i + 1) % len(rect_vertices)]
 
-	circle_center_outside := center_seperation >= 0
-	if (circle_center_outside) {
-		v1, v2, at_corner := shape_get_corner_vertices(circle.pos, closest_line)
-		if (at_corner) {
-			if (math.length(v1) > circle.radius) {return}
-			event.normal = math.normalize(v1)
-			event.depth = circle.radius - math.length(v1)
-			return event, true
+		edge := b - a
+		axis := shape_vector_normalize_perp(edge)
+
+		min_a, max_a := shape_project_vertices_to_axis(rect_vertices[:], axis)
+		circle_depth := axis * circle.radius
+		smaller, bigger := circle.pos - circle_depth, circle.pos + circle_depth
+		min_b, max_b: f32 = shape_project_vertices_to_axis({smaller, bigger}, axis)
+
+		if min_a >= max_b || min_b >= max_a {
+			return ContactEvent{}, false
 		}
-		if (center_seperation > circle.radius) {return}
-		// At Edge
-		event.normal = -normal
-		event.depth = circle.radius - center_seperation
 
-		return event, true
-
-	} else {
-		// FIX: let's just guard clause this instead.
-		// Inside
-		event.normal = shape_line_normal(closest_line)
-		event.depth = circle.radius
-		return event, true
+		depth := math.min(max_b - min_a, max_a - min_b)
+		if (depth < event.depth) {
+			event.depth = depth
+			event.normal = axis
+		}
 	}
+
+	dir := circle.pos - rect.pos
+	if (math.dot(dir, event.normal) < 0) {
+		event.normal *= -1
+	}
+
+	is_colliding = true
+
 
 	return
 }
