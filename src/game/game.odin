@@ -137,7 +137,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 			@(static)
 			target_frame: mu.Real
-			mu.layout_row(mui_ctx, {80, 154})
+			mu.layout_row(mui_ctx, {80, -1})
 			res := mu.button(mui_ctx, "Jump to Frame")
 			if .SUBMIT in res {
 				append(&ctx.events, JumpToFrame{cast(int)target_frame})
