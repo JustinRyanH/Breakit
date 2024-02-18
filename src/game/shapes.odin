@@ -281,17 +281,9 @@ shape_is_circle_colliding_line_v2 :: proc(
 	is_colliding: bool,
 ) {
 	closest_point := shape_point_projected_to_line(circle.pos, line)
-	is_point_inside_circle := shape_is_point_inside_circle(closest_point, circle)
 
-	if (is_point_inside_circle) {
-		evt.normal = shape_line_normal(line)
-		end := circle.pos - evt.normal * circle.radius
-		evt.depth = math.length(closest_point - end)
-
-
-		return evt, true
-	}
-
+	evt, is_colliding = shape_are_circles_colliding(circle, Circle{closest_point, line.thickness})
+	evt.normal *= -1
 	return
 }
 
