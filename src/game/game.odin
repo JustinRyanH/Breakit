@@ -214,6 +214,8 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 
 
 update_gameplay :: proc(frame_input: input.FrameInput) {
+	ball_collision_targets := make([dynamic]Shape, 0, 32, context.temp_allocator)
+
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
 	paddle := &g_mem.paddle
