@@ -238,7 +238,7 @@ game_draw :: proc() {
 			draw_cmds.draw_shape(ln_copy, WHITE)
 
 		}
-		evt, is_colliding := shape_is_circle_colliding_rect_v2(mouse_circle.shape, box.shape)
+		evt, is_colliding := shape_is_circle_colliding_rect(mouse_circle.shape, box.shape)
 		if is_colliding {
 			draw_cmds.draw_shape(
 				Line{mouse_circle.shape.pos, mouse_circle.shape.pos + evt.normal * 20, 5.0},
