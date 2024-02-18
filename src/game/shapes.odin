@@ -127,6 +127,38 @@ shape_are_rects_colliding_obb :: proc(
 	return event, true
 }
 
+
+shape_are_rects_colliding_obb_v2 :: proc(
+	rect_a, rect_b: Rectangle,
+) -> (
+	event: ContactEvent,
+	is_colliding: bool,
+) {
+	seperation_a, axis_a, pen_point_a := shape_rectangle_seperation(rect_a, rect_b)
+	if (seperation_a >= 0) {
+		return
+	}
+	seperation_b, axis_b, pen_point_b := shape_rectangle_seperation(rect_b, rect_a)
+	if (seperation_b >= 0) {
+		return
+	}
+
+	if (seperation_a > seperation_b) {
+		event.depth = -seperation_a
+		event.normal = shape_line_normal(axis_a)
+		event.start = pen_point_a
+		event.end = pen_point_a + event.normal * event.depth
+	} else {
+		event.depth = -seperation_b
+		event.normal = shape_line_normal(axis_b)
+		event.start = pen_point_b
+		event.end = pen_point_b + event.normal * event.depth
+	}
+
+	return event, true
+}
+
+
 // returns true if the two circles intersect
 shape_are_circles_colliding :: proc(
 	circle_a, circle_b: Circle,
