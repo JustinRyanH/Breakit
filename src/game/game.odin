@@ -254,12 +254,11 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		for line in sa.slice(&g_mem.bounds) {
 			evt, is_colliding := shape_check_collision(ball.shape, line)
 			if is_colliding {
-				if (math.abs(evt.normal.x) > 0) {
-					ball.direction.x *= -1
-				}
-				if (math.abs(evt.normal.y) > 0) {
-					ball.direction.y *= -1
-				}
+				surface_perp_projection := math.dot(ball.direction, evt.normal) * evt.normal
+				surface_axis := ball.direction - surface_perp_projection
+
+				ball.direction = surface_axis - surface_perp_projection
+
 			}
 			ball.shape.pos += evt.normal * evt.depth
 		}
