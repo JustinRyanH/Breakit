@@ -45,11 +45,6 @@ Camera2D :: struct {
 	zoom:     f32, // Camera zoom (scaling), should be 1.0f by default
 }
 
-platform_debug_draw_collision :: proc(ce: ContactEvent) {
-	line := Line{ce.start, ce.end, 2}
-	ctx.draw_cmds.draw_shape(line, PINK)
-}
-
 //////////////////////////
 // Platform Abstraction //
 //////////////////////////

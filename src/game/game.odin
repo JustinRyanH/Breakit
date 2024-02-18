@@ -239,7 +239,6 @@ game_draw :: proc() {
 		}
 		evt, is_colliding := shape_are_rects_colliding_obb_v2(mouse_box.shape, box.shape)
 		if is_colliding {
-			draw_cmds.draw_shape(Line{evt.start, evt.end, 5.0}, ORANGE)
 		}
 	}
 

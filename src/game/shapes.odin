@@ -31,8 +31,6 @@ Shape :: union {
 
 
 ContactEvent :: struct {
-	start:  Vector2,
-	end:    Vector2,
 	normal: Vector2,
 	depth:  f32,
 }
@@ -75,8 +73,6 @@ shape_check_collision :: proc(
 			return shape_is_line_colliding_rect(a, b)
 		case Line:
 			point, is_colliding := shape_are_lines_colliding(a, b)
-			evt.start = point
-			evt.end = point
 			evt.normal = shape_line_normal(a)
 			evt.depth = 0
 			return evt, is_colliding
@@ -115,13 +111,9 @@ shape_are_rects_colliding_obb :: proc(
 	if (seperation_a > seperation_b) {
 		event.depth = -seperation_a
 		event.normal = shape_line_normal(axis_a)
-		event.start = pen_point_a
-		event.end = pen_point_a + event.normal * event.depth
 	} else {
 		event.depth = -seperation_b
 		event.normal = shape_line_normal(axis_b)
-		event.start = pen_point_b
-		event.end = pen_point_b + event.normal * event.depth
 	}
 
 	return event, true
@@ -146,13 +138,9 @@ shape_are_rects_colliding_obb_v2 :: proc(
 	if (seperation_a > seperation_b) {
 		event.depth = -seperation_a
 		event.normal = shape_line_normal(axis_a)
-		event.start = pen_point_a
-		event.end = pen_point_a + event.normal * event.depth
 	} else {
 		event.depth = -seperation_b
 		event.normal = shape_line_normal(axis_b)
-		event.start = pen_point_b
-		event.end = pen_point_b + event.normal * event.depth
 	}
 
 	return event, true
@@ -170,9 +158,9 @@ shape_are_circles_colliding :: proc(
 	distance := math.vector_length(delta)
 	if (distance <= (circle_a.radius + circle_b.radius)) {
 		normal := math.normalize(delta)
-		evt.start = circle_a.pos + math.normalize(delta) * circle_a.radius
-		evt.end = circle_b.pos - math.normalize(delta) * circle_b.radius
-		evt.depth = math.length(evt.start - evt.end)
+		start := circle_a.pos + math.normalize(delta) * circle_a.radius
+		end := circle_b.pos - math.normalize(delta) * circle_b.radius
+		evt.depth = math.length(start - end)
 		evt.normal = normal
 
 		is_colliding = true
@@ -202,16 +190,12 @@ shape_is_circle_colliding_rect :: proc(
 			if (math.length(v1) > circle.radius) {return}
 			event.normal = math.normalize(v1)
 			event.depth = circle.radius - math.length(v1)
-			event.start = circle.pos
-			event.end = event.start + event.normal * -event.depth
 			return event, true
 		}
 		if (center_seperation > circle.radius) {return}
 		// At Edge
 		event.normal = -normal
 		event.depth = circle.radius - center_seperation
-		event.start = circle.pos + (normal * -circle.radius)
-		event.end = event.start + (normal * event.depth)
 
 		return event, true
 
@@ -220,8 +204,6 @@ shape_is_circle_colliding_rect :: proc(
 		// Inside
 		event.normal = shape_line_normal(closest_line)
 		event.depth = circle.radius
-		event.start = line_point
-		event.end = circle.pos + event.normal * -event.depth
 		return event, true
 	}
 
@@ -248,8 +230,6 @@ shape_is_point_inside_rect :: proc(
 		return
 	}
 
-	evt.start = line_point
-	evt.end = point
 	evt.normal = line_normal
 	evt.depth = math.length(point - line_point)
 	is_colliding = true
@@ -271,9 +251,8 @@ shape_is_circle_colliding_line :: proc(
 
 	if (is_point_inside_circle) {
 		evt.normal = shape_line_normal(line)
-		evt.start = closest_point
-		evt.end = circle.pos - evt.normal * circle.radius
-		evt.depth = math.length(closest_point - evt.end)
+		end := circle.pos - evt.normal * circle.radius
+		evt.depth = math.length(closest_point - end)
 
 
 		return evt, true
@@ -325,14 +304,11 @@ shape_is_line_colliding_rect :: proc(
 		dot_1 := math.dot(test_point, line_normal)
 
 		evt.normal = line_normal
-		evt.start = c_points[0]
-		evt.end = line.start if dot_1 < 0 else line.end
-		evt.depth = math.length(c_points[0] - evt.end)
+		end := line.start if dot_1 < 0 else line.end
+		evt.depth = math.length(c_points[0] - end)
 
 		return evt, true
 	case 2:
-		evt.start = c_points[0]
-		evt.end = c_points[1]
 		evt.normal = shape_line_normal(c_lines[0])
 		evt.depth = math.length(c_points[0] - c_points[1])
 		return evt, true
