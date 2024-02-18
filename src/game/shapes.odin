@@ -325,44 +325,6 @@ shape_is_line_colliding_rect :: proc(
 // Helpers
 /////////////////////////////////
 
-shape_rectangle_seperation :: proc(
-	rect_a: Rectangle,
-	rect_b: Rectangle,
-) -> (
-	seperation: f32,
-	axis: Line,
-	pen_point: Vector2,
-) {
-	seperation = min(f32)
-	rect_a_lines := shape_get_rect_lines(rect_a)
-	rect_b_lines := shape_get_rect_lines(rect_b)
-
-
-	for line_a in rect_a_lines {
-		line_n := shape_line_normal(line_a)
-
-		smallest_sep := max(f32)
-		min_vertex: Vector2
-
-		for line_b in rect_b_lines {
-			projected_point := math.dot(line_b.start - line_a.start, line_n)
-			if (projected_point < smallest_sep) {
-				smallest_sep = projected_point
-				min_vertex = line_b.start
-
-			}
-			smallest_sep = min(smallest_sep, projected_point)
-		}
-		if (smallest_sep > seperation) {
-			seperation = smallest_sep
-			pen_point = min_vertex
-			axis = line_a
-		}
-	}
-
-	return
-}
-
 shape_get_closest_line :: proc(point: Vector2, rectangle: Rectangle) -> (closest_line: Line) {
 	rect_lines := shape_get_rect_lines(rectangle)
 	chosen_line_distance := max(f32)
