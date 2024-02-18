@@ -1,5 +1,6 @@
 package game
 
+import sa "core:container/small_array"
 import "core:fmt"
 import math "core:math/linalg"
 
@@ -36,6 +37,7 @@ GameMemory :: struct {
 	// Game Entities
 	paddle:       Paddle,
 	ball:         Ball,
+	bounds:       sa.Small_Array(16, Line),
 }
 
 
@@ -66,6 +68,18 @@ game_setup :: proc() {
 	g_mem.ball.color = RED
 	g_mem.ball.state = .LockedToPaddle
 	g_mem.ball.speed = 350
+
+	sa.clear(&g_mem.bounds)
+	sa.append(&g_mem.bounds, Line{Vector2{g_mem.scene_width - 30, 30}, Vector2{30, 30}, 1.0})
+	sa.append(
+		&g_mem.bounds,
+		Line {
+			Vector2{g_mem.scene_width - 30, g_mem.scene_height - 30},
+			Vector2{g_mem.scene_width - 30, 30},
+			1.0,
+		},
+	)
+	sa.append(&g_mem.bounds, Line{Vector2{30, 30}, Vector2{30, g_mem.scene_height - 30}, 1.0})
 }
 
 @(export)
@@ -167,6 +181,18 @@ game_draw :: proc() {
 	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
 	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
 
+	for line in sa.slice(&game.bounds) {
+		draw_cmds.draw_shape(line, WHITE)
+		evt, is_colliding := shape_check_collision(game.ball.shape, line)
+		mid_p := shape_line_mid_point(line)
+		normal := shape_line_normal(line)
+		draw_cmds.draw_shape(Line{mid_p, mid_p + normal * 10, 1.0}, GREEN)
+
+		if is_colliding {
+			draw_cmds.draw_shape(Line{evt.start, evt.end, 1.0}, ORANGE)
+		}
+	}
+
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
 	draw_cmds.draw_text(
@@ -215,12 +241,12 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		ball.direction = Vector2{0, -1}
 	}
 
-	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 0) {
-		paddle.shape.pos.x = paddle.shape.size.x / 2
+	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 30) {
+		paddle.shape.pos.x = paddle.shape.size.x / 2 + 30
 	}
 
-	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width) {
-		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2
+	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width - 30) {
+		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2 - 30
 	}
 
 
@@ -233,41 +259,37 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 		evt, is_colliding := shape_check_collision(
 			ball.shape,
-			Line{Vector2{}, Vector2{scene_width, 0}, 1.0},
+			Line{Vector2{scene_width + 30, 30}, Vector2{30, 30}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.y *= -1
-			ball.shape.pos -= evt.normal * evt.depth
 		}
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line{Vector2{scene_width, 0}, Vector2{scene_width, scene_height}, 1.0},
+			Line{Vector2{scene_width - 30, scene_height - 30}, Vector2{scene_width - 30, 30}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.x *= -1
-			ball.shape.pos -= evt.normal * evt.depth
 		}
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line{Vector2{0, scene_height}, Vector2{0, 0}, 1.0},
+			Line{Vector2{30, 30}, Vector2{30, scene_height - 30}, 1.0},
 		)
 		if (is_colliding) {
 			ball.direction.x *= -1
-			ball.shape.pos -= evt.normal * evt.depth
 		}
 
 		evt, is_colliding = shape_check_collision(
 			ball.shape,
-			Line{Vector2{0, scene_height}, Vector2{scene_width, scene_height}, 1},
+			Line{Vector2{scene_width - 30, scene_height - 30}, Vector2{30, scene_height - 30}, 1},
 		)
 
 		evt, is_colliding = shape_check_collision(ball.shape, paddle.shape)
 		if (is_colliding) {
 			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
 			ball.direction.y *= -1
-			ball.shape.pos -= evt.normal * evt.depth
 		}
 
 		if (ball.shape.pos.y + ball.shape.radius > scene_height) {
