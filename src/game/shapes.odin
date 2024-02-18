@@ -470,7 +470,7 @@ shape_get_line_intersection :: proc(a: Line, b: Line) -> (Vector2, bool) {
 }
 
 // Rotates the Vector 90 counter clockwise, normalized
-shape_get_vector_normal :: proc(vec: Vector2) -> Vector2 {
+shape_vector_normalize_perp :: proc(vec: Vector2) -> Vector2 {
 	v := math.normalize(vec)
 	l := math.length(vec)
 	return Vector2{-v.y, v.x}
@@ -485,7 +485,7 @@ shape_line_mid_point :: proc(line: Line) -> Vector2 {
 }
 
 shape_line_normal :: proc(line: Line) -> Vector2 {
-	return shape_get_vector_normal(line.start - line.end)
+	return shape_vector_normalize_perp(line.start - line.end)
 }
 
 shape_point_projected_to_line :: #force_inline proc(point: Vector2, line: Line) -> Vector2 {
@@ -526,7 +526,7 @@ shape_get_corner_vertices :: proc(p: Vector2, l: Line) -> (Vector2, Vector2, boo
 @(test)
 test_shape_get_vector_normal :: proc(t: ^testing.T) {
 	v := Vector2{3, 4}
-	n := shape_get_vector_normal(v)
+	n := shape_vector_normalize_perp(v)
 	testing.expect(t, math.normalize(Vector2{-4, 3}) == n, "Normal of Vector")
 }
 
