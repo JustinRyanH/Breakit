@@ -493,6 +493,18 @@ shape_invert_line :: #force_inline proc(line: Line) -> (new_line: Line) {
 	return
 }
 
+
+shape_rotate_vector :: proc(v: Vector2, radians: f32) -> Vector2 {
+	rotated_point := math.normalize(v)
+	rotated_point.x = v.x * math.cos(radians) - v.y * math.sin(radians)
+	rotated_point.y = v.x * math.sin(radians) + v.y * math.cos(radians)
+	return rotated_point
+}
+
+///////////////////////////////////////////
+/// Private
+///////////////////////////////////////////
+
 @(private = "file")
 shape_get_corner_vertices :: proc(p: Vector2, l: Line) -> (Vector2, Vector2, bool) {
 	v1 := p - l.start

@@ -47,8 +47,8 @@ g_input: input.FrameInput
 g_mem: ^GameMemory
 
 
-DebugBox :: struct {
-	shape: Rectangle,
+DebugLine :: struct {
+	shape: Line,
 	color: Color,
 }
 
@@ -57,7 +57,7 @@ DebugCircle :: struct {
 	color: Color,
 }
 
-debug_boxes: [16]DebugBox
+debug_lines: [16]DebugLine
 mouse_circle: DebugCircle
 
 
@@ -97,14 +97,26 @@ game_setup :: proc() {
 	)
 	sa.append(&g_mem.bounds, Line{Vector2{30, 30}, Vector2{30, g_mem.scene_height - 30}, 1.0})
 
-	for _, idx in debug_boxes {
+	for _, idx in debug_lines {
 		width := rand.float32_range(20, 100)
-		height := rand.float32_range(20, 100)
 
-		x := rand.float32_range(width + 10, g_mem.scene_width - 10)
-		y := rand.float32_range(height + 10, g_mem.scene_height - 10)
-		debug_boxes[idx].shape = Rectangle{Vector2{x, y}, Vector2{width, height}, 0.0}
-		debug_boxes[idx].color = Color {
+		x := rand.float32_range(10, g_mem.scene_width - 10)
+		y := rand.float32_range(10, g_mem.scene_height - 10)
+		thickness := rand.float32_range(1, 10)
+
+		center := Vector2{x, y}
+
+		rand_angle := rand.float32_range(0, math.PI * 2)
+
+		v1 := shape_rotate_vector(Vector2{-1, 0}, rand_angle)
+		v2 := shape_rotate_vector(Vector2{1, 0}, rand_angle)
+
+		v1 = center + v1 * width
+		v2 = center + v2 * width
+
+
+		debug_lines[idx].shape = Line{v1, v2, thickness}
+		debug_lines[idx].color = Color {
 			cast(u8)(rand.float32() * 255),
 			cast(u8)(rand.float32() * 255),
 			cast(u8)(rand.float32() * 255),
@@ -145,10 +157,6 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	}
 
 	mouse_circle.shape.pos = input.mouse_position(frame_input)
-
-	for box in &debug_boxes {
-		box.shape.rotation += 10.0 * dt
-	}
 
 	{
 		mui_ctx := &ctx.mui
@@ -229,16 +237,14 @@ game_draw :: proc() {
 	// draw_cmds.draw_shape(game.ball.shape, game.ball.color)
 	draw_cmds.draw_shape(mouse_circle.shape, mouse_circle.color)
 
-	for box in debug_boxes {
-		lines := shape_get_rect_lines(box.shape)
-		draw_cmds.draw_shape(box.shape, box.color)
-		for line in lines {
-			ln_copy := line
-			ln_copy.thickness = 2
-			draw_cmds.draw_shape(ln_copy, WHITE)
+	for line in debug_lines {
+		draw_cmds.draw_shape(line.shape, line.color)
+		line_m := shape_line_mid_point(line.shape)
+		line_n := shape_line_normal(line.shape)
 
-		}
-		evt, is_colliding := shape_is_circle_colliding_rect(mouse_circle.shape, box.shape)
+		draw_cmds.draw_shape(Line{line_m, line_m + line_n * 10, 2}, RED)
+
+		evt, is_colliding := shape_is_circle_colliding_line(mouse_circle.shape, line.shape)
 		if is_colliding {
 			draw_cmds.draw_shape(
 				Line{mouse_circle.shape.pos, mouse_circle.shape.pos + evt.normal * 20, 5.0},
