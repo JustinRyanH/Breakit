@@ -4,6 +4,7 @@ There are the tasks I want to work on next
 
 ## Active
 
+[ ] Fix literal corner case with box collision
 ## Core
 
 ## Nice to Haves
