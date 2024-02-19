@@ -4,13 +4,17 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Fix literal corner case with box collision
+[ ] Blocks to Break
+
 ## Core
+
+[ ] Game Over Scene
+[ ] Game Over Scene Win
+[ ] Main Menu
 
 ## Nice to Haves
 
-[ ] Crash on hot reload if the memory structure changes
-[ ] Input Recording, Stream Compress/Decompress
+[ ] Input Recording, Save to File
 [ ] Start Menu
 [ ] Start Menu with Keyboard Selectable Options
 [ ] Particles on Hit
@@ -21,9 +25,11 @@ push the ball out, maybe adjust the velocity a bit too
 [ ] Make a MicroUI style/atlas editor
 [ ] Move main.odin to src
 [ ] Propertly close out the debug logs, and compress them
+[ ] Crash on hot reload if the memory structure changes
 
 ## DONE
 
+[x] Fix literal corner case with box collision
 [x] MicroUI over Raygui
 [x] MVP
 [x] Hot Reloading
