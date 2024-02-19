@@ -95,13 +95,8 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	switch pb in ctx.playback {
-	case input.Recording:
+	if (ctx.last_frame_id != get_frame_id(frame_input)) {
 		update_gameplay(frame_input)
-	case input.Replay:
-		if (ctx.last_frame_id != get_frame_id(frame_input)) {
-			update_gameplay(frame_input)
-		}
 	}
 
 	{
