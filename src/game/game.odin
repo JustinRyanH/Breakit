@@ -38,7 +38,7 @@ GameMemory :: struct {
 	// Game Entities
 	paddle:       Paddle,
 	ball:         Ball,
-	bounds:       sa.Small_Array(16, Line),
+	bounds:       sa.Small_Array(16, Rectangle),
 }
 
 
@@ -59,6 +59,7 @@ game_init :: proc() {
 game_setup :: proc() {
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
+	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
 	g_mem.paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
 	g_mem.paddle.shape.size = Vector2{100, 20}
 	g_mem.paddle.color = BLUE
@@ -70,17 +71,34 @@ game_setup :: proc() {
 	g_mem.ball.state = .LockedToPaddle
 	g_mem.ball.speed = 350
 
+	wall_thickness: f32 = 100
+
+
 	sa.clear(&g_mem.bounds)
-	sa.append(&g_mem.bounds, Line{Vector2{g_mem.scene_width - 30, 30}, Vector2{30, 30}, 1.0})
 	sa.append(
 		&g_mem.bounds,
-		Line {
-			Vector2{g_mem.scene_width - 30, g_mem.scene_height - 30},
-			Vector2{g_mem.scene_width - 30, 30},
-			1.0,
+		Rectangle {
+			Vector2{(-wall_thickness / 2) + 5, scene_height / 2},
+			Vector2{wall_thickness, scene_height},
+			0.0,
 		},
 	)
-	sa.append(&g_mem.bounds, Line{Vector2{30, 30}, Vector2{30, g_mem.scene_height - 30}, 1.0})
+	sa.append(
+		&g_mem.bounds,
+		Rectangle {
+			Vector2{scene_width + (wall_thickness / 2) - 5, scene_height / 2},
+			Vector2{wall_thickness, scene_height},
+			0.0,
+		},
+	)
+	sa.append(
+		&g_mem.bounds,
+		Rectangle {
+			Vector2{scene_width / 2, wall_thickness / 2},
+			Vector2{scene_width, wall_thickness},
+			0.0,
+		},
+	)
 }
 
 @(export)
@@ -177,7 +195,7 @@ game_draw :: proc() {
 	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
 	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
 	for ln in sa.slice(&game.bounds) {
-		draw_cmds.draw_shape(ln, WHITE)
+		draw_cmds.draw_shape(ln, Color{36, 36, 32, 255})
 	}
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
@@ -231,12 +249,12 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		ball.direction = Vector2{0, -1}
 	}
 
-	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 30) {
-		paddle.shape.pos.x = paddle.shape.size.x / 2 + 30
+	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 0) {
+		paddle.shape.pos.x = paddle.shape.size.x / 2
 	}
 
-	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width - 30) {
-		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2 - 30
+	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width - 0) {
+		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2
 	}
 
 
