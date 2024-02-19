@@ -289,13 +289,9 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			case .Ball, .Brick, .Wall:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if is_colliding {
-					surface_perp_projection := math.dot(ball.direction, evt.normal) * evt.normal
-					surface_axis := ball.direction - surface_perp_projection
-
-					ball.direction = surface_axis - surface_perp_projection
-
+					ball.direction = bounce_normal(ball.direction, evt.normal)
+					ball.shape.pos += evt.normal * evt.depth
 				}
-				ball.shape.pos += evt.normal * evt.depth
 			case .Paddle:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if (is_colliding) {
@@ -318,4 +314,11 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 get_frame_id :: proc(frame_input: input.FrameInput) -> int {
 	return frame_input.current_frame.meta.frame_id
+}
+
+bounce_normal :: #force_inline proc(dir: Vector2, normal: Vector2) -> Vector2 {
+	surface_perp_projection := math.dot(dir, normal) * normal
+	surface_axis := dir - surface_perp_projection
+
+	return surface_axis - surface_perp_projection
 }
