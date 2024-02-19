@@ -35,6 +35,12 @@ BallState :: enum {
 	Free,
 }
 
+Brick :: struct {
+	shape: Rectangle,
+	color: Color,
+	alive: bool,
+}
+
 Ball :: struct {
 	shape:     Circle,
 	color:     Color,
@@ -51,6 +57,7 @@ GameMemory :: struct {
 	paddle:       Paddle,
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Rectangle),
+	bricks:       [dynamic]Brick,
 }
 
 
@@ -82,6 +89,8 @@ game_setup :: proc() {
 	g_mem.ball.color = RED
 	g_mem.ball.state = .LockedToPaddle
 	g_mem.ball.speed = 350
+
+	clear(&g_mem.bricks)
 
 	wall_thickness: f32 = 100
 
