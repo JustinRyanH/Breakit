@@ -284,24 +284,29 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		// We can slip through objects, so we should eventually do a raycast
 		ball.shape.pos += ball.direction * ball.speed * dt
 
-		for line in sa.slice(&g_mem.bounds) {
-			evt, is_colliding := shape_check_collision(ball.shape, line)
-			if is_colliding {
-				surface_perp_projection := math.dot(ball.direction, evt.normal) * evt.normal
-				surface_axis := ball.direction - surface_perp_projection
+		for collidable in ball_collision_targets {
+			switch collidable.kind {
+			case .Ball, .Brick, .Wall:
+				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
+				if is_colliding {
+					surface_perp_projection := math.dot(ball.direction, evt.normal) * evt.normal
+					surface_axis := ball.direction - surface_perp_projection
 
-				ball.direction = surface_axis - surface_perp_projection
+					ball.direction = surface_axis - surface_perp_projection
 
+				}
+				ball.shape.pos += evt.normal * evt.depth
+			case .Paddle:
+				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
+				if (is_colliding) {
+					ball.direction.x =
+						(ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
+					if (ball.direction.y > 0) {ball.direction.y *= -1}
+					ball.shape.pos += evt.normal * evt.depth
+				}
 			}
-			ball.shape.pos += evt.normal * evt.depth
 		}
 
-		evt, is_colliding := shape_check_collision(ball.shape, paddle.shape)
-		if (is_colliding) {
-			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
-			if (ball.direction.y > 0) {ball.direction.y *= -1}
-			ball.shape.pos += evt.normal * evt.depth
-		}
 
 		if (ball.shape.pos.y + ball.shape.radius > scene_height) {
 			game_setup()
