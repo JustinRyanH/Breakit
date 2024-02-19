@@ -267,8 +267,10 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 		evt, is_colliding := shape_check_collision(ball.shape, paddle.shape)
 		if (is_colliding) {
+			fmt.println("Paddle Evt", evt, "Ball Dir", ball.direction)
 			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
-			ball.direction.y *= -1
+			if (ball.direction.y > 0) {ball.direction.y *= -1}
+			ball.shape.pos += evt.normal * evt.depth
 		}
 
 		if (ball.shape.pos.y + ball.shape.radius > scene_height) {
