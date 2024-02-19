@@ -12,6 +12,18 @@ import mu "../microui"
 KbKey :: input.KeyboardKey
 MouseBtn :: input.MouseButton
 
+ObjectKind :: enum {
+	Ball,
+	Brick,
+	Wall,
+	Paddle,
+}
+
+CollidableObject :: struct {
+	kind:  ObjectKind,
+	shape: Shape,
+}
+
 Paddle :: struct {
 	shape: Rectangle,
 	color: Color,
@@ -227,12 +239,18 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 
 
 update_gameplay :: proc(frame_input: input.FrameInput) {
-	ball_collision_targets := make([dynamic]Shape, 0, 32, context.temp_allocator)
+	ball_collision_targets := make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
+
+	append(&ball_collision_targets, CollidableObject{.Paddle, paddle.shape})
+	for wall in sa.slice(&g_mem.bounds) {
+		append(&ball_collision_targets, CollidableObject{.Wall, wall})
+	}
+
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
 
