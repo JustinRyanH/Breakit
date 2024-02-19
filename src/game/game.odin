@@ -250,8 +250,8 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
 	case .Free:
 		ball.direction = math.normalize(ball.direction)
+		// We can slip through objects, so we should eventually do a raycast
 		ball.shape.pos += ball.direction * ball.speed * dt
-
 
 		for line in sa.slice(&g_mem.bounds) {
 			evt, is_colliding := shape_check_collision(ball.shape, line)
@@ -267,7 +267,6 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 		evt, is_colliding := shape_check_collision(ball.shape, paddle.shape)
 		if (is_colliding) {
-			fmt.println("Paddle Evt", evt, "Ball Dir", ball.direction)
 			ball.direction.x = (ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
 			if (ball.direction.y > 0) {ball.direction.y *= -1}
 			ball.shape.pos += evt.normal * evt.depth
