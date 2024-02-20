@@ -98,7 +98,8 @@ data_pool_new_iter :: proc(dp: DataPool($N, $T)) -> DataPoolIterator(N, T) {
 	return DataPoolIterator(N, T){dp = dp}
 }
 
-data_pool_iter :: proc(it: DataPoolIterator($N, $T)) -> (val: T, h: Handle, cond: bool) {
+data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (val: T, h: Handle, cond: bool) {
+	cond = it.index < cast(int)it.dp.items_len
 	return
 }
 
@@ -220,4 +221,32 @@ test_data_pool_remove :: proc(t: ^testing.T) {
 	testing.expect(t, was_removed, "data should have been removed")
 	was_removed = data_pool_remove(&byte_dp, handle_a)
 	testing.expect(t, !was_removed, "data cannot be removed twice")
+}
+
+@(test)
+test_data_pool_iterator :: proc(t: ^testing.T) {
+	TestStruct :: struct {
+		v: u8,
+	}
+	ByteDataPool :: DataPool(4, TestStruct)
+	byte_dp := ByteDataPool{}
+
+	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
+	handle_b, success_b := data_pool_add(&byte_dp, TestStruct{77})
+	handle_c, success_c := data_pool_add(&byte_dp, TestStruct{100})
+	handle_d, success_d := data_pool_add(&byte_dp, TestStruct{240})
+	successes := []bool{success_a, success_b, success_c, success_d}
+	for success in successes {
+		testing.expect(t, success, "data should have been added")
+	}
+
+	removed := data_pool_remove(&byte_dp, handle_b)
+	testing.expect(t, removed, "data should have been removed")
+
+	iter := data_pool_new_iter(byte_dp)
+
+
+	val, handle, should_continue := data_pool_iter(&iter)
+	testing.expect(t, should_continue, "There should be more iterations left")
+
 }
