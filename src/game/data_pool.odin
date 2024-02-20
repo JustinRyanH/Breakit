@@ -99,7 +99,7 @@ data_pool_new_iter :: proc(dp: ^DataPool($N, $T)) -> DataPoolIterator(N, T) {
 	return DataPoolIterator(N, T){dp = dp}
 }
 
-data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (val: T, h: Handle, cond: bool) {
+data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (data: T, h: Handle, cond: bool) {
 	cond = it.index < cast(int)it.dp.items_len
 
 	for ; cond; cond = it.index < cast(int)it.dp.items_len {
@@ -108,12 +108,29 @@ data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (val: T, h: Handle, con
 			it.index += 1
 			continue
 		}
-		val = dc.data
+		data = dc.data
 		h = transmute(Handle)dc.id
 		it.index += 1
 		break
 	}
 
+	return
+}
+
+data_pool_iter_ptr :: proc(it: ^DataPoolIterator($N, $T)) -> (data: ^T, h: Handle, cond: bool) {
+	cond = it.index < cast(int)it.dp.items_len
+
+	for ; cond; cond = it.index < cast(int)it.dp.items_len {
+		dc := it.dp.items[it.index]
+		if dc.id == NilHandleStruct {
+			it.index += 1
+			continue
+		}
+		data = &it.dp.items[it.index].data
+		h = transmute(Handle)dc.id
+		it.index += 1
+		break
+	}
 
 	return
 }
@@ -261,23 +278,67 @@ test_data_pool_iterator :: proc(t: ^testing.T) {
 	iter := data_pool_new_iter(&byte_dp)
 
 
-	val, handle, should_continue := data_pool_iter(&iter)
+	data, handle, should_continue := data_pool_iter(&iter)
 	testing.expect(t, should_continue, "There should be more iterations left")
-	testing.expect(t, val.v == 33, "The first value should be 33")
+	testing.expect(t, data.v == 33, "The first value should be 33")
 	testing.expect(t, handle == handle_a, "The first handle should be handle_a")
 
-	val, handle, should_continue = data_pool_iter(&iter)
+	data, handle, should_continue = data_pool_iter(&iter)
 	testing.expect(t, should_continue, "There should be more iterations left")
-	testing.expect(t, val.v == 100, "The first value should be 100")
+	testing.expect(t, data.v == 100, "The first value should be 100")
 	testing.expect(t, handle == handle_c, "The first handle should be handle_a")
 
-	val, handle, should_continue = data_pool_iter(&iter)
+	data, handle, should_continue = data_pool_iter(&iter)
 	testing.expect(t, should_continue, "There should be more iterations left")
-	testing.expect(t, val.v == 240, "The first value should be 100")
+	testing.expect(t, data.v == 240, "The first value should be 100")
 	testing.expect(t, handle == handle_d, "The first handle should be handle_a")
 
-	val, handle, should_continue = data_pool_iter(&iter)
+	data, handle, should_continue = data_pool_iter(&iter)
 	testing.expect(t, !should_continue, "There should be more iterations left")
-	testing.expect(t, val.v == 0, "The first value should be 100")
+	testing.expect(t, data.v == 0, "The first value should be 100")
+	testing.expect(t, handle == 0, "The first handle should be handle_a")
+}
+
+@(test)
+test_data_pool_iterator_ptr :: proc(t: ^testing.T) {
+	TestStruct :: struct {
+		v: u8,
+	}
+	ByteDataPool :: DataPool(4, TestStruct)
+	byte_dp := ByteDataPool{}
+
+	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
+	handle_b, success_b := data_pool_add(&byte_dp, TestStruct{77})
+	handle_c, success_c := data_pool_add(&byte_dp, TestStruct{100})
+	handle_d, success_d := data_pool_add(&byte_dp, TestStruct{240})
+	successes := []bool{success_a, success_b, success_c, success_d}
+	for success in successes {
+		testing.expect(t, success, "data should have been added")
+	}
+
+	removed := data_pool_remove(&byte_dp, handle_b)
+	testing.expect(t, removed, "data should have been removed")
+
+	iter := data_pool_new_iter(&byte_dp)
+
+
+	data, handle, should_continue := data_pool_iter_ptr(&iter)
+	testing.expect(t, should_continue, "There should be more iterations left")
+	testing.expect(t, data.v == 33, "The first value should be 33")
+	testing.expect(t, handle == handle_a, "The first handle should be handle_a")
+
+	data, handle, should_continue = data_pool_iter_ptr(&iter)
+	testing.expect(t, should_continue, "There should be more iterations left")
+	testing.expect(t, data.v == 100, "The first value should be 100")
+	testing.expect(t, handle == handle_c, "The first handle should be handle_a")
+
+	data, handle, should_continue = data_pool_iter_ptr(&iter)
+	testing.expect(t, should_continue, "There should be more iterations left")
+	testing.expect(t, data.v == 240, "The first value should be 100")
+	testing.expect(t, handle == handle_d, "The first handle should be handle_a")
+
+	data, handle, should_continue = data_pool_iter_ptr(&iter)
+	testing.expect(t, !should_continue, "There should be more iterations left")
+	testing.expect(t, data == nil, "The first value should be 100")
 	testing.expect(t, handle == 0, "The first handle should be handle_a")
 }
