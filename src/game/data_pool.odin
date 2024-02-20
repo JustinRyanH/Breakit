@@ -54,8 +54,14 @@ data_pool_get :: proc(dp: ^DataPool($N, $T), h: Handle) -> (data: T, found: bool
 	return
 }
 
-data_pool_get_ptr :: proc(dp: ^DataPool($N, $T)) -> ^T {
-	return
+data_pool_get_ptr :: proc(dp: ^DataPool($N, $T), h: Handle) -> ^T {
+	hs := transmute(HandleStruct)h
+
+	db := dp.items[hs.idx]
+	if (db.id.gen == hs.gen) {
+		return &dp.items[hs.idx].data
+	}
+	return nil
 }
 
 
@@ -111,4 +117,26 @@ test_data_pool_get :: proc(t: ^testing.T) {
 
 	testing.expect(t, found, "Data should have been found")
 	testing.expect(t, data == 33, fmt.tprintf("Data should have been 33, but was %d", data))
+}
+
+@(test)
+test_data_pool_get_ptr :: proc(t: ^testing.T) {
+	assert(size_of(HandleStruct) == size_of(Handle))
+
+	ByteDataPool :: DataPool(4, u8)
+	byte_dp := ByteDataPool{}
+
+	handle, success := data_pool_add(&byte_dp, 33)
+	testing.expect(t, success, "Data should have been added")
+
+	{
+
+		data_ptr := data_pool_get_ptr(&byte_dp, handle)
+		testing.expect(t, data_ptr != nil, "Data should have been found")
+		data_ptr^ = 50
+	}
+
+	data, found := data_pool_get(&byte_dp, handle)
+	testing.expect(t, found, "Data should have been found")
+	testing.expect(t, data == 50, "Data should have been adjusted in memory")
 }
