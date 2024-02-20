@@ -76,9 +76,12 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
+	clear(&g_mem.bricks)
+	sa.clear(&g_mem.bounds)
+
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
-	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
+	width, height := g_mem.scene_width, g_mem.scene_height
 	g_mem.paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
 	g_mem.paddle.shape.size = Vector2{100, 20}
 	g_mem.paddle.color = BLUE
@@ -90,36 +93,57 @@ game_setup :: proc() {
 	g_mem.ball.state = .LockedToPaddle
 	g_mem.ball.speed = 350
 
-	clear(&g_mem.bricks)
-
 	wall_thickness: f32 = 100
 
+	sa.append(
+		&g_mem.bounds,
+		Rectangle {
+			Vector2{(-wall_thickness / 2) + 5, height / 2},
+			Vector2{wall_thickness, height},
+			0.0,
+		},
+	)
+	sa.append(
+		&g_mem.bounds,
+		Rectangle {
+			Vector2{width + (wall_thickness / 2) - 5, height / 2},
+			Vector2{wall_thickness, height},
+			0.0,
+		},
+	)
+	sa.append(
+		&g_mem.bounds,
+		Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
+	)
 
-	sa.clear(&g_mem.bounds)
-	sa.append(
-		&g_mem.bounds,
-		Rectangle {
-			Vector2{(-wall_thickness / 2) + 5, scene_height / 2},
-			Vector2{wall_thickness, scene_height},
-			0.0,
-		},
-	)
-	sa.append(
-		&g_mem.bounds,
-		Rectangle {
-			Vector2{scene_width + (wall_thickness / 2) - 5, scene_height / 2},
-			Vector2{wall_thickness, scene_height},
-			0.0,
-		},
-	)
-	sa.append(
-		&g_mem.bounds,
-		Rectangle {
-			Vector2{scene_width / 2, wall_thickness / 2},
-			Vector2{scene_width, wall_thickness},
-			0.0,
-		},
-	)
+
+	brickable_area: Rectangle
+	brickable_area.pos = Vector2{width / 2, height / 2 - 35}
+	brickable_area.size = Vector2{788, 250}
+	brickable_area_min, brickable_area_max := shape_get_rect_extends(brickable_area)
+
+	gap: f32 = 2
+	bricks_per_row: int = 7
+	bricks_per_column: int = 7
+
+	brick_width: f32 = (brickable_area.size.x / cast(f32)bricks_per_row)
+	brick_height: f32 = (brickable_area.size.y / cast(f32)bricks_per_column)
+
+
+	for idx in 0 ..< (bricks_per_row * bricks_per_column) {
+		x_index := idx % bricks_per_row
+		y_index := idx / bricks_per_row
+
+		pos := Vector2{cast(f32)x_index * brick_width, cast(f32)y_index * brick_height}
+		pos += brickable_area_min + (Vector2{brick_width, brick_height} / 2)
+
+		brick := Brick {
+			Rectangle{pos, Vector2{brick_width - gap, brick_height - gap}, 0},
+			Color{255, 0, 0, 128},
+			true,
+		}
+		append(&g_mem.bricks, brick)
+	}
 }
 
 @(export)
@@ -210,6 +234,8 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 @(export)
 game_draw :: proc() {
 	game := g_mem
+	width, height := g_mem.scene_width, g_mem.scene_height
+
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
 
@@ -217,6 +243,10 @@ game_draw :: proc() {
 	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
 	for ln in sa.slice(&game.bounds) {
 		draw_cmds.draw_shape(ln, Color{36, 36, 32, 255})
+	}
+
+	for brick in game.bricks {
+		draw_cmds.draw_shape(brick.shape, brick.color)
 	}
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
@@ -233,6 +263,7 @@ game_draw :: proc() {
 
 @(export)
 game_shutdown :: proc() {
+	delete(g_mem.bricks)
 	free(g_mem)
 }
 
