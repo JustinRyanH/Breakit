@@ -135,6 +135,10 @@ data_pool_iter_ptr :: proc(it: ^DataPoolIterator($N, $T)) -> (data: ^T, h: Handl
 	return
 }
 
+/////////////////////////////
+// Tests
+/////////////////////////////
+
 @(test)
 test_data_pool_add_simple :: proc(t: ^testing.T) {
 	assert(size_of(HandleStruct) == size_of(Handle))
@@ -339,6 +343,6 @@ test_data_pool_iterator_ptr :: proc(t: ^testing.T) {
 
 	data, handle, should_continue = data_pool_iter_ptr(&iter)
 	testing.expect(t, !should_continue, "There should be more iterations left")
-	testing.expect(t, data == nil, "The first value should be 100")
+	testing.expect(t, data.v == 0, "The first value should be 100")
 	testing.expect(t, handle == 0, "The first handle should be handle_a")
 }
