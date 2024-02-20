@@ -38,11 +38,19 @@ data_pool_add :: proc(dp: ^DataPool($N, $T), v: T) -> (Handle, bool) {
 		return 0, false
 	}
 	handle := HandleStruct{dp.items_len, 1}
+	dp.items[dp.items_len] = DataContainer(T){handle, v}
+
 	dp.items_len += 1
 	return transmute(Handle)handle, true
 }
 
 data_pool_get :: proc(dp: ^DataPool($N, $T), h: Handle) -> (data: T, found: bool) {
+	hs := transmute(HandleStruct)h
+
+	db := dp.items[hs.idx]
+	if (db.id.gen == hs.gen) {
+		return db.data, true
+	}
 	return
 }
 
@@ -86,4 +94,21 @@ test_data_pool_add_simple :: proc(t: ^testing.T) {
 	handle, success := data_pool_add(&byte_dp, 244)
 	testing.expect(t, !success, "Success returns false if it is full")
 
+}
+
+
+@(test)
+test_data_pool_get :: proc(t: ^testing.T) {
+	assert(size_of(HandleStruct) == size_of(Handle))
+
+	ByteDataPool :: DataPool(4, u8)
+	byte_dp := ByteDataPool{}
+
+	handle, success := data_pool_add(&byte_dp, 33)
+	testing.expect(t, success, "Data should have been added")
+
+	data, found := data_pool_get(&byte_dp, handle)
+
+	testing.expect(t, found, "Data should have been found")
+	testing.expect(t, data == 33, fmt.tprintf("Data should have been 33, but was %d", data))
 }
