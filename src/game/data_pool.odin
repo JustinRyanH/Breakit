@@ -56,7 +56,7 @@ data_pool_get :: proc(dp: ^DataPool($N, $T), h: Handle) -> (data: T, found: bool
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
-	if (db.id.gen == hs.gen && db.id.idx == hs.idx) {
+	if (db.id == hs) {
 		return db.data, true
 	}
 	return
@@ -66,7 +66,7 @@ data_pool_get_ptr :: proc(dp: ^DataPool($N, $T), h: Handle) -> ^T {
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
-	if (db.id.gen == hs.gen && db.id.idx == hs.idx) {
+	if (db.id == hs) {
 		return &dp.items[hs.idx].data
 	}
 	return nil
@@ -77,7 +77,7 @@ data_pool_remove :: proc(dp: ^DataPool($N, $T), h: Handle) -> bool {
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
-	if (db.id.gen == hs.gen && db.id.idx == hs.idx) {
+	if (db.id == hs) {
 
 		item := &dp.items[hs.idx]
 		dp.unused_items[dp.unused_items_len] = item.id
