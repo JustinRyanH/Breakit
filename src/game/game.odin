@@ -4,10 +4,12 @@ import sa "core:container/small_array"
 import "core:fmt"
 import math "core:math/linalg"
 import "core:math/rand"
+import "core:mem"
 
 import "./input"
 
 import mu "../microui"
+
 
 KbKey :: input.KeyboardKey
 MouseBtn :: input.MouseButton
@@ -291,6 +293,9 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		append(&ball_collision_targets, CollidableObject{.Wall, wall})
 	}
 
+	for brick in g_mem.bricks {
+		append(&ball_collision_targets, CollidableObject{.Brick, brick.shape})
+	}
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
 
