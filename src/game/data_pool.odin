@@ -24,7 +24,7 @@ DataPool :: struct($N: u32, $T: typeid) {
 	items:            [N]DataContainer(T),
 	items_len:        u32,
 	unused_items:     [N]HandleStruct,
-	unused_items_idx: int,
+	unused_items_len: int,
 }
 
 DataPoolIterator :: struct($N: u32, $T: typeid) {
@@ -34,13 +34,21 @@ DataPoolIterator :: struct($N: u32, $T: typeid) {
 
 
 data_pool_add :: proc(dp: ^DataPool($N, $T), v: T) -> (Handle, bool) {
-	if (dp.items_len == N && dp.unused_items_idx == 0) {
+	if (dp.items_len == N && dp.unused_items_len == 0) {
 		return 0, false
 	}
+	if (dp.unused_items_len > 0) {
+		handle := dp.unused_items[dp.unused_items_len - 1]
+		handle.gen += 1
+		dp.items[handle.idx] = DataContainer(T){handle, v}
+		dp.unused_items_len -= 1
+		return transmute(Handle)handle, true
+	}
+
 	handle := HandleStruct{dp.items_len, 1}
 	dp.items[dp.items_len] = DataContainer(T){handle, v}
-
 	dp.items_len += 1
+
 	return transmute(Handle)handle, true
 }
 
@@ -72,7 +80,8 @@ data_pool_remove :: proc(dp: ^DataPool($N, $T), h: Handle) -> bool {
 	if (db.id.gen == hs.gen && db.id.idx == hs.idx) {
 
 		item := &dp.items[hs.idx]
-		dp.unused_items[dp.unused_items_idx] = item.id
+		dp.unused_items[dp.unused_items_len] = item.id
+		dp.unused_items_len += 1
 		item.id = HandleStruct{}
 		item.data = T{}
 
@@ -116,6 +125,39 @@ test_data_pool_add_simple :: proc(t: ^testing.T) {
 	handle, success := data_pool_add(&byte_dp, TestStruct{244})
 	testing.expect(t, !success, "Success returns false if it is full")
 
+}
+
+@(test)
+test_data_pool_add_reuse :: proc(t: ^testing.T) {
+
+	TestStruct :: struct {
+		v: u8,
+	}
+	ByteDataPool :: DataPool(4, TestStruct)
+	byte_dp := ByteDataPool{}
+
+	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
+	testing.expect(t, success_a, "data should have been added")
+
+	was_removed := data_pool_remove(&byte_dp, handle_a)
+	testing.expect(t, was_removed, "data should have been removed")
+
+	handle_b, success_b := data_pool_add(&byte_dp, TestStruct{33})
+	testing.expect(t, success_b, "data cannot be removed twice")
+
+	handle_struct_b := transmute(HandleStruct)handle_b
+	handle_struct_a := transmute(HandleStruct)handle_a
+
+	testing.expect(
+		t,
+		handle_struct_a.idx == handle_struct_b.idx,
+		"it re-uses the previously used spots",
+	)
+	testing.expect(
+		t,
+		handle_struct_b.gen > handle_struct_a.gen,
+		"it iterates the handle generation",
+	)
 }
 
 
