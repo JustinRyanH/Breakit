@@ -51,6 +51,7 @@ BallState :: enum {
 }
 
 Brick :: struct {
+	id:    EntityHandle,
 	shape: Rectangle,
 	color: Color,
 	alive: bool,
@@ -169,14 +170,19 @@ game_setup :: proc() {
 		pos := Vector2{cast(f32)x_index * brick_width, cast(f32)y_index * brick_height}
 		pos += brickable_area_min + (Vector2{brick_width, brick_height} / 2)
 
+		id, success := data_pool_add(&g_mem.entities, Entity{})
+		if !success {
+			panic("Failed to create Brick Entity")
+		}
 		brick := Brick {
+			id,
 			Rectangle{pos, Vector2{brick_width - gap, brick_height - gap}, 0},
 			Color{255, 0, 0, 128},
 			true,
 		}
-		_, success := data_pool_add(&g_mem.bricks, brick)
+		_, success = data_pool_add(&g_mem.bricks, brick)
 		if (!success) {
-			fmt.printf("Did not add data: %v", &g_mem.bricks)
+			panic(fmt.tprintf("Did not add data: %v", &g_mem.bricks))
 		}
 	}
 }
