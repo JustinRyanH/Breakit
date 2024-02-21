@@ -4,7 +4,7 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Blocks to Break
+[ ] Event Pool
 
 ## Core
 
@@ -29,6 +29,7 @@ push the ball out, maybe adjust the velocity a bit too
 
 ## DONE
 
+[x] Blocks to Break
 [x] Fix literal corner case with box collision
 [x] MicroUI over Raygui
 [x] MVP
