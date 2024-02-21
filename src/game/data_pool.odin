@@ -3,12 +3,6 @@ package game
 import "core:fmt"
 import "core:testing"
 
-DataPoolResult :: enum {
-	None,
-	NotFound,
-	AtCapacity,
-}
-
 Handle :: distinct u64
 HandleStruct :: struct {
 	idx: u32,
