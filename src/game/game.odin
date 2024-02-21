@@ -71,6 +71,7 @@ EntityHandle :: distinct Handle
 Entity :: union {
 	Brick,
 	Ball,
+	Wall,
 }
 
 GameMemory :: struct {
@@ -126,13 +127,7 @@ game_setup :: proc() {
 	g_mem.ball.speed = 350
 
 	wall_thickness: f32 = 100
-
-	handle, success = data_pool_add(&g_mem.entities, Entity{})
-	if !success {
-		panic("Failed to create Ball Entity")
-	}
-	sa.append(
-		&g_mem.bounds,
+	walls: []Wall =  {
 		Wall {
 			handle,
 			Rectangle {
@@ -141,14 +136,6 @@ game_setup :: proc() {
 				0.0,
 			},
 		},
-	)
-
-	handle, success = data_pool_add(&g_mem.entities, Entity{})
-	if !success {
-		panic("Failed to create Ball Entity")
-	}
-	sa.append(
-		&g_mem.bounds,
 		Wall {
 			handle,
 			Rectangle {
@@ -157,19 +144,21 @@ game_setup :: proc() {
 				0.0,
 			},
 		},
-	)
-
-	handle, success = data_pool_add(&g_mem.entities, Entity{})
-	if !success {
-		panic("Failed to create Ball Entity")
-	}
-	sa.append(
-		&g_mem.bounds,
 		Wall {
 			handle,
 			Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
 		},
-	)
+	}
+
+	for wall in walls {
+		ptr, h, success := data_pool_add_empty(&g_mem.entities)
+		if !success {
+			panic("Failed to create Wall Entity")
+		}
+		ptr^ = wall
+		sa.append(&g_mem.bounds, wall)
+
+	}
 
 
 	brickable_area: Rectangle
