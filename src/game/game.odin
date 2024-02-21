@@ -42,6 +42,7 @@ Paddle :: struct {
 }
 
 Wall :: struct {
+	id:    EntityHandle,
 	shape: Rectangle,
 }
 
@@ -122,9 +123,14 @@ game_setup :: proc() {
 
 	wall_thickness: f32 = 100
 
+	handle, success = data_pool_add(&g_mem.entities, Entity{})
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
 	sa.append(
 		&g_mem.bounds,
 		Wall {
+			handle,
 			Rectangle {
 				Vector2{(-wall_thickness / 2) + 5, height / 2},
 				Vector2{wall_thickness, height},
@@ -132,9 +138,15 @@ game_setup :: proc() {
 			},
 		},
 	)
+
+	handle, success = data_pool_add(&g_mem.entities, Entity{})
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
 	sa.append(
 		&g_mem.bounds,
 		Wall {
+			handle,
 			Rectangle {
 				Vector2{width + (wall_thickness / 2) - 5, height / 2},
 				Vector2{wall_thickness, height},
@@ -142,9 +154,15 @@ game_setup :: proc() {
 			},
 		},
 	)
+
+	handle, success = data_pool_add(&g_mem.entities, Entity{})
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
 	sa.append(
 		&g_mem.bounds,
 		Wall {
+			handle,
 			Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
 		},
 	)
