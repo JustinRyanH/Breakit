@@ -21,9 +21,17 @@ ObjectKind :: enum {
 	Paddle,
 }
 
+BrickHandle :: distinct Handle
+
+HandleUnion :: union {
+	Handle,
+	BrickHandle,
+}
+
 CollidableObject :: struct {
-	kind:  ObjectKind,
-	shape: Shape,
+	kind:   ObjectKind,
+	handle: HandleUnion,
+	shape:  Shape,
 }
 
 Paddle :: struct {
@@ -60,6 +68,7 @@ GameMemory :: struct {
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Rectangle),
 	bricks:       [dynamic]Brick,
+	bricks_v2:    DataPool(256, Brick, BrickHandle),
 }
 
 
@@ -144,6 +153,7 @@ game_setup :: proc() {
 			Color{255, 0, 0, 128},
 			true,
 		}
+		data_pool_add(&g_mem.bricks_v2, brick)
 		append(&g_mem.bricks, brick)
 	}
 }
@@ -288,13 +298,15 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	append(&ball_collision_targets, CollidableObject{.Paddle, paddle.shape})
+	null_handle: Handle = 0
+
+	append(&ball_collision_targets, CollidableObject{.Paddle, null_handle, paddle.shape})
 	for wall in sa.slice(&g_mem.bounds) {
-		append(&ball_collision_targets, CollidableObject{.Wall, wall})
+		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall})
 	}
 
 	for brick in g_mem.bricks {
-		append(&ball_collision_targets, CollidableObject{.Brick, brick.shape})
+		append(&ball_collision_targets, CollidableObject{.Brick, null_handle, brick.shape})
 	}
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
