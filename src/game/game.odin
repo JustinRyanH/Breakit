@@ -67,7 +67,6 @@ GameMemory :: struct {
 	paddle:       Paddle,
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Rectangle),
-	bricks:       [dynamic]Brick,
 	bricks_v2:    DataPool(256, Brick, BrickHandle),
 }
 
@@ -88,7 +87,6 @@ game_init :: proc() {
 @(export)
 game_setup :: proc() {
 	data_pool_reset(&g_mem.bricks_v2)
-	clear(&g_mem.bricks)
 	sa.clear(&g_mem.bounds)
 
 	g_mem.scene_width = 800
@@ -158,7 +156,6 @@ game_setup :: proc() {
 		if (!success) {
 			fmt.printf("Did not add data: %v", &g_mem.bricks_v2)
 		}
-		append(&g_mem.bricks, brick)
 	}
 }
 
@@ -280,7 +277,6 @@ game_draw :: proc() {
 
 @(export)
 game_shutdown :: proc() {
-	delete(g_mem.bricks)
 	free(g_mem)
 }
 
