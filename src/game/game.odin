@@ -115,7 +115,7 @@ game_setup :: proc() {
 	g_mem.paddle.color = BLUE
 	g_mem.paddle.speed = 300
 
-	handle, success := data_pool_add(&g_mem.entities, Entity{})
+	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Ball Entity")
 	}
@@ -125,6 +125,7 @@ game_setup :: proc() {
 	g_mem.ball.color = RED
 	g_mem.ball.state = .LockedToPaddle
 	g_mem.ball.speed = 350
+	ptr^ = g_mem.ball
 
 	wall_thickness: f32 = 100
 	walls: []Wall =  {
@@ -155,11 +156,11 @@ game_setup :: proc() {
 		if !success {
 			panic("Failed to create Wall Entity")
 		}
-		ptr^ = wall
+		w_copy := wall
+		w_copy.id = h
+		ptr^ = w_copy
 		sa.append(&g_mem.bounds, wall)
-
 	}
-
 
 	brickable_area: Rectangle
 	brickable_area.pos = Vector2{width / 2, height / 2 - 35}
