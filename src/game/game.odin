@@ -81,6 +81,7 @@ GameMemory :: struct {
 
 ctx: ^Context
 g_input: input.FrameInput
+ball_collision_targets: [dynamic]CollidableObject
 g_mem: ^GameMemory
 
 current_input :: #force_inline proc() -> input.UserInput {
@@ -355,12 +356,7 @@ update_paddle :: proc(frame_input: input.FrameInput) {
 	}
 }
 
-update_gameplay :: proc(frame_input: input.FrameInput) {
-	ball_collision_targets := make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
-
-	dt := input.frame_query_delta(frame_input)
-	g_input = frame_input
-
+update_ball :: proc(frame_input: input.FrameInput) {
 	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
 	if paddle_ptr == nil {
 		panic("Paddle should always exists")
@@ -378,20 +374,8 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		panic("Ball should also be a Ball")
 	}
 
-	ball_targets := data_pool_new_iter(&g_mem.entities)
-	for entity, handle in data_pool_iter(&ball_targets) {
-		#partial switch e in entity {
-		case Brick:
-			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
-		case Paddle:
-			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
-		case Wall:
-			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
+	dt := input.frame_query_delta(frame_input)
 
-		}
-	}
-
-	update_paddle(frame_input)
 	is_locked_to_paddle := ball.state == .LockedToPaddle
 	if (is_locked_to_paddle && input.is_pressed(frame_input, .SPACE)) {
 		ball.state = .Free
@@ -437,10 +421,35 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			}
 		}
 
-		if (ball.shape.pos.y - ball.shape.radius * 3 > scene_height) {
+		height := g_mem.scene_height
+		if (ball.shape.pos.y - ball.shape.radius * 3 > height) {
 			game_setup()
 		}
 	}
+}
+
+update_gameplay :: proc(frame_input: input.FrameInput) {
+	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
+
+	dt := input.frame_query_delta(frame_input)
+	g_input = frame_input
+
+	ball_targets := data_pool_new_iter(&g_mem.entities)
+	for entity, handle in data_pool_iter(&ball_targets) {
+		#partial switch e in entity {
+		case Brick:
+			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
+		case Paddle:
+			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
+		case Wall:
+			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
+
+		}
+	}
+
+	update_paddle(frame_input)
+	update_ball(frame_input)
+
 }
 
 
