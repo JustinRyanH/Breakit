@@ -86,7 +86,7 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
-	data_pool_reset(&g_mem.bricks)
+	data_pool_hard_reset(&g_mem.bricks)
 	sa.clear(&g_mem.bounds)
 
 	g_mem.scene_width = 800
