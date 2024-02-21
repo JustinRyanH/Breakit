@@ -331,8 +331,23 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
-	paddle := &g_mem.paddle
-	ball := &g_mem.ball
+
+	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle.id)
+	if paddle_ptr == nil {
+		panic("Paddle should always exists")
+	}
+	paddle, is_paddle := &paddle_ptr.(Paddle)
+	if !is_paddle {
+		panic("Paddle should also be a Paddle")
+	}
+	ball_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.ball.id)
+	if ball_ptr == nil {
+		panic("Ball should always exists")
+	}
+	ball, is_ball := &ball_ptr.(Ball)
+	if !is_ball {
+		panic("Ball should also be a Ball")
+	}
 
 	ball_targets := data_pool_new_iter(&g_mem.entities)
 	for entity, handle in data_pool_iter(&ball_targets) {
@@ -409,20 +424,9 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			}
 		}
 
-
 		if (ball.shape.pos.y - ball.shape.radius * 3 > scene_height) {
 			game_setup()
 		}
-	}
-
-
-	paddle_ptr := data_pool_get_ptr(&g_mem.entities, paddle.id)
-	if paddle_ptr != nil {
-		paddle_ptr^ = g_mem.paddle
-	}
-	ball_ptr := data_pool_get_ptr(&g_mem.entities, ball.id)
-	if ball_ptr != nil {
-		ball_ptr^ = g_mem.ball
 	}
 }
 
