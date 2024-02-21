@@ -345,10 +345,10 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	}
 
 	brick_iter := data_pool_new_iter(&g_mem.entities)
-	for brick, handle in data_pool_iter(&brick_iter) {
-		brick, is_brick := brick.(Brick)
-		if (is_brick) {
-			append(&ball_collision_targets, CollidableObject{.Brick, brick.id, brick.shape})
+	for entity, handle in data_pool_iter(&brick_iter) {
+		#partial switch e in entity {
+		case Brick:
+			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
 		}
 	}
 
