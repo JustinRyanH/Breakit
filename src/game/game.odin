@@ -305,8 +305,9 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall})
 	}
 
-	for brick in g_mem.bricks {
-		append(&ball_collision_targets, CollidableObject{.Brick, null_handle, brick.shape})
+	brick_iter := data_pool_new_iter(&g_mem.bricks_v2)
+	for brick, handle in data_pool_iter(&brick_iter) {
+		append(&ball_collision_targets, CollidableObject{.Brick, handle, brick.shape})
 	}
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
