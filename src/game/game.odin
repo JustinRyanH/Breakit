@@ -364,14 +364,6 @@ update_paddle :: proc(frame_input: input.FrameInput) {
 }
 
 update_ball :: proc(frame_input: input.FrameInput) {
-	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
-	if paddle_ptr == nil {
-		panic("Paddle should always exists")
-	}
-	paddle, is_paddle := &paddle_ptr.(Paddle)
-	if !is_paddle {
-		panic("Paddle should also be a Paddle")
-	}
 	ball_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.ball)
 	if ball_ptr == nil {
 		panic("Ball should always exists")
@@ -386,6 +378,14 @@ update_ball :: proc(frame_input: input.FrameInput) {
 
 	switch bs in &ball.state {
 	case LockedToEntity:
+		paddle_ptr := data_pool_get_ptr(&g_mem.entities, bs.handle)
+		if paddle_ptr == nil {
+			panic("Paddle should always exists")
+		}
+		paddle, is_paddle := &paddle_ptr.(Paddle)
+		if !is_paddle {
+			panic("Paddle should also be a Paddle")
+		}
 		ball.shape.pos = paddle.shape.pos + bs.offset
 
 		if input.is_pressed(frame_input, .SPACE) {
@@ -419,8 +419,12 @@ update_ball :: proc(frame_input: input.FrameInput) {
 			case .Paddle:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if (is_colliding) {
+					paddle_rect, ok := collidable.shape.(Rectangle)
+					if !ok {
+						panic("Rect Shape should be a shape")
+					}
 					bs.direction.x =
-						(ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
+						(ball.shape.pos.x - paddle_rect.pos.x) / (paddle_rect.size.x / 2)
 					if (bs.direction.y > 0) {bs.direction.y *= -1}
 					ball.shape.pos += evt.normal * evt.depth
 				}
