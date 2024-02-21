@@ -87,6 +87,7 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
+	data_pool_reset(&g_mem.bricks_v2)
 	clear(&g_mem.bricks)
 	sa.clear(&g_mem.bounds)
 
@@ -153,7 +154,10 @@ game_setup :: proc() {
 			Color{255, 0, 0, 128},
 			true,
 		}
-		data_pool_add(&g_mem.bricks_v2, brick)
+		_, success := data_pool_add(&g_mem.bricks_v2, brick)
+		if (!success) {
+			fmt.printf("Did not add data: %v", &g_mem.bricks_v2)
+		}
 		append(&g_mem.bricks, brick)
 	}
 }
@@ -257,7 +261,8 @@ game_draw :: proc() {
 		draw_cmds.draw_shape(ln, Color{36, 36, 32, 255})
 	}
 
-	for brick in game.bricks {
+	brick_iter := data_pool_new_iter(&g_mem.bricks_v2)
+	for brick in data_pool_iter(&brick_iter) {
 		draw_cmds.draw_shape(brick.shape, brick.color)
 	}
 
@@ -349,7 +354,10 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 				if is_colliding {
 					brick_handle, is_brick := collidable.handle.(BrickHandle)
 					if is_brick {
-						fmt.println("Hit Brick", brick_handle)
+						removed := data_pool_remove(&g_mem.bricks_v2, brick_handle)
+						if !removed {
+							fmt.println("Failed to remove brick at handle", brick_handle)
+						}
 					}
 					ball.direction = bounce_normal(ball.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth

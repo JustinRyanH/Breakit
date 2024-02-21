@@ -106,10 +106,9 @@ data_pool_reset :: proc(db: ^DataPool($N, $T, $H)) {
 	for i := len(db.items) - 1; i >= 0; i -= 1 {
 		item_pos := N - 1 - cast(u32)i
 		db.unused_items[i] = db.items[item_pos].id
-		db.items[item_pos].id.idx = item_pos
+		db.unused_items[i].idx = item_pos
 		db.items[i].id = NilHandleStruct
 	}
-	fmt.println(db.unused_items)
 	db.unused_items_len = N
 	db.items_len = N
 }
@@ -395,6 +394,7 @@ test_data_pool_iterator_reset :: proc(t: ^testing.T) {
 	}
 	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
+	data_pool_reset(&byte_dp)
 
 	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
 	handle_b, success_b := data_pool_add(&byte_dp, TestStruct{77})
