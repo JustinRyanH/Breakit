@@ -60,6 +60,18 @@ data_pool_get :: proc(dp: ^DataPool($N, $T, $H), h: H) -> (data: T, found: bool)
 	return
 }
 
+data_pool_add_empty :: proc(dp: ^DataPool($N, $T, $H)) -> (^T, H, bool) {
+	h, success := data_pool_add(dp, T{})
+	if !success {
+		return nil, 0, false
+	}
+	ptr := data_pool_get_ptr(dp, h)
+	if ptr == nil {
+		return nil, 0, false
+	}
+	return ptr, h, true
+}
+
 data_pool_get_ptr :: proc(dp: ^DataPool($N, $T, $H), h: H) -> ^T {
 	hs := transmute(HandleStruct)h
 
@@ -436,4 +448,36 @@ test_data_pool_iterator_reset :: proc(t: ^testing.T) {
 	testing.expect(t, !should_continue, "There should be more iterations left")
 	testing.expect(t, data.v == 0, "The first value should be 100")
 	testing.expect(t, handle == 0, "The first handle should be handle_a")
+}
+
+@(test)
+test_data_pool_add_empty :: proc(t: ^testing.T) {
+	TestStructA :: struct {
+		v: u8,
+	}
+	TestStructB :: struct {
+		v: i8,
+	}
+	TestUnion :: union {
+		TestStructA,
+		TestStructB,
+	}
+	ByteDataPool :: DataPool(4, TestUnion, Handle)
+	byte_dp := ByteDataPool{}
+
+	empty_ptr, handle, success := data_pool_add_empty(&byte_dp)
+	testing.expect(t, success, "It should have successfully added")
+	testing.expect(t, handle != 0, "It have a non-zero handle")
+	testing.expectf(
+		t,
+		empty_ptr^ == nil,
+		"It returns a nil version of the union, got %v",
+		empty_ptr,
+	)
+
+	empty_ptr^ = TestStructB{-8}
+
+	data, found := data_pool_get(&byte_dp, handle)
+	testing.expect(t, found, "Handle should have data in pool")
+	testing.expectf(t, data == TestStructB{-8}, "Data should Exists, found %v", data)
 }
