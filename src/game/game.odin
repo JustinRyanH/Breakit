@@ -39,9 +39,19 @@ Wall :: struct {
 	shape: Rectangle,
 }
 
-BallState :: enum {
-	LockedToPaddle,
-	Free,
+LockedToEntity :: struct {
+	handle: EntityHandle,
+	offset: Vector2,
+}
+
+FreeMovement :: struct {
+	direction: Vector2,
+	speed:     f32,
+}
+
+BallState :: union {
+	LockedToEntity,
+	FreeMovement,
 }
 
 Brick :: struct {
@@ -52,12 +62,10 @@ Brick :: struct {
 }
 
 Ball :: struct {
-	id:        EntityHandle,
-	shape:     Circle,
-	color:     Color,
-	state:     BallState,
-	direction: Vector2,
-	speed:     Vector2,
+	id:    EntityHandle,
+	shape: Circle,
+	color: Color,
+	state: BallState,
 }
 
 EntityHandle :: distinct Handle
@@ -126,8 +134,7 @@ game_setup :: proc() {
 	ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
 	ball.shape.radius = 10
 	ball.color = RED
-	ball.state = .LockedToPaddle
-	ball.speed = 350
+	ball.state = LockedToEntity{paddle.id, Vector2{0, -20}}
 	ptr^ = ball
 
 	wall_thickness: f32 = 100
@@ -376,20 +383,19 @@ update_ball :: proc(frame_input: input.FrameInput) {
 
 	dt := input.frame_query_delta(frame_input)
 
-	is_locked_to_paddle := ball.state == .LockedToPaddle
-	if (is_locked_to_paddle && input.is_pressed(frame_input, .SPACE)) {
-		ball.state = .Free
-		ball.direction = Vector2{0, -1}
-	}
 
+	switch bs in &ball.state {
+	case LockedToEntity:
+		ball.shape.pos = paddle.shape.pos + bs.offset
 
-	switch ball.state {
-	case .LockedToPaddle:
-		ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
-	case .Free:
-		ball.direction = math.normalize(ball.direction)
+		if input.is_pressed(frame_input, .SPACE) {
+			// TODO: This needs to use some sort of Event Pool.
+			ball.state = FreeMovement{Vector2{0, -1}, 350}
+		}
+	case FreeMovement:
+		bs.direction = math.normalize(bs.direction)
 		// We can slip through objects, so we should eventually do a raycast
-		ball.shape.pos += ball.direction * ball.speed * dt
+		ball.shape.pos += bs.direction * bs.speed * dt
 
 		for collidable in ball_collision_targets {
 			switch collidable.kind {
@@ -407,15 +413,15 @@ update_ball :: proc(frame_input: input.FrameInput) {
 							fmt.println("Failed to remove brick at handle", collidable.handle)
 						}
 					}
-					ball.direction = bounce_normal(ball.direction, evt.normal)
+					bs.direction = bounce_normal(bs.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth
 				}
 			case .Paddle:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if (is_colliding) {
-					ball.direction.x =
+					bs.direction.x =
 						(ball.shape.pos.x - paddle.shape.pos.x) / (paddle.shape.size.x / 2)
-					if (ball.direction.y > 0) {ball.direction.y *= -1}
+					if (bs.direction.y > 0) {bs.direction.y *= -1}
 					ball.shape.pos += evt.normal * evt.depth
 				}
 			}
