@@ -26,6 +26,7 @@ BrickHandle :: distinct Handle
 HandleUnion :: union {
 	Handle,
 	BrickHandle,
+	EntityHandle,
 }
 
 CollidableObject :: struct {
@@ -56,12 +57,16 @@ Brick :: struct {
 }
 
 Ball :: struct {
+	id:        EntityHandle,
 	shape:     Circle,
 	color:     Color,
 	state:     BallState,
 	direction: Vector2,
 	speed:     Vector2,
 }
+
+EntityHandle :: distinct Handle
+Entity :: struct {}
 
 GameMemory :: struct {
 	scene_width:  f32,
@@ -72,6 +77,7 @@ GameMemory :: struct {
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Wall),
 	bricks:       DataPool(256, Brick, BrickHandle),
+	entities:     DataPool(512, Entity, EntityHandle),
 }
 
 
@@ -90,7 +96,8 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
-	data_pool_hard_reset(&g_mem.bricks)
+	data_pool_reset(&g_mem.bricks)
+	data_pool_reset(&g_mem.entities)
 	sa.clear(&g_mem.bounds)
 
 	g_mem.scene_width = 800
@@ -101,6 +108,11 @@ game_setup :: proc() {
 	g_mem.paddle.color = BLUE
 	g_mem.paddle.speed = 300
 
+	handle, success := data_pool_add(&g_mem.entities, Entity{})
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
+	g_mem.ball.id = handle
 	g_mem.ball.shape.pos = g_mem.paddle.shape.pos + Vector2{0, -20}
 	g_mem.ball.shape.radius = 10
 	g_mem.ball.color = RED
