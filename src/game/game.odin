@@ -40,6 +40,10 @@ Paddle :: struct {
 	speed: f32,
 }
 
+Wall :: struct {
+	shape: Rectangle,
+}
+
 BallState :: enum {
 	LockedToPaddle,
 	Free,
@@ -66,7 +70,7 @@ GameMemory :: struct {
 	// Game Entities
 	paddle:       Paddle,
 	ball:         Ball,
-	bounds:       sa.Small_Array(16, Rectangle),
+	bounds:       sa.Small_Array(16, Wall),
 	bricks:       DataPool(256, Brick, BrickHandle),
 }
 
@@ -107,23 +111,29 @@ game_setup :: proc() {
 
 	sa.append(
 		&g_mem.bounds,
-		Rectangle {
-			Vector2{(-wall_thickness / 2) + 5, height / 2},
-			Vector2{wall_thickness, height},
-			0.0,
+		Wall {
+			Rectangle {
+				Vector2{(-wall_thickness / 2) + 5, height / 2},
+				Vector2{wall_thickness, height},
+				0.0,
+			},
 		},
 	)
 	sa.append(
 		&g_mem.bounds,
-		Rectangle {
-			Vector2{width + (wall_thickness / 2) - 5, height / 2},
-			Vector2{wall_thickness, height},
-			0.0,
+		Wall {
+			Rectangle {
+				Vector2{width + (wall_thickness / 2) - 5, height / 2},
+				Vector2{wall_thickness, height},
+				0.0,
+			},
 		},
 	)
 	sa.append(
 		&g_mem.bounds,
-		Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
+		Wall {
+			Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
+		},
 	)
 
 
@@ -254,8 +264,8 @@ game_draw :: proc() {
 
 	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
 	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
-	for ln in sa.slice(&game.bounds) {
-		draw_cmds.draw_shape(ln, Color{36, 36, 32, 255})
+	for wall in sa.slice(&game.bounds) {
+		draw_cmds.draw_shape(wall.shape, Color{36, 36, 32, 255})
 	}
 
 	brick_iter := data_pool_new_iter(&g_mem.bricks)
@@ -303,7 +313,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	append(&ball_collision_targets, CollidableObject{.Paddle, null_handle, paddle.shape})
 	for wall in sa.slice(&g_mem.bounds) {
-		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall})
+		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall.shape})
 	}
 
 	brick_iter := data_pool_new_iter(&g_mem.bricks)
