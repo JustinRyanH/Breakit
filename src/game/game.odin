@@ -30,12 +30,14 @@ HandleUnion :: union {
 }
 
 CollidableObject :: struct {
-	kind:   ObjectKind,
-	handle: HandleUnion,
-	shape:  Shape,
+	kind:     ObjectKind,
+	handle:   HandleUnion,
+	e_handle: EntityHandle,
+	shape:    Shape,
 }
 
 Paddle :: struct {
+	id:    EntityHandle,
 	shape: Rectangle,
 	color: Color,
 	speed: f32,
@@ -69,6 +71,7 @@ Ball :: struct {
 
 EntityHandle :: distinct Handle
 Entity :: union {
+	Paddle,
 	Brick,
 	Ball,
 	Wall,
@@ -110,12 +113,20 @@ game_setup :: proc() {
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
 	width, height := g_mem.scene_width, g_mem.scene_height
+
+
+	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
 	g_mem.paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
 	g_mem.paddle.shape.size = Vector2{100, 20}
 	g_mem.paddle.color = BLUE
 	g_mem.paddle.speed = 300
+	g_mem.paddle.id = handle
+	ptr^ = g_mem.paddle
 
-	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
+	ptr, handle, success = data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Ball Entity")
 	}
@@ -209,8 +220,6 @@ game_update_context :: proc(new_ctx: ^Context) {
 game_update :: proc(frame_input: input.FrameInput) -> bool {
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
-	paddle := &g_mem.paddle
-	ball := &g_mem.ball
 
 	if (ctx.last_frame_id != get_frame_id(frame_input)) {
 		update_gameplay(frame_input)
@@ -293,15 +302,18 @@ game_draw :: proc() {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
 
-	draw_cmds.draw_shape(game.paddle.shape, game.paddle.color)
-	draw_cmds.draw_shape(game.ball.shape, game.ball.color)
-	for wall in sa.slice(&game.bounds) {
-		draw_cmds.draw_shape(wall.shape, Color{36, 36, 32, 255})
-	}
-
-	brick_iter := data_pool_new_iter(&g_mem.bricks)
-	for brick in data_pool_iter(&brick_iter) {
-		draw_cmds.draw_shape(brick.shape, brick.color)
+	entity_iter := data_pool_new_iter(&g_mem.entities)
+	for entity in data_pool_iter(&entity_iter) {
+		switch e in entity {
+		case Brick:
+			draw_cmds.draw_shape(e.shape, e.color)
+		case Ball:
+			draw_cmds.draw_shape(e.shape, e.color)
+		case Paddle:
+			draw_cmds.draw_shape(e.shape, e.color)
+		case Wall:
+			draw_cmds.draw_shape(e.shape, Color{36, 36, 32, 255})
+		}
 	}
 
 	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
@@ -342,14 +354,17 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	null_handle: Handle = 0
 
-	append(&ball_collision_targets, CollidableObject{.Paddle, null_handle, paddle.shape})
+	append(
+		&ball_collision_targets,
+		CollidableObject{.Paddle, null_handle, paddle.id, paddle.shape},
+	)
 	for wall in sa.slice(&g_mem.bounds) {
-		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall.shape})
+		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall.id, wall.shape})
 	}
 
 	brick_iter := data_pool_new_iter(&g_mem.bricks)
 	for brick, handle in data_pool_iter(&brick_iter) {
-		append(&ball_collision_targets, CollidableObject{.Brick, handle, brick.shape})
+		append(&ball_collision_targets, CollidableObject{.Brick, handle, brick.id, brick.shape})
 	}
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
@@ -395,6 +410,10 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 						if !removed {
 							fmt.println("Failed to remove brick at handle", brick_handle)
 						}
+						removed = data_pool_remove(&g_mem.entities, collidable.e_handle)
+						if !removed {
+							fmt.println("Failed to remove brick at handle", collidable.e_handle)
+						}
 					}
 					ball.direction = bounce_normal(ball.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth
@@ -416,6 +435,15 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
+
+	paddle_ptr := data_pool_get_ptr(&g_mem.entities, paddle.id)
+	if paddle_ptr != nil {
+		paddle_ptr^ = g_mem.paddle
+	}
+	ball_ptr := data_pool_get_ptr(&g_mem.entities, ball.id)
+	if ball_ptr != nil {
+		ball_ptr^ = g_mem.ball
+	}
 }
 
 
