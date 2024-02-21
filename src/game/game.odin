@@ -374,7 +374,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 
 
-		if (ball.shape.pos.y + ball.shape.radius > scene_height) {
+		if (ball.shape.pos.y - ball.shape.radius * 3 > scene_height) {
 			game_setup()
 		}
 	}
