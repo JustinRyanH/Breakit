@@ -21,16 +21,10 @@ ObjectKind :: enum {
 	Paddle,
 }
 
-HandleUnion :: union {
-	Handle,
-	EntityHandle,
-}
-
 CollidableObject :: struct {
-	kind:     ObjectKind,
-	handle:   HandleUnion,
-	e_handle: EntityHandle,
-	shape:    Shape,
+	kind:   ObjectKind,
+	handle: EntityHandle,
+	shape:  Shape,
 }
 
 Paddle :: struct {
@@ -345,22 +339,16 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	null_handle: Handle = 0
 
-	append(
-		&ball_collision_targets,
-		CollidableObject{.Paddle, null_handle, paddle.id, paddle.shape},
-	)
+	append(&ball_collision_targets, CollidableObject{.Paddle, paddle.id, paddle.shape})
 	for wall in sa.slice(&g_mem.bounds) {
-		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall.id, wall.shape})
+		append(&ball_collision_targets, CollidableObject{.Wall, wall.id, wall.shape})
 	}
 
 	brick_iter := data_pool_new_iter(&g_mem.entities)
 	for brick, handle in data_pool_iter(&brick_iter) {
 		brick, is_brick := brick.(Brick)
 		if (is_brick) {
-			append(
-				&ball_collision_targets,
-				CollidableObject{.Brick, handle, brick.id, brick.shape},
-			)
+			append(&ball_collision_targets, CollidableObject{.Brick, brick.id, brick.shape})
 		}
 	}
 
@@ -401,15 +389,15 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			case .Ball, .Brick, .Wall:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if is_colliding {
-					entity, exists := data_pool_get(&g_mem.entities, collidable.e_handle)
+					entity, exists := data_pool_get(&g_mem.entities, collidable.handle)
 					if (!exists) {
 						continue
 					}
 					_, is_brick := entity.(Brick)
 					if is_brick {
-						removed := data_pool_remove(&g_mem.entities, collidable.e_handle)
+						removed := data_pool_remove(&g_mem.entities, collidable.handle)
 						if !removed {
-							fmt.println("Failed to remove brick at handle", collidable.e_handle)
+							fmt.println("Failed to remove brick at handle", collidable.handle)
 						}
 					}
 					ball.direction = bounce_normal(ball.direction, evt.normal)
