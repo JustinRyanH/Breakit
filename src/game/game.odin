@@ -329,6 +329,31 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
 }
 
+update_ball :: proc(frame_input: input.FrameInput) {
+	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
+	if paddle_ptr == nil {panic("Paddle should always exists")}
+
+	paddle, is_paddle := &paddle_ptr.(Paddle)
+	if !is_paddle {panic("Paddle should also be a Paddle")}
+
+	dt := input.frame_query_delta(frame_input)
+	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
+
+	if (input.is_pressed(frame_input, KbKey.LEFT)) {
+		paddle.shape.pos -= Vector2{1, 0} * paddle.speed * dt
+	}
+	if (input.is_pressed(frame_input, KbKey.RIGHT)) {
+		paddle.shape.pos += Vector2{1, 0} * paddle.speed * dt
+	}
+
+	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 0) {
+		paddle.shape.pos.x = paddle.shape.size.x / 2
+	}
+
+	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width - 0) {
+		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2
+	}
+}
 
 update_gameplay :: proc(frame_input: input.FrameInput) {
 	ball_collision_targets := make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
@@ -366,27 +391,11 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
-	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
-
-	if (input.is_pressed(frame_input, KbKey.LEFT)) {
-		paddle.shape.pos -= Vector2{1, 0} * paddle.speed * dt
-	}
-	if (input.is_pressed(frame_input, KbKey.RIGHT)) {
-		paddle.shape.pos += Vector2{1, 0} * paddle.speed * dt
-	}
-
+	update_ball(frame_input)
 	is_locked_to_paddle := ball.state == .LockedToPaddle
 	if (is_locked_to_paddle && input.is_pressed(frame_input, .SPACE)) {
 		ball.state = .Free
 		ball.direction = Vector2{0, -1}
-	}
-
-	if (paddle.shape.pos.x - paddle.shape.size.x / 2 < 0) {
-		paddle.shape.pos.x = paddle.shape.size.x / 2
-	}
-
-	if (paddle.shape.pos.x + paddle.shape.size.x / 2 > scene_width - 0) {
-		paddle.shape.pos.x = g_mem.scene_width - paddle.shape.size.x / 2
 	}
 
 
