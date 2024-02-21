@@ -74,7 +74,7 @@ GameMemory :: struct {
 
 	// Game Entities
 	paddle:       EntityHandle,
-	ball:         Ball,
+	ball:         EntityHandle,
 	entities:     DataPool(512, Entity, EntityHandle),
 }
 
@@ -104,7 +104,7 @@ game_setup :: proc() {
 
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
-		panic("Failed to create Ball Entity")
+		panic("Failed to create Paddle Entity")
 	}
 	paddle := Paddle{}
 	paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
@@ -119,13 +119,15 @@ game_setup :: proc() {
 	if !success {
 		panic("Failed to create Ball Entity")
 	}
-	g_mem.ball.id = handle
-	g_mem.ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
-	g_mem.ball.shape.radius = 10
-	g_mem.ball.color = RED
-	g_mem.ball.state = .LockedToPaddle
-	g_mem.ball.speed = 350
-	ptr^ = g_mem.ball
+	g_mem.ball = handle
+	ball := Ball{}
+	ball.id = handle
+	ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
+	ball.shape.radius = 10
+	ball.color = RED
+	ball.state = .LockedToPaddle
+	ball.speed = 350
+	ptr^ = ball
 
 	wall_thickness: f32 = 100
 	walls: []Wall =  {
@@ -342,7 +344,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	if !is_paddle {
 		panic("Paddle should also be a Paddle")
 	}
-	ball_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.ball.id)
+	ball_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.ball)
 	if ball_ptr == nil {
 		panic("Ball should always exists")
 	}
