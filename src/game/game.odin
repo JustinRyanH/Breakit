@@ -337,18 +337,16 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	paddle := &g_mem.paddle
 	ball := &g_mem.ball
 
-	null_handle: Handle = 0
-
-	append(&ball_collision_targets, CollidableObject{.Paddle, paddle.id, paddle.shape})
-	for wall in sa.slice(&g_mem.bounds) {
-		append(&ball_collision_targets, CollidableObject{.Wall, wall.id, wall.shape})
-	}
-
-	brick_iter := data_pool_new_iter(&g_mem.entities)
-	for entity, handle in data_pool_iter(&brick_iter) {
+	ball_targets := data_pool_new_iter(&g_mem.entities)
+	for entity, handle in data_pool_iter(&ball_targets) {
 		#partial switch e in entity {
 		case Brick:
 			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
+		case Paddle:
+			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
+		case Wall:
+			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
+
 		}
 	}
 
