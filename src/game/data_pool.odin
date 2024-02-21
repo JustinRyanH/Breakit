@@ -21,20 +21,20 @@ DataContainer :: struct($T: typeid) {
 	data: T,
 }
 
-DataPool :: struct($N: u32, $T: typeid) {
+DataPool :: struct($N: u32, $T: typeid, $H: typeid/Handle) {
 	items:            [N]DataContainer(T),
 	items_len:        u32,
 	unused_items:     [N]HandleStruct,
 	unused_items_len: int,
 }
 
-DataPoolIterator :: struct($N: u32, $T: typeid) {
-	dp:    ^DataPool(N, T),
+DataPoolIterator :: struct($N: u32, $T: typeid, $H: typeid/Handle) {
+	dp:    ^DataPool(N, T, H),
 	index: int,
 }
 
 
-data_pool_add :: proc(dp: ^DataPool($N, $T), v: T) -> (Handle, bool) {
+data_pool_add :: proc(dp: ^DataPool($N, $T, $H), v: T) -> (H, bool) {
 	if (dp.items_len == N && dp.unused_items_len == 0) {
 		return 0, false
 	}
@@ -43,17 +43,17 @@ data_pool_add :: proc(dp: ^DataPool($N, $T), v: T) -> (Handle, bool) {
 		handle.gen += 1
 		dp.items[handle.idx] = DataContainer(T){handle, v}
 		dp.unused_items_len -= 1
-		return transmute(Handle)handle, true
+		return transmute(H)handle, true
 	}
 
 	handle := HandleStruct{dp.items_len, 1}
 	dp.items[dp.items_len] = DataContainer(T){handle, v}
 	dp.items_len += 1
 
-	return transmute(Handle)handle, true
+	return transmute(H)handle, true
 }
 
-data_pool_get :: proc(dp: ^DataPool($N, $T), h: Handle) -> (data: T, found: bool) {
+data_pool_get :: proc(dp: ^DataPool($N, $T, $H), h: H) -> (data: T, found: bool) {
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
@@ -63,7 +63,7 @@ data_pool_get :: proc(dp: ^DataPool($N, $T), h: Handle) -> (data: T, found: bool
 	return
 }
 
-data_pool_get_ptr :: proc(dp: ^DataPool($N, $T), h: Handle) -> ^T {
+data_pool_get_ptr :: proc(dp: ^DataPool($N, $T, $H), h: H) -> ^T {
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
@@ -74,7 +74,7 @@ data_pool_get_ptr :: proc(dp: ^DataPool($N, $T), h: Handle) -> ^T {
 }
 
 
-data_pool_remove :: proc(dp: ^DataPool($N, $T), h: Handle) -> bool {
+data_pool_remove :: proc(dp: ^DataPool($N, $T, $H), h: H) -> bool {
 	hs := transmute(HandleStruct)h
 
 	db := dp.items[hs.idx]
@@ -93,13 +93,13 @@ data_pool_remove :: proc(dp: ^DataPool($N, $T), h: Handle) -> bool {
 	return false
 }
 
-data_pool_valid :: proc(dp: ^DataPool($N, $T), h: Handle) -> bool {}
+data_pool_valid :: proc(dp: ^DataPool($N, $T, $H), h: Handle) -> bool {}
 
-data_pool_new_iter :: proc(dp: ^DataPool($N, $T)) -> DataPoolIterator(N, T) {
-	return DataPoolIterator(N, T){dp = dp}
+data_pool_new_iter :: proc(dp: ^DataPool($N, $T, $H)) -> DataPoolIterator(N, T, H) {
+	return DataPoolIterator(N, T, H){dp = dp}
 }
 
-data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (data: T, h: Handle, cond: bool) {
+data_pool_iter :: proc(it: ^DataPoolIterator($N, $T, $H)) -> (data: T, h: H, cond: bool) {
 	cond = it.index < cast(int)it.dp.items_len
 
 	for ; cond; cond = it.index < cast(int)it.dp.items_len {
@@ -109,7 +109,7 @@ data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (data: T, h: Handle, co
 			continue
 		}
 		data = dc.data
-		h = transmute(Handle)dc.id
+		h = transmute(H)dc.id
 		it.index += 1
 		break
 	}
@@ -117,7 +117,7 @@ data_pool_iter :: proc(it: ^DataPoolIterator($N, $T)) -> (data: T, h: Handle, co
 	return
 }
 
-data_pool_iter_ptr :: proc(it: ^DataPoolIterator($N, $T)) -> (data: ^T, h: Handle, cond: bool) {
+data_pool_iter_ptr :: proc(it: ^DataPoolIterator($N, $T, $H)) -> (data: ^T, h: H, cond: bool) {
 	cond = it.index < cast(int)it.dp.items_len
 
 	for ; cond; cond = it.index < cast(int)it.dp.items_len {
@@ -127,7 +127,7 @@ data_pool_iter_ptr :: proc(it: ^DataPoolIterator($N, $T)) -> (data: ^T, h: Handl
 			continue
 		}
 		data = &it.dp.items[it.index].data
-		h = transmute(Handle)dc.id
+		h = transmute(H)dc.id
 		it.index += 1
 		break
 	}
@@ -146,7 +146,7 @@ test_data_pool_add_simple :: proc(t: ^testing.T) {
 		v: u8,
 	}
 
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	for i := 0; i < 4; i += 1 {
@@ -170,7 +170,7 @@ test_data_pool_add_reuse :: proc(t: ^testing.T) {
 	TestStruct :: struct {
 		v: u8,
 	}
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
@@ -205,7 +205,7 @@ test_data_pool_get :: proc(t: ^testing.T) {
 		v: u8,
 	}
 
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle, success := data_pool_add(&byte_dp, TestStruct{33})
@@ -224,7 +224,7 @@ test_data_pool_get_ptr :: proc(t: ^testing.T) {
 		v: u8,
 	}
 
-	ByteDataPool :: DataPool(4, u8)
+	ByteDataPool :: DataPool(4, u8, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle, success := data_pool_add(&byte_dp, 33)
@@ -245,7 +245,7 @@ test_data_pool_remove :: proc(t: ^testing.T) {
 	TestStruct :: struct {
 		v: u8,
 	}
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
@@ -264,7 +264,7 @@ test_data_pool_iterator :: proc(t: ^testing.T) {
 	TestStruct :: struct {
 		v: u8,
 	}
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
@@ -308,7 +308,7 @@ test_data_pool_iterator_ptr :: proc(t: ^testing.T) {
 	TestStruct :: struct {
 		v: u8,
 	}
-	ByteDataPool :: DataPool(4, TestStruct)
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
 	byte_dp := ByteDataPool{}
 
 	handle_a, success_a := data_pool_add(&byte_dp, TestStruct{33})
