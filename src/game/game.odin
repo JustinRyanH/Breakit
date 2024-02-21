@@ -85,7 +85,6 @@ GameMemory :: struct {
 	paddle:       Paddle,
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Wall),
-	bricks:       DataPool(256, Brick, BrickHandle),
 	entities:     DataPool(512, Entity, EntityHandle),
 }
 
@@ -106,7 +105,6 @@ game_init :: proc() {
 @(export)
 game_setup :: proc() {
 	// Soft Reset, I want to crash if there is dangling handles between resets
-	data_pool_reset(&g_mem.bricks)
 	data_pool_reset(&g_mem.entities)
 	sa.clear(&g_mem.bounds)
 
@@ -204,10 +202,6 @@ game_setup :: proc() {
 			true,
 		}
 		e_ptr^ = brick
-		_, success = data_pool_add(&g_mem.bricks, brick)
-		if (!success) {
-			panic(fmt.tprintf("Did not add data: %v", &g_mem.bricks))
-		}
 	}
 }
 
@@ -362,9 +356,15 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall.id, wall.shape})
 	}
 
-	brick_iter := data_pool_new_iter(&g_mem.bricks)
+	brick_iter := data_pool_new_iter(&g_mem.entities)
 	for brick, handle in data_pool_iter(&brick_iter) {
-		append(&ball_collision_targets, CollidableObject{.Brick, handle, brick.id, brick.shape})
+		brick, is_brick := brick.(Brick)
+		if (is_brick) {
+			append(
+				&ball_collision_targets,
+				CollidableObject{.Brick, handle, brick.id, brick.shape},
+			)
+		}
 	}
 
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
@@ -404,13 +404,13 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			case .Ball, .Brick, .Wall:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if is_colliding {
-					brick_handle, is_brick := collidable.handle.(BrickHandle)
+					entity, exists := data_pool_get(&g_mem.entities, collidable.e_handle)
+					if (!exists) {
+						continue
+					}
+					_, is_brick := entity.(Brick)
 					if is_brick {
-						removed := data_pool_remove(&g_mem.bricks, brick_handle)
-						if !removed {
-							fmt.println("Failed to remove brick at handle", brick_handle)
-						}
-						removed = data_pool_remove(&g_mem.entities, collidable.e_handle)
+						removed := data_pool_remove(&g_mem.entities, collidable.e_handle)
 						if !removed {
 							fmt.println("Failed to remove brick at handle", collidable.e_handle)
 						}
