@@ -21,11 +21,8 @@ ObjectKind :: enum {
 	Paddle,
 }
 
-BrickHandle :: distinct Handle
-
 HandleUnion :: union {
 	Handle,
-	BrickHandle,
 	EntityHandle,
 }
 
