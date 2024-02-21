@@ -329,7 +329,7 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
 }
 
-update_ball :: proc(frame_input: input.FrameInput) {
+update_paddle :: proc(frame_input: input.FrameInput) {
 	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
 	if paddle_ptr == nil {panic("Paddle should always exists")}
 
@@ -391,7 +391,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
-	update_ball(frame_input)
+	update_paddle(frame_input)
 	is_locked_to_paddle := ball.state == .LockedToPaddle
 	if (is_locked_to_paddle && input.is_pressed(frame_input, .SPACE)) {
 		ball.state = .Free
