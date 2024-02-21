@@ -338,6 +338,8 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 }
 
 update_paddle :: proc(frame_input: input.FrameInput) {
+	// This happens a lot. I should create a method where it panics
+	// for each of the types I wanna pull
 	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
 	if paddle_ptr == nil {panic("Paddle should always exists")}
 
