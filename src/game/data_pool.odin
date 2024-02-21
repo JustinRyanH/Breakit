@@ -113,6 +113,8 @@ data_pool_reset :: proc(db: ^DataPool($N, $T, $H)) {
 		db.unused_items[i].idx = item_pos
 		db.items[i].id = NilHandleStruct
 	}
+	db.items_len = N
+	db.unused_items_len = N
 }
 
 // "Hard" resets the DataPool
