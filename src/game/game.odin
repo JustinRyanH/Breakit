@@ -347,6 +347,10 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			case .Ball, .Brick, .Wall:
 				evt, is_colliding := shape_check_collision(ball.shape, collidable.shape)
 				if is_colliding {
+					brick_handle, is_brick := collidable.handle.(BrickHandle)
+					if is_brick {
+						fmt.println("Hit Brick", brick_handle)
+					}
 					ball.direction = bounce_normal(ball.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth
 				}
