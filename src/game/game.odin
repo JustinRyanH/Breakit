@@ -75,7 +75,6 @@ GameMemory :: struct {
 	// Game Entities
 	paddle:       Paddle,
 	ball:         Ball,
-	bounds:       sa.Small_Array(16, Wall),
 	entities:     DataPool(512, Entity, EntityHandle),
 }
 
@@ -97,7 +96,6 @@ game_init :: proc() {
 game_setup :: proc() {
 	// Soft Reset, I want to crash if there is dangling handles between resets
 	data_pool_reset(&g_mem.entities)
-	sa.clear(&g_mem.bounds)
 
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
@@ -159,7 +157,6 @@ game_setup :: proc() {
 		w_copy := wall
 		w_copy.id = h
 		ptr^ = w_copy
-		sa.append(&g_mem.bounds, wall)
 	}
 
 	brickable_area: Rectangle
