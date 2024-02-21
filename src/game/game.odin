@@ -67,7 +67,7 @@ GameMemory :: struct {
 	paddle:       Paddle,
 	ball:         Ball,
 	bounds:       sa.Small_Array(16, Rectangle),
-	bricks_v2:    DataPool(256, Brick, BrickHandle),
+	bricks:       DataPool(256, Brick, BrickHandle),
 }
 
 
@@ -86,7 +86,7 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
-	data_pool_reset(&g_mem.bricks_v2)
+	data_pool_reset(&g_mem.bricks)
 	sa.clear(&g_mem.bounds)
 
 	g_mem.scene_width = 800
@@ -152,9 +152,9 @@ game_setup :: proc() {
 			Color{255, 0, 0, 128},
 			true,
 		}
-		_, success := data_pool_add(&g_mem.bricks_v2, brick)
+		_, success := data_pool_add(&g_mem.bricks, brick)
 		if (!success) {
-			fmt.printf("Did not add data: %v", &g_mem.bricks_v2)
+			fmt.printf("Did not add data: %v", &g_mem.bricks)
 		}
 	}
 }
@@ -258,7 +258,7 @@ game_draw :: proc() {
 		draw_cmds.draw_shape(ln, Color{36, 36, 32, 255})
 	}
 
-	brick_iter := data_pool_new_iter(&g_mem.bricks_v2)
+	brick_iter := data_pool_new_iter(&g_mem.bricks)
 	for brick in data_pool_iter(&brick_iter) {
 		draw_cmds.draw_shape(brick.shape, brick.color)
 	}
@@ -306,7 +306,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		append(&ball_collision_targets, CollidableObject{.Wall, null_handle, wall})
 	}
 
-	brick_iter := data_pool_new_iter(&g_mem.bricks_v2)
+	brick_iter := data_pool_new_iter(&g_mem.bricks)
 	for brick, handle in data_pool_iter(&brick_iter) {
 		append(&ball_collision_targets, CollidableObject{.Brick, handle, brick.shape})
 	}
@@ -350,7 +350,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 				if is_colliding {
 					brick_handle, is_brick := collidable.handle.(BrickHandle)
 					if is_brick {
-						removed := data_pool_remove(&g_mem.bricks_v2, brick_handle)
+						removed := data_pool_remove(&g_mem.bricks, brick_handle)
 						if !removed {
 							fmt.println("Failed to remove brick at handle", brick_handle)
 						}
