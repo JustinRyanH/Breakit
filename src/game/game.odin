@@ -68,7 +68,10 @@ Ball :: struct {
 }
 
 EntityHandle :: distinct Handle
-Entity :: struct {}
+Entity :: union {
+	Brick,
+	Ball,
+}
 
 GameMemory :: struct {
 	scene_width:  f32,
@@ -98,6 +101,7 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
+	// Soft Reset, I want to crash if there is dangling handles between resets
 	data_pool_reset(&g_mem.bricks)
 	data_pool_reset(&g_mem.entities)
 	sa.clear(&g_mem.bounds)
@@ -188,16 +192,17 @@ game_setup :: proc() {
 		pos := Vector2{cast(f32)x_index * brick_width, cast(f32)y_index * brick_height}
 		pos += brickable_area_min + (Vector2{brick_width, brick_height} / 2)
 
-		id, success := data_pool_add(&g_mem.entities, Entity{})
+		e_ptr, h, success := data_pool_add_empty(&g_mem.entities)
 		if !success {
 			panic("Failed to create Brick Entity")
 		}
 		brick := Brick {
-			id,
+			h,
 			Rectangle{pos, Vector2{brick_width - gap, brick_height - gap}, 0},
 			Color{255, 0, 0, 128},
 			true,
 		}
+		e_ptr^ = brick
 		_, success = data_pool_add(&g_mem.bricks, brick)
 		if (!success) {
 			panic(fmt.tprintf("Did not add data: %v", &g_mem.bricks))
