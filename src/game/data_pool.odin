@@ -102,6 +102,10 @@ data_pool_new_iter :: proc(dp: ^DataPool($N, $T, $H)) -> DataPoolIterator(N, T, 
 	return DataPoolIterator(N, T, H){dp = dp}
 }
 
+
+// Soft resets the Data Pool.
+// This is used when there might be handles after clear
+// is performed
 data_pool_reset :: proc(db: ^DataPool($N, $T, $H)) {
 	for i := len(db.items) - 1; i >= 0; i -= 1 {
 		item_pos := N - 1 - cast(u32)i
@@ -109,8 +113,14 @@ data_pool_reset :: proc(db: ^DataPool($N, $T, $H)) {
 		db.unused_items[i].idx = item_pos
 		db.items[i].id = NilHandleStruct
 	}
-	db.unused_items_len = N
-	db.items_len = N
+}
+
+// "Hard" resets the DataPool
+// Use this when there are no dangling handles 
+// that could cause data issues
+data_pool_hard_reset :: proc(db: ^DataPool($N, $T, $H)) {
+	db.unused_items_len = 0
+	db.items_len = 0
 }
 
 data_pool_iter :: proc(it: ^DataPoolIterator($N, $T, $H)) -> (data: T, h: H, cond: bool) {
