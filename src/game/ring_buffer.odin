@@ -4,9 +4,9 @@ import "core:math"
 import "core:testing"
 
 RingBuffer :: struct($N: u32, $T: typeid) {
-	items:       [N]T,
 	start_index: u32,
 	end_index:   u32,
+	items:       [N]T,
 }
 
 ring_buffer_append :: proc(rb: ^RingBuffer($N, $T), v: T) -> bool {

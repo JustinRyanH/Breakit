@@ -21,6 +21,18 @@ ObjectKind :: enum {
 	Paddle,
 }
 
+DestroyEvent :: struct {
+	handle: EntityHandle,
+}
+
+BeginFreeMovement :: struct {
+	ball_handle: EntityHandle,
+}
+
+GameEvent :: union {
+	DestroyEvent,
+}
+
 CollidableObject :: struct {
 	kind:   ObjectKind,
 	handle: EntityHandle,
@@ -84,6 +96,7 @@ GameMemory :: struct {
 	paddle:       EntityHandle,
 	ball:         EntityHandle,
 	entities:     DataPool(512, Entity, EntityHandle),
+	event_queue:  RingBuffer(256, GameEvent),
 }
 
 
