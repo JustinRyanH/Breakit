@@ -40,6 +40,11 @@ push the ball out, maybe adjust the velocity a bit too
 
 ## THOUGHTS
 
+Essentially thoughts I have when developing, so I can re-read this and remind
+myself of my decisions. Basically my personal Architect of Record
+
+### Thought List
+
 - I want to do a Platform layer like the Handmade Hero,
   what I think I should do is provide an command buffer
   that we build of commands that replicate the
@@ -65,3 +70,13 @@ push the ball out, maybe adjust the velocity a bit too
   Game Memory is the state of the game after the input from the frames
   and this is inserted into the the game.dll every frame. So we shouldn't
   leave this weird dangling context on the memory state
+- Why I use Fixed RingBuffer and DataPool over Dynamic Array?
+  My hope since it all will be pushed to the Heap in one big data chunk
+  it should be MUCH easier to serialize the whole state to a
+  file, memory copy, or something else than a dynamic array.
+  Note: I've decided to use a ring buffer for a GameEvent because
+  I likely will only resolve them at the start of a frame, not at
+  the end
+- That said I will use dynamic array with temporary allocator
+  if make(T, 0, X, context.temp_allocator) at the start of a frames
+  but this is because I won't need to save it.
