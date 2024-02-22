@@ -197,7 +197,6 @@ is_pressed :: proc(frame: FrameInput, key: BooleanInput) -> (res: bool) {
 	return res
 }
 
-@(private = "file")
 was_just_released :: proc(frame: FrameInput, key: BooleanInput) -> (res: bool) {
 	switch i in key {
 	case KeyboardKey:
