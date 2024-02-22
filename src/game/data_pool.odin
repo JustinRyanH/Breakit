@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import "core:testing"
 
 Handle :: distinct u64
@@ -183,12 +182,8 @@ test_data_pool_add_simple :: proc(t: ^testing.T) {
 
 	for i := 0; i < 4; i += 1 {
 		handle, success := data_pool_add(&byte_dp, TestStruct{cast(u8)i + 5})
-		testing.expect(t, success, fmt.tprintf("Data should have been added at index %d", i))
-		testing.expect(
-			t,
-			handle != 0,
-			fmt.tprintf("Data should have returned non-zero handle at index %d", i),
-		)
+		testing.expectf(t, success, "Data should have been added at index %d", i)
+		testing.expectf(t, handle != 0, "Data should have returned non-zero handle at index %d", i)
 	}
 
 	handle, success := data_pool_add(&byte_dp, TestStruct{244})
@@ -246,7 +241,7 @@ test_data_pool_get :: proc(t: ^testing.T) {
 	data, found := data_pool_get(&byte_dp, handle)
 
 	testing.expect(t, found, "Data should have been found")
-	testing.expect(t, data.v == 33, fmt.tprintf("Data should have been 33, but was %d", data))
+	testing.expectf(t, data.v == 33, "Data should have been 33, but was %d", data)
 }
 
 @(test)
