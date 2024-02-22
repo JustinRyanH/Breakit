@@ -15,10 +15,10 @@ DataContainer :: struct($T: typeid) {
 }
 
 DataPool :: struct($N: u32, $T: typeid, $H: typeid/Handle) {
-	items:            [N]DataContainer(T),
 	items_len:        u32,
-	unused_items:     [N]HandleStruct,
 	unused_items_len: u32,
+	items:            [N]DataContainer(T),
+	unused_items:     [N]HandleStruct,
 }
 
 DataPoolIterator :: struct($N: u32, $T: typeid, $H: typeid/Handle) {
