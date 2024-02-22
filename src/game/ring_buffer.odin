@@ -135,3 +135,22 @@ test_ring_buffer_loop :: proc(t: ^testing.T) {
 	success = ring_buffer_append(&buffer, 7)
 	expect(t, success, "stays healthy after looping")
 }
+
+@(test)
+test_can_i_iter_ring_buffer :: proc(t: ^testing.T) {
+	using testing
+	ByteRingBuffer :: RingBuffer(3, u8)
+	buffer := ByteRingBuffer{}
+
+	ring_buffer_append(&buffer, 1)
+	ring_buffer_append(&buffer, 2)
+	ring_buffer_append(&buffer, 3)
+
+	i: u8 = 1
+	for v in ring_buffer_pop(&buffer) {
+		expectf(t, v == i, "Expected Value to be: %v, but found: %v", i, v)
+		i += 1
+	}
+
+	expect(t, ring_buffer_len(buffer) == 0, "Ring Buffer should be empty")
+}
