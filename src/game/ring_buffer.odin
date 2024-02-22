@@ -102,3 +102,36 @@ test_ring_buffer_full :: proc(t: ^testing.T) {
 	expect(t, !success, "does not successfully add if full")
 	expect(t, ring_buffer_len(buffer) == 4, "Stays at 4")
 }
+
+@(test)
+test_ring_buffer_loop :: proc(t: ^testing.T) {
+	using testing
+
+	ByteRingBuffer :: RingBuffer(3, u8)
+	buffer := ByteRingBuffer{}
+
+	ring_buffer_append(&buffer, 1)
+	ring_buffer_append(&buffer, 2)
+	ring_buffer_append(&buffer, 3)
+
+	v, exists := ring_buffer_pop(&buffer)
+	expect(t, exists, "Value Exists")
+	expect(t, v == 1, "returns the first value")
+	v, exists = ring_buffer_pop(&buffer)
+	expect(t, exists, "Value Exists")
+	expect(t, v == 2, "returns the first value")
+	v, exists = ring_buffer_pop(&buffer)
+	expect(t, exists, "Value Exists")
+	expect(t, v == 3, "returns the first value")
+
+	ring_buffer_append(&buffer, 4)
+	expect(t, buffer.end_index < buffer.start_index, "The index should loop")
+	expect(t, ring_buffer_len(buffer) == 1, "The buffer length is 1 after looping")
+	ring_buffer_append(&buffer, 5)
+	expect(t, ring_buffer_len(buffer) == 2, "The buffer length is 1 after looping")
+
+	success := ring_buffer_append(&buffer, 6)
+	expect(t, success, "stays healthy after looping")
+	success = ring_buffer_append(&buffer, 7)
+	expect(t, success, "stays healthy after looping")
+}
