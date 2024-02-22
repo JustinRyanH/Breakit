@@ -56,4 +56,9 @@ test_ring_buffer :: proc(t: ^testing.T) {
 	v, found := ring_buffer_pop(&buffer)
 	expect(t, found, "It found the option")
 	expectf(t, v == 10, "Expected %v, found %v", 10, v)
+
+	v, found = ring_buffer_pop(&buffer)
+	expect(t, !found, "It founds nothing")
+	expectf(t, v == 0, "Expected %v, found %v", 0, v)
+
 }
