@@ -230,15 +230,6 @@ mouse_delta :: proc(frame_input: FrameInput) -> math.Vector2f32 {
 }
 
 ///////////////////////////////////////////
-// Helpers
-///////////////////////////////////////////
-
-@(private = "file")
-was_pressed :: #force_inline proc(previous_state, current_state: bool) -> bool {
-	return !current_state && previous_state
-}
-
-///////////////////////////////////////////
 // Testing
 ///////////////////////////////////////////
 
