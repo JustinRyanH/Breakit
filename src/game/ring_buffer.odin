@@ -10,6 +10,9 @@ RingBuffer :: struct($N: u32, $T: typeid) {
 }
 
 ring_buffer_append :: proc(rb: ^RingBuffer($N, $T), v: T) -> bool {
+	if (ring_buffer_len(rb) == N) {
+		return false
+	}
 	rb.items[rb.end_index] = v
 	rb.end_index += 1
 	return true
@@ -60,5 +63,28 @@ test_ring_buffer :: proc(t: ^testing.T) {
 	v, found = ring_buffer_pop(&buffer)
 	expect(t, !found, "It founds nothing")
 	expectf(t, v == 0, "Expected %v, found %v", 0, v)
+}
 
+test_ring_buffer_full :: proc(t: ^testing.T) {
+	using testing
+
+	ByteRingBuffer :: RingBuffer(4, u8)
+	buffer := ByteRingBuffer{}
+
+	expect(t, ring_buffer_len(&buffer) == 0, "Starts off with empty buffer")
+
+
+	success := ring_buffer_append(&buffer, 5)
+	expect(t, success, "Successfully adds")
+	success = ring_buffer_append(&buffer, 10)
+	expect(t, success, "Successfully adds")
+	success = ring_buffer_append(&buffer, 15)
+	expect(t, success, "Successfully adds")
+	success = ring_buffer_append(&buffer, 20)
+	expect(t, ring_buffer_len(&buffer) == 4, "Fills up")
+
+	ring_buffer_append(&buffer, 25)
+	success = ring_buffer_append(&buffer, 20)
+	expect(t, !success, "does not successfully add if full")
+	expect(t, ring_buffer_len(&buffer) == 4, "Stays at 4")
 }
