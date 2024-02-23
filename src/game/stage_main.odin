@@ -250,7 +250,6 @@ get_paddle :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHand
 // Helpers
 //////////////////////////////
 
-@(private = "file")
 setup_and_add_paddle :: proc(stage: ^StageMain) {
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
@@ -266,7 +265,6 @@ setup_and_add_paddle :: proc(stage: ^StageMain) {
 	stage.paddle = handle
 }
 
-@(private = "file")
 setup_and_add_ball :: proc(stage: ^StageMain) {
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {

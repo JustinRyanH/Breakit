@@ -276,7 +276,16 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	for event in ring_buffer_pop(&g_mem.event_queue) {
 		switch evt in event {
 		case BallDeathEvent:
-			game_setup()
+			stage, is_stage := &g_mem.stage.(StageMain)
+			if is_stage {
+				if (stage.lives > 0) {
+					stage.lives -= 1
+					ball := get_ball(&g_mem.entities, stage.ball)
+					ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
+				} else {
+					game_setup()
+				}
+			}
 		case DestroyEvent:
 			removed := data_pool_remove(&g_mem.entities, evt.handle)
 			if !removed {
