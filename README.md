@@ -23,6 +23,8 @@ This edition has hot reloads for OSX and Windows (have not tested Linux).
 
 If you run `task cmd:game` tell Tasklist to watch `game/*` and rebuild the DLL
 
+You can run `task cmd:game --watch` to have the effects live load
+
 ---
 GDD
 
@@ -51,7 +53,7 @@ Block Breaker
 
 ### Target Audience
 
-None. This is an Experiment that 3 people with play on Itch.io
+None. This is an Experiment that 3 people will play on Itch.io
 
 ## Concept
 
