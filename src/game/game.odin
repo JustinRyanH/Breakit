@@ -27,10 +27,13 @@ DestroyEvent :: struct {
 
 BeginFreeMovement :: struct {
 	ball_handle: EntityHandle,
+	direction:   Vector2,
+	speed:       f32,
 }
 
 GameEvent :: union {
 	DestroyEvent,
+	BeginFreeMovement,
 }
 
 CollidableObject :: struct {
@@ -382,12 +385,12 @@ update_ball :: proc(frame_input: input.FrameInput) {
 
 	switch bs in &ball.state {
 	case LockedToEntity:
-	  paddle := get_paddle(&g_mem.entities, bs.handle)
+		paddle := get_paddle(&g_mem.entities, bs.handle)
 		ball.shape.pos = paddle.shape.pos + bs.offset
 
 		if input.is_pressed(frame_input, .SPACE) {
-			// TODO: This needs to use some sort of Event Pool.
-			ball.state = FreeMovement{Vector2{0, -1}, 350}
+			evt := BeginFreeMovement{g_mem.ball, Vector2{0, -1}, 350}
+			ring_buffer_append(&g_mem.event_queue, evt)
 		}
 	case FreeMovement:
 		bs.direction = math.normalize(bs.direction)
@@ -440,6 +443,16 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
+
+
+	for event in ring_buffer_pop(&g_mem.event_queue) {
+		switch evt in event {
+		case DestroyEvent:
+		case BeginFreeMovement:
+			ball := get_ball(&g_mem.entities, evt.ball_handle)
+      ball.state = FreeMovement{ evt.direction, evt.speed }
+		}
+	}
 
 	ball_targets := data_pool_new_iter(&g_mem.entities)
 	for entity, handle in data_pool_iter(&ball_targets) {
