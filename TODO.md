@@ -13,6 +13,8 @@ There are the tasks I want to work on next
 
 ## Nice to Haves
 
+[ ] Steal Small_Array `as_slice` for DataPool
+  I don't think I should do that for RingBuffer
 [ ] Actually Finish the loop for Playback
 [ ] Input Recording, Save to File
 [ ] Start Menu
