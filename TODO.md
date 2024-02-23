@@ -22,8 +22,6 @@ There are the tasks I want to work on next
 [ ] Particles on Hit
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
-[ ] If paddle overlaps ball,
-push the ball out, maybe adjust the velocity a bit too
 [ ] Make a MicroUI style/atlas editor
 [ ] Move main.odin to src
 [ ] Propertly close out the debug logs, and compress them
@@ -31,6 +29,7 @@ push the ball out, maybe adjust the velocity a bit too
 
 ## DONE
 
+[x] Push Ball out if overlaps
 [x] Event Pool
 [x] Blocks to Break
 [x] Fix literal corner case with box collision
