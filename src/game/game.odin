@@ -241,32 +241,14 @@ game_draw :: proc() {
 	game := g_mem
 	width, height := g_mem.scene_width, g_mem.scene_height
 
-	draw_cmds := &ctx.draw_cmds
-	draw_cmds.clear(BLACK)
-
-	entity_iter := data_pool_new_iter(&g_mem.entities)
-	for entity in data_pool_iter(&entity_iter) {
-		switch e in entity {
-		case Brick:
-			draw_cmds.draw_shape(e.shape, e.color)
-		case Ball:
-			draw_cmds.draw_shape(e.shape, e.color)
-		case Paddle:
-			draw_cmds.draw_shape(e.shape, e.color)
-		case Wall:
-			draw_cmds.draw_shape(e.shape, Color{36, 36, 32, 255})
-		}
+	switch s in g_mem.stages {
+	case MainStage:
+		main_stage_draw(s)
+	case LoseStage:
+		panic("LostStage is not implemented")
+	case WinStage:
+		panic("WinStage is not implemented")
 	}
-
-	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().keyboard), 10, 40, 8, RAYWHITE)
-	draw_cmds.draw_text(fmt.ctprintf("%v", current_input().mouse), 10, 60, 8, RAYWHITE)
-	draw_cmds.draw_text(
-		fmt.ctprintf("index: %v", current_input().meta.frame_id),
-		10,
-		84,
-		12,
-		RAYWHITE,
-	)
 }
 
 
