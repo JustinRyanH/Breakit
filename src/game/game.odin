@@ -408,10 +408,7 @@ update_ball :: proc(frame_input: input.FrameInput) {
 					}
 					_, is_brick := entity.(Brick)
 					if is_brick {
-						removed := data_pool_remove(&g_mem.entities, collidable.handle)
-						if !removed {
-							fmt.println("Failed to remove brick at handle", collidable.handle)
-						}
+						ring_buffer_append(&g_mem.event_queue, DestroyEvent{collidable.handle})
 					}
 					bs.direction = bounce_normal(bs.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth
@@ -448,9 +445,13 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	for event in ring_buffer_pop(&g_mem.event_queue) {
 		switch evt in event {
 		case DestroyEvent:
+			removed := data_pool_remove(&g_mem.entities, evt.handle)
+			if !removed {
+				fmt.println("Failed to remove brick at handle", evt)
+			}
 		case BeginFreeMovement:
 			ball := get_ball(&g_mem.entities, evt.ball_handle)
-      ball.state = FreeMovement{ evt.direction, evt.speed }
+			ball.state = FreeMovement{evt.direction, evt.speed}
 		}
 	}
 
