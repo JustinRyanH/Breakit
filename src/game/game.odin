@@ -346,7 +346,7 @@ setup_next_stage :: proc(stage: Stages) {
 	case LoseStage:
 		panic("Not main stage")
 	}
-	g_mem.stages = stage
+	g_mem.stages = stage_cpy
 }
 
 get_frame_id :: proc(frame_input: input.FrameInput) -> int {
