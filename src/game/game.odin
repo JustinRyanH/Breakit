@@ -118,7 +118,7 @@ GameMemory :: struct {
 	scene_height: f32,
 
 	// Game Entities
-	stages:       Stages,
+	stage:        Stages,
 
 	// Game Entities
 	entities:     DataPool(512, Entity, EntityHandle),
@@ -241,7 +241,7 @@ game_draw :: proc() {
 	game := g_mem
 	width, height := g_mem.scene_width, g_mem.scene_height
 
-	switch s in g_mem.stages {
+	switch s in g_mem.stage {
 	case StageMain:
 		stage_main_draw(s)
 	case StageLose:
@@ -288,7 +288,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
-	switch stage in g_mem.stages {
+	switch stage in g_mem.stage {
 	case StageMain:
 		stage_main_update(stage, frame_input)
 	case StageWin:
@@ -309,7 +309,7 @@ setup_next_stage :: proc(stage: Stages) {
 	case StageLose:
 		panic("Not main stage")
 	}
-	g_mem.stages = stage_cpy
+	g_mem.stage = stage_cpy
 }
 
 get_frame_id :: proc(frame_input: input.FrameInput) -> int {
