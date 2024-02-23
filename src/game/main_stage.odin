@@ -20,7 +20,7 @@ update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	}
 
 	update_paddle(frame_input, stage)
-	update_ball(frame_input, stage)
+	update_ball(stage, frame_input)
 }
 
 setup_and_add_paddle :: proc(stage: ^MainStage) {
@@ -150,7 +150,7 @@ update_paddle :: proc(frame_input: input.FrameInput, stage: MainStage) {
 	}
 }
 
-update_ball :: proc(frame_input: input.FrameInput, stage: MainStage) {
+update_ball :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	ball := get_ball(&g_mem.entities, stage.ball)
 
 	dt := input.frame_query_delta(frame_input)
