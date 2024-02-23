@@ -312,28 +312,32 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	switch stage in g_mem.stages {
 	case MainStage:
-		ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
-		ball_targets := data_pool_new_iter(&g_mem.entities)
-		for entity, handle in data_pool_iter(&ball_targets) {
-			#partial switch e in entity {
-			case Brick:
-				append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
-			case Paddle:
-				append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
-			case Wall:
-				append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
-
-			}
-		}
-
-		update_paddle(frame_input, stage)
-		update_ball(frame_input, stage)
+		update_main_stage(stage, frame_input)
 	case WinStage:
 		panic("Lose Stage Not implemented")
 	case LoseStage:
 		panic("Lose Stage Not implemented")
 	}
 
+}
+
+update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
+	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
+	ball_targets := data_pool_new_iter(&g_mem.entities)
+	for entity, handle in data_pool_iter(&ball_targets) {
+		#partial switch e in entity {
+		case Brick:
+			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
+		case Paddle:
+			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
+		case Wall:
+			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
+
+		}
+	}
+
+	update_paddle(frame_input, stage)
+	update_ball(frame_input, stage)
 }
 
 setup_next_stage :: proc(stage: Stages) {
