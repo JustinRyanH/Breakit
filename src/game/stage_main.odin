@@ -8,6 +8,7 @@ import "input"
 StageMain :: struct {
 	paddle: EntityHandle,
 	ball:   EntityHandle,
+	lives:  int,
 }
 
 stage_main_update :: proc(stage: StageMain, frame_input: input.FrameInput) {
@@ -31,6 +32,8 @@ stage_main_update :: proc(stage: StageMain, frame_input: input.FrameInput) {
 
 setup_stage_main :: proc(stage: ^StageMain) {
 	width, height := g_mem.scene_width, g_mem.scene_height
+
+	stage.lives = 3
 
 	setup_and_add_paddle(stage)
 	setup_and_add_ball(stage)
@@ -106,8 +109,8 @@ setup_stage_main :: proc(stage: ^StageMain) {
 stage_main_draw :: proc(stage: StageMain) {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
+	width, height := input.frame_query_dimensions(g_input)
 
-	frame := current_input()
 
 	entity_iter := data_pool_new_iter(&g_mem.entities)
 	for entity in data_pool_iter(&entity_iter) {
@@ -123,6 +126,14 @@ stage_main_draw :: proc(stage: StageMain) {
 		}
 	}
 
+	ball := get_ball(&g_mem.entities, stage.ball)
+	for i := 0; i < stage.lives; i += 1 {
+		ball_shape := ball.shape
+		ball_shape.pos = Vector2{width - (30 * cast(f32)i) - 30, 45}
+		draw_cmds.draw_shape(ball_shape, ball.color)
+	}
+
+	frame := current_input()
 	draw_cmds.draw_text(fmt.ctprintf("%v", frame.keyboard), 10, 40, 8, RAYWHITE)
 	draw_cmds.draw_text(fmt.ctprintf("%v", frame.mouse), 10, 60, 8, RAYWHITE)
 	draw_cmds.draw_text(fmt.ctprintf("index: %v", frame.meta.frame_id), 10, 84, 12, RAYWHITE)
