@@ -36,6 +36,27 @@ GameEvent :: union {
 	BeginFreeMovement,
 }
 
+StageTypes :: enum {
+	MainStage,
+	WinStage,
+	LoseStage,
+}
+
+MainStage :: struct {
+	paddle: EntityHandle,
+	ball:   EntityHandle,
+}
+
+WinStage :: struct {}
+
+LoseStage :: struct {}
+
+Stages :: union {
+	MainStage,
+	WinStage,
+	LoseStage,
+}
+
 CollidableObject :: struct {
 	kind:   ObjectKind,
 	handle: EntityHandle,
@@ -96,8 +117,9 @@ GameMemory :: struct {
 	scene_height: f32,
 
 	// Game Entities
-	paddle:       EntityHandle,
-	ball:         EntityHandle,
+	stages:       Stages,
+
+	// Game Entities
 	entities:     DataPool(512, Entity, EntityHandle),
 	event_queue:  RingBuffer(256, GameEvent),
 }
@@ -127,6 +149,8 @@ game_setup :: proc() {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
 
+	main_stage := MainStage{}
+
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Paddle Entity")
@@ -137,14 +161,13 @@ game_setup :: proc() {
 	paddle.color = BLUE
 	paddle.speed = 300
 	paddle.id = handle
-	g_mem.paddle = handle
 	ptr^ = paddle
+	main_stage.paddle = handle
 
 	ptr, handle, success = data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Ball Entity")
 	}
-	g_mem.ball = handle
 	ball := Ball{}
 	ball.id = handle
 	ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
@@ -152,6 +175,9 @@ game_setup :: proc() {
 	ball.color = RED
 	ball.state = LockedToEntity{paddle.id, Vector2{0, -20}}
 	ptr^ = ball
+	main_stage.ball = handle
+
+	g_mem.stages = main_stage
 
 	wall_thickness: f32 = 100
 	walls: []Wall =  {
@@ -353,10 +379,10 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
 }
 
-update_paddle :: proc(frame_input: input.FrameInput) {
+update_paddle :: proc(frame_input: input.FrameInput, stage: MainStage) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
-	paddle := get_paddle(&g_mem.entities, g_mem.paddle)
+	paddle := get_paddle(&g_mem.entities, stage.paddle)
 
 	dt := input.frame_query_delta(frame_input)
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
@@ -377,8 +403,8 @@ update_paddle :: proc(frame_input: input.FrameInput) {
 	}
 }
 
-update_ball :: proc(frame_input: input.FrameInput) {
-	ball := get_ball(&g_mem.entities, g_mem.ball)
+update_ball :: proc(frame_input: input.FrameInput, stage: MainStage) {
+	ball := get_ball(&g_mem.entities, stage.ball)
 
 	dt := input.frame_query_delta(frame_input)
 
@@ -389,7 +415,7 @@ update_ball :: proc(frame_input: input.FrameInput) {
 		ball.shape.pos = paddle.shape.pos + bs.offset
 
 		if input.is_pressed(frame_input, .SPACE) {
-			evt := BeginFreeMovement{g_mem.ball, Vector2{0, -1}, 350}
+			evt := BeginFreeMovement{stage.ball, Vector2{0, -1}, 350}
 			ring_buffer_append(&g_mem.event_queue, evt)
 		}
 	case FreeMovement:
@@ -436,7 +462,6 @@ update_ball :: proc(frame_input: input.FrameInput) {
 }
 
 update_gameplay :: proc(frame_input: input.FrameInput) {
-	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
@@ -455,21 +480,29 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
-	ball_targets := data_pool_new_iter(&g_mem.entities)
-	for entity, handle in data_pool_iter(&ball_targets) {
-		#partial switch e in entity {
-		case Brick:
-			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
-		case Paddle:
-			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
-		case Wall:
-			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
+	switch stage in g_mem.stages {
+	case MainStage:
+		ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
+		ball_targets := data_pool_new_iter(&g_mem.entities)
+		for entity, handle in data_pool_iter(&ball_targets) {
+			#partial switch e in entity {
+			case Brick:
+				append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
+			case Paddle:
+				append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
+			case Wall:
+				append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
 
+			}
 		}
-	}
 
-	update_paddle(frame_input)
-	update_ball(frame_input)
+		update_paddle(frame_input, stage)
+		update_ball(frame_input, stage)
+	case WinStage:
+		panic("Lose Stage Not implemented")
+	case LoseStage:
+		panic("Lose Stage Not implemented")
+	}
 
 }
 
