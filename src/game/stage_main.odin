@@ -5,12 +5,12 @@ import math "core:math/linalg"
 
 import "input"
 
-MainStage :: struct {
+StageMain :: struct {
 	paddle: EntityHandle,
 	ball:   EntityHandle,
 }
 
-main_stage_update :: proc(stage: MainStage, frame_input: input.FrameInput) {
+stage_main_update :: proc(stage: StageMain, frame_input: input.FrameInput) {
 	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 	ball_targets := data_pool_new_iter(&g_mem.entities)
 	for entity, handle in data_pool_iter(&ball_targets) {
@@ -25,11 +25,11 @@ main_stage_update :: proc(stage: MainStage, frame_input: input.FrameInput) {
 		}
 	}
 
-	main_stage_update_paddle(stage, frame_input)
-	main_stage_update_ball(stage, frame_input)
+	stage_main_update_paddle(stage, frame_input)
+	stage_main_update_ball(stage, frame_input)
 }
 
-setup_main_stage :: proc(stage: ^MainStage) {
+setup_stage_main :: proc(stage: ^StageMain) {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
 	setup_and_add_paddle(stage)
@@ -103,7 +103,7 @@ setup_main_stage :: proc(stage: ^MainStage) {
 	}
 }
 
-main_stage_draw :: proc(stage: MainStage) {
+stage_main_draw :: proc(stage: StageMain) {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
 
@@ -128,7 +128,7 @@ main_stage_draw :: proc(stage: MainStage) {
 	draw_cmds.draw_text(fmt.ctprintf("index: %v", frame.meta.frame_id), 10, 84, 12, RAYWHITE)
 }
 
-main_stage_update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput) {
+stage_main_update_paddle :: proc(stage: StageMain, frame_input: input.FrameInput) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
 	paddle := get_paddle(&g_mem.entities, stage.paddle)
@@ -152,7 +152,7 @@ main_stage_update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput
 	}
 }
 
-main_stage_update_ball :: proc(stage: MainStage, frame_input: input.FrameInput) {
+stage_main_update_ball :: proc(stage: StageMain, frame_input: input.FrameInput) {
 	ball := get_ball(&g_mem.entities, stage.ball)
 
 	dt := input.frame_query_delta(frame_input)
@@ -240,7 +240,7 @@ get_paddle :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHand
 //////////////////////////////
 
 @(private = "file")
-setup_and_add_paddle :: proc(stage: ^MainStage) {
+setup_and_add_paddle :: proc(stage: ^StageMain) {
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Paddle Entity")
@@ -256,7 +256,7 @@ setup_and_add_paddle :: proc(stage: ^MainStage) {
 }
 
 @(private = "file")
-setup_and_add_ball :: proc(stage: ^MainStage) {
+setup_and_add_ball :: proc(stage: ^StageMain) {
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Ball Entity")

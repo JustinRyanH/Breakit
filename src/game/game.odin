@@ -47,13 +47,13 @@ StageWin :: struct {}
 StageLose :: struct {}
 
 StageTypes :: enum {
-	MainStage,
+	StageMain,
 	WinStage,
-	LoseStage,
+	StageLose,
 }
 
 Stages :: union {
-	MainStage,
+	StageMain,
 	StageWin,
 	StageLose,
 }
@@ -149,8 +149,8 @@ game_setup :: proc() {
 	g_mem.scene_height = 600
 
 
-	main_stage := MainStage{}
-	setup_next_stage(main_stage)
+	stage_main := StageMain{}
+	setup_next_stage(stage_main)
 }
 
 @(export)
@@ -242,11 +242,11 @@ game_draw :: proc() {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
 	switch s in g_mem.stages {
-	case MainStage:
-		main_stage_draw(s)
-	case LoseStage:
+	case StageMain:
+		stage_main_draw(s)
+	case StageLose:
 		panic("LostStage is not implemented")
-	case WinStage:
+	case StageWin:
 		panic("WinStage is not implemented")
 	}
 }
@@ -289,11 +289,11 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	}
 
 	switch stage in g_mem.stages {
-	case MainStage:
-		main_stage_update(stage, frame_input)
-	case WinStage:
+	case StageMain:
+		stage_main_update(stage, frame_input)
+	case StageWin:
 		panic("Lose Stage Not implemented")
-	case LoseStage:
+	case StageLose:
 		panic("Lose Stage Not implemented")
 	}
 
@@ -302,11 +302,11 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 setup_next_stage :: proc(stage: Stages) {
 	stage_cpy := stage
 	switch s in &stage_cpy {
-	case MainStage:
-		setup_main_stage(&s)
-	case WinStage:
+	case StageMain:
+		setup_stage_main(&s)
+	case StageWin:
 		panic("Not main stage")
-	case LoseStage:
+	case StageLose:
 		panic("Not main stage")
 	}
 	g_mem.stages = stage_cpy
