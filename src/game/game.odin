@@ -312,7 +312,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	switch stage in g_mem.stages {
 	case MainStage:
-		update_main_stage(stage, frame_input)
+		main_stage_update(stage, frame_input)
 	case WinStage:
 		panic("Lose Stage Not implemented")
 	case LoseStage:

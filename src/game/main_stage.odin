@@ -4,7 +4,7 @@ import math "core:math/linalg"
 
 import "input"
 
-update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
+main_stage_update :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 	ball_targets := data_pool_new_iter(&g_mem.entities)
 	for entity, handle in data_pool_iter(&ball_targets) {
