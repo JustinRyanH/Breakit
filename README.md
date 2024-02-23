@@ -93,5 +93,3 @@ the velocity of ball and the paddle.
 ### Controls
 
 Controller, Keyboard
-
-
