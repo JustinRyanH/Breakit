@@ -353,11 +353,7 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 update_paddle :: proc(frame_input: input.FrameInput) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
-	paddle_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.paddle)
-	if paddle_ptr == nil {panic("Paddle should always exists")}
-
-	paddle, is_paddle := &paddle_ptr.(Paddle)
-	if !is_paddle {panic("Paddle should also be a Paddle")}
+	paddle := get_paddle(&g_mem.entities, g_mem.paddle)
 
 	dt := input.frame_query_delta(frame_input)
 	scene_width, scene_height := g_mem.scene_width, g_mem.scene_height
@@ -379,28 +375,14 @@ update_paddle :: proc(frame_input: input.FrameInput) {
 }
 
 update_ball :: proc(frame_input: input.FrameInput) {
-	ball_ptr := data_pool_get_ptr(&g_mem.entities, g_mem.ball)
-	if ball_ptr == nil {
-		panic("Ball should always exists")
-	}
-	ball, is_ball := &ball_ptr.(Ball)
-	if !is_ball {
-		panic("Ball should also be a Ball")
-	}
+	ball := get_ball(&g_mem.entities, g_mem.ball)
 
 	dt := input.frame_query_delta(frame_input)
 
 
 	switch bs in &ball.state {
 	case LockedToEntity:
-		paddle_ptr := data_pool_get_ptr(&g_mem.entities, bs.handle)
-		if paddle_ptr == nil {
-			panic("Paddle should always exists")
-		}
-		paddle, is_paddle := &paddle_ptr.(Paddle)
-		if !is_paddle {
-			panic("Paddle should also be a Paddle")
-		}
+	  paddle := get_paddle(&g_mem.entities, bs.handle)
 		ball.shape.pos = paddle.shape.pos + bs.offset
 
 		if input.is_pressed(frame_input, .SPACE) {
@@ -487,4 +469,29 @@ bounce_normal :: #force_inline proc(dir: Vector2, normal: Vector2) -> Vector2 {
 	surface_axis := dir - surface_perp_projection
 
 	return surface_axis - surface_perp_projection
+}
+
+get_ball :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHandle) -> ^Ball {
+	ball_ptr := data_pool_get_ptr(pool, handle)
+	if ball_ptr == nil {
+		panic("Ball should always exists")
+	}
+	ball, is_ball := &ball_ptr.(Ball)
+	if !is_ball {
+		panic("Ball should also be a Ball")
+	}
+	return ball
+}
+
+
+get_paddle :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHandle) -> ^Paddle {
+	paddle_ptr := data_pool_get_ptr(pool, handle)
+	if paddle_ptr == nil {
+		panic("Ball should always exists")
+	}
+	paddle, is_paddle := &paddle_ptr.(Paddle)
+	if !is_paddle {
+		panic("Ball should also be a Ball")
+	}
+	return paddle
 }
