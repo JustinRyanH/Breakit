@@ -32,7 +32,6 @@ setup_and_add_ball :: proc(stage: ^MainStage) {
 setup_main_stage :: proc(stage: ^MainStage) {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
-
 	setup_and_add_paddle(stage)
 	setup_and_add_ball(stage)
 
@@ -102,12 +101,4 @@ setup_main_stage :: proc(stage: ^MainStage) {
 		}
 		e_ptr^ = brick
 	}
-}
-
-setup_next_stage :: proc(stage: Stages) {
-	main_stage, ok := stage.(MainStage)
-	if !ok {
-		panic("Not main stage")
-	}
-	g_mem.stages = main_stage
 }

@@ -418,6 +418,19 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 }
 
+setup_next_stage :: proc(stage: Stages) {
+	stage_cpy := stage
+	switch s in &stage_cpy {
+	case MainStage:
+		setup_main_stage(&s)
+	case WinStage:
+		panic("Not main stage")
+	case LoseStage:
+		panic("Not main stage")
+	}
+	g_mem.stages = stage
+}
+
 get_frame_id :: proc(frame_input: input.FrameInput) -> int {
 	return frame_input.current_frame.meta.frame_id
 }
