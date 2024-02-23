@@ -418,13 +418,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 }
 
-setup_next_stage :: proc(stage: Stages) {
-	width, height := g_mem.scene_width, g_mem.scene_height
-
-	main_stage, ok := stage.(MainStage)
-	if !ok {
-		panic("Not main stage")
-	}
+setup_and_add_paddle :: proc(stage: ^MainStage) {
 	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Paddle Entity")
@@ -436,27 +430,42 @@ setup_next_stage :: proc(stage: Stages) {
 	paddle.speed = 300
 	paddle.id = handle
 	ptr^ = paddle
-	main_stage.paddle = handle
+	stage.paddle = handle
+}
 
-	ptr, handle, success = data_pool_add_empty(&g_mem.entities)
+setup_and_add_ball :: proc(stage: ^MainStage) {
+	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
 	if !success {
 		panic("Failed to create Ball Entity")
 	}
 	ball := Ball{}
 	ball.id = handle
-	ball.shape.pos = paddle.shape.pos + Vector2{0, -20}
 	ball.shape.radius = 10
 	ball.color = RED
-	ball.state = LockedToEntity{paddle.id, Vector2{0, -20}}
+	ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
 	ptr^ = ball
-	main_stage.ball = handle
+	stage.ball = handle
+
+
+}
+
+setup_next_stage :: proc(stage: Stages) {
+	width, height := g_mem.scene_width, g_mem.scene_height
+
+	main_stage, ok := stage.(MainStage)
+	if !ok {
+		panic("Not main stage")
+	}
+
+	setup_and_add_paddle(&main_stage)
+	setup_and_add_ball(&main_stage)
 
 	g_mem.stages = main_stage
 
 	wall_thickness: f32 = 100
 	walls: []Wall =  {
 		Wall {
-			handle,
+			0,
 			Rectangle {
 				Vector2{(-wall_thickness / 2) + 5, height / 2},
 				Vector2{wall_thickness, height},
@@ -464,7 +473,7 @@ setup_next_stage :: proc(stage: Stages) {
 			},
 		},
 		Wall {
-			handle,
+			0,
 			Rectangle {
 				Vector2{width + (wall_thickness / 2) - 5, height / 2},
 				Vector2{wall_thickness, height},
@@ -472,7 +481,7 @@ setup_next_stage :: proc(stage: Stages) {
 			},
 		},
 		Wall {
-			handle,
+			0,
 			Rectangle{Vector2{width / 2, wall_thickness / 2}, Vector2{width, wall_thickness}, 0.0},
 		},
 	}
