@@ -13,18 +13,17 @@ There are the tasks I want to work on next
 
 ## Nice to Haves
 
-[ ] Steal Small_Array `as_slice` for DataPool
-  I don't think I should do that for RingBuffer
-[ ] Actually Finish the loop for Playback
-[ ] Input Recording, Save to File
 [ ] Start Menu
-[ ] Start Menu with Keyboard Selectable Options
+[ ] Steal Small_Array `as_slice` for DataPool
+[ ] Actually Finish the loop for Playback
 [ ] Particles on Hit
+[ ] Input Recording, Save to File
+[ ] Start Menu with Keyboard Selectable Options
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
 [ ] Make a MicroUI style/atlas editor
 [ ] Move main.odin to src
-[ ] Propertly close out the debug logs, and compress them
+[ ] Propertly close out the debug input, and compress them
 [ ] Crash on hot reload if the memory structure changes
 
 ## DONE
