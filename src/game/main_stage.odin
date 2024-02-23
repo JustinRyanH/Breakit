@@ -4,6 +4,11 @@ import math "core:math/linalg"
 
 import "input"
 
+MainStage :: struct {
+	paddle: EntityHandle,
+	ball:   EntityHandle,
+}
+
 main_stage_update :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 	ball_targets := data_pool_new_iter(&g_mem.entities)
@@ -21,35 +26,6 @@ main_stage_update :: proc(stage: MainStage, frame_input: input.FrameInput) {
 
 	main_stage_update_paddle(stage, frame_input)
 	main_stage_update_ball(stage, frame_input)
-}
-
-setup_and_add_paddle :: proc(stage: ^MainStage) {
-	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
-	if !success {
-		panic("Failed to create Paddle Entity")
-	}
-	paddle := Paddle{}
-	paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
-	paddle.shape.size = Vector2{100, 20}
-	paddle.color = BLUE
-	paddle.speed = 300
-	paddle.id = handle
-	ptr^ = paddle
-	stage.paddle = handle
-}
-
-setup_and_add_ball :: proc(stage: ^MainStage) {
-	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
-	if !success {
-		panic("Failed to create Ball Entity")
-	}
-	ball := Ball{}
-	ball.id = handle
-	ball.shape.radius = 10
-	ball.color = RED
-	ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
-	ptr^ = ball
-	stage.ball = handle
 }
 
 setup_main_stage :: proc(stage: ^MainStage) {
@@ -231,4 +207,39 @@ get_paddle :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHand
 		panic("Ball should also be a Ball")
 	}
 	return paddle
+}
+
+//////////////////////////////
+// Helpers
+//////////////////////////////
+
+@(private = "file")
+setup_and_add_paddle :: proc(stage: ^MainStage) {
+	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
+	if !success {
+		panic("Failed to create Paddle Entity")
+	}
+	paddle := Paddle{}
+	paddle.shape.pos = Vector2{g_mem.scene_width / 2, g_mem.scene_height - 50}
+	paddle.shape.size = Vector2{100, 20}
+	paddle.color = BLUE
+	paddle.speed = 300
+	paddle.id = handle
+	ptr^ = paddle
+	stage.paddle = handle
+}
+
+@(private = "file")
+setup_and_add_ball :: proc(stage: ^MainStage) {
+	ptr, handle, success := data_pool_add_empty(&g_mem.entities)
+	if !success {
+		panic("Failed to create Ball Entity")
+	}
+	ball := Ball{}
+	ball.id = handle
+	ball.shape.radius = 10
+	ball.color = RED
+	ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
+	ptr^ = ball
+	stage.ball = handle
 }

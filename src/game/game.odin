@@ -47,10 +47,6 @@ StageTypes :: enum {
 	LoseStage,
 }
 
-MainStage :: struct {
-	paddle: EntityHandle,
-	ball:   EntityHandle,
-}
 
 WinStage :: struct {}
 
