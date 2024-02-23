@@ -321,25 +321,6 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 }
 
-update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
-	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
-	ball_targets := data_pool_new_iter(&g_mem.entities)
-	for entity, handle in data_pool_iter(&ball_targets) {
-		#partial switch e in entity {
-		case Brick:
-			append(&ball_collision_targets, CollidableObject{.Brick, e.id, e.shape})
-		case Paddle:
-			append(&ball_collision_targets, CollidableObject{.Paddle, e.id, e.shape})
-		case Wall:
-			append(&ball_collision_targets, CollidableObject{.Wall, e.id, e.shape})
-
-		}
-	}
-
-	update_paddle(frame_input, stage)
-	update_ball(frame_input, stage)
-}
-
 setup_next_stage :: proc(stage: Stages) {
 	stage_cpy := stage
 	switch s in &stage_cpy {
