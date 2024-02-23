@@ -31,9 +31,14 @@ BeginFreeMovement :: struct {
 	speed:       f32,
 }
 
+BallDeathEvent :: struct {
+	ball: EntityHandle,
+}
+
 GameEvent :: union {
 	DestroyEvent,
 	BeginFreeMovement,
+	BallDeathEvent,
 }
 
 StageTypes :: enum {
@@ -456,7 +461,7 @@ update_ball :: proc(frame_input: input.FrameInput, stage: MainStage) {
 
 		height := g_mem.scene_height
 		if (ball.shape.pos.y - ball.shape.radius * 3 > height) {
-			game_setup()
+			ring_buffer_append(&g_mem.event_queue, BallDeathEvent{stage.ball})
 		}
 	}
 }
@@ -469,6 +474,8 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	for event in ring_buffer_pop(&g_mem.event_queue) {
 		switch evt in event {
+		case BallDeathEvent:
+			game_setup()
 		case DestroyEvent:
 			removed := data_pool_remove(&g_mem.entities, evt.handle)
 			if !removed {
