@@ -344,28 +344,3 @@ bounce_normal :: #force_inline proc(dir: Vector2, normal: Vector2) -> Vector2 {
 
 	return surface_axis - surface_perp_projection
 }
-
-get_ball :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHandle) -> ^Ball {
-	ball_ptr := data_pool_get_ptr(pool, handle)
-	if ball_ptr == nil {
-		panic("Ball should always exists")
-	}
-	ball, is_ball := &ball_ptr.(Ball)
-	if !is_ball {
-		panic("Ball should also be a Ball")
-	}
-	return ball
-}
-
-
-get_paddle :: proc(pool: ^DataPool($N, Entity, EntityHandle), handle: EntityHandle) -> ^Paddle {
-	paddle_ptr := data_pool_get_ptr(pool, handle)
-	if paddle_ptr == nil {
-		panic("Ball should always exists")
-	}
-	paddle, is_paddle := &paddle_ptr.(Paddle)
-	if !is_paddle {
-		panic("Ball should also be a Ball")
-	}
-	return paddle
-}
