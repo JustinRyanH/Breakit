@@ -42,9 +42,9 @@ GameEvent :: union {
 }
 
 
-WinStage :: struct {}
+StageWin :: struct {}
 
-LoseStage :: struct {}
+StageLose :: struct {}
 
 StageTypes :: enum {
 	MainStage,
@@ -54,8 +54,8 @@ StageTypes :: enum {
 
 Stages :: union {
 	MainStage,
-	WinStage,
-	LoseStage,
+	StageWin,
+	StageLose,
 }
 
 CollidableObject :: struct {
