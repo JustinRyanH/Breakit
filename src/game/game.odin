@@ -41,16 +41,16 @@ GameEvent :: union {
 	BallDeathEvent,
 }
 
+
+WinStage :: struct {}
+
+LoseStage :: struct {}
+
 StageTypes :: enum {
 	MainStage,
 	WinStage,
 	LoseStage,
 }
-
-
-WinStage :: struct {}
-
-LoseStage :: struct {}
 
 Stages :: union {
 	MainStage,
