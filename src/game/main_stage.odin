@@ -19,8 +19,8 @@ update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
 		}
 	}
 
-	update_paddle(stage, frame_input)
-	update_ball(stage, frame_input)
+	main_stage_update_paddle(stage, frame_input)
+	main_stage_update_ball(stage, frame_input)
 }
 
 setup_and_add_paddle :: proc(stage: ^MainStage) {
@@ -126,7 +126,7 @@ setup_main_stage :: proc(stage: ^MainStage) {
 	}
 }
 
-update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput) {
+main_stage_update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
 	paddle := get_paddle(&g_mem.entities, stage.paddle)
@@ -150,7 +150,7 @@ update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	}
 }
 
-update_ball :: proc(stage: MainStage, frame_input: input.FrameInput) {
+main_stage_update_ball :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	ball := get_ball(&g_mem.entities, stage.ball)
 
 	dt := input.frame_query_delta(frame_input)
