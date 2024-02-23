@@ -19,7 +19,7 @@ update_main_stage :: proc(stage: MainStage, frame_input: input.FrameInput) {
 		}
 	}
 
-	update_paddle(frame_input, stage)
+	update_paddle(stage, frame_input)
 	update_ball(stage, frame_input)
 }
 
@@ -126,7 +126,7 @@ setup_main_stage :: proc(stage: ^MainStage) {
 	}
 }
 
-update_paddle :: proc(frame_input: input.FrameInput, stage: MainStage) {
+update_paddle :: proc(stage: MainStage, frame_input: input.FrameInput) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
 	paddle := get_paddle(&g_mem.entities, stage.paddle)
