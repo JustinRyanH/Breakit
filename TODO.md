@@ -98,3 +98,5 @@ myself of my decisions. Basically my personal Architect of Record
 - That said I will use dynamic array with temporary allocator
   if make(T, 0, X, context.temp_allocator) at the start of a frames
   but this is because I won't need to save it.
+- I kind of think I should have groupings that are similiar to the
+  raylib cheatsheet
