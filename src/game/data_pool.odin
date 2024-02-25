@@ -484,5 +484,17 @@ test_data_pool_add_empty :: proc(t: ^testing.T) {
 
 @(test)
 test_data_pool_len :: proc(t: ^testing.T) {
-	testing.expect(t, false, "Test Not Implemented")
+	TestStruct :: struct {
+		v: u8,
+	}
+	ByteDataPool :: DataPool(4, TestStruct, Handle)
+	data_pool_example := ByteDataPool{}
+
+	data_pool_add(&data_pool_example, TestStruct{33})
+	handle, _ := data_pool_add(&data_pool_example, TestStruct{31})
+	data_pool_remove(&data_pool_example, handle)
+	data_pool_add(&data_pool_example, TestStruct{40})
+
+
+	testing.expect(t, data_pool_len(&data_pool_example) == 2, "The length should be 2")
 }
