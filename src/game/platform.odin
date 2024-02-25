@@ -45,9 +45,28 @@ Camera2D :: struct {
 	zoom:     f32, // Camera zoom (scaling), should be 1.0f by default
 }
 
+FontHandle :: distinct Handle
+Font :: struct {
+	handle: FontHandle,
+	name:   string,
+}
+
+TextCommandErrors :: enum {
+	NoError,
+	FontPoolFull,
+	FontNotFound,
+}
+
 //////////////////////////
 // Platform Abstraction //
 //////////////////////////
+
+TextCommands :: struct {
+	load_font:    proc(path: string) -> (Font, TextCommandErrors),
+	unload_font:  proc(font: Font),
+	measure_text: proc(font: Font, text: string, font_size: i32, spacing: i32) -> (f32, f32),
+	get_fonts:    proc() -> []Font,
+}
 
 
 PlatformCommands :: struct {
@@ -63,4 +82,5 @@ PlatformDrawCommands :: struct {
 	clear:            proc(color: Color),
 	draw_text:        proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
 	draw_shape:       proc(shape: Shape, color: Color),
+	text_cmds:        TextCommands,
 }

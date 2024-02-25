@@ -46,6 +46,9 @@ main :: proc() {
 	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
 	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
+	storage := rl_platform.new_platform_storage()
+	defer rl_platform.free_platform_storage(storage)
+
 	rl.InitWindow(800, 600, "Breakit")
 	rl.SetTargetFPS(60.0)
 	defer rl.CloseWindow()

@@ -9,6 +9,10 @@ import rl "vendor:raylib"
 import "../game"
 import "../game/input"
 
+PlayformStorage :: struct {
+	fonts: game.DataPool(32, game.Font, game.FontHandle),
+}
+
 RlToGameKeyMap :: struct {
 	rl_key:   rl.KeyboardKey,
 	game_key: input.KeyboardKey,
@@ -154,6 +158,14 @@ new_context :: proc() -> ^game.Context {
 
 deinit_game_context :: proc(ctx: ^game.Context) {
 	free(ctx)
+}
+
+new_platform_storage :: proc() -> ^PlayformStorage {
+	return new(PlayformStorage)
+}
+
+free_platform_storage :: proc(storage: ^PlayformStorage) {
+	free(storage)
 }
 
 
