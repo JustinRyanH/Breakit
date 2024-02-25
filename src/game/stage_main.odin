@@ -11,7 +11,7 @@ StageMain :: struct {
 	lives:  int,
 }
 
-stage_main_update :: proc(stage: StageMain, frame_input: input.FrameInput) {
+stage_main_update :: proc(stage: ^StageMain, frame_input: input.FrameInput) {
 	ball_collision_targets = make([dynamic]CollidableObject, 0, 32, context.temp_allocator)
 	ball_targets := data_pool_new_iter(&g_mem.entities)
 	for entity, handle in data_pool_iter(&ball_targets) {
@@ -30,10 +30,10 @@ stage_main_update :: proc(stage: StageMain, frame_input: input.FrameInput) {
 	stage_main_update_ball(stage, frame_input)
 }
 
-setup_stage_main :: proc(stage: ^StageMain) {
+stage_main_setup :: proc(stage: ^StageMain) {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
-	stage.lives = 3
+	stage.lives = 1
 
 	setup_and_add_paddle(stage)
 	setup_and_add_ball(stage)
@@ -109,6 +109,7 @@ setup_stage_main :: proc(stage: ^StageMain) {
 stage_main_draw :: proc(stage: StageMain) {
 	draw_cmds := &ctx.draw_cmds
 	draw_cmds.clear(BLACK)
+
 	width, height := input.frame_query_dimensions(g_input)
 
 
@@ -139,7 +140,7 @@ stage_main_draw :: proc(stage: StageMain) {
 	draw_cmds.draw_text(fmt.ctprintf("index: %v", frame.meta.frame_id), 10, 84, 12, RAYWHITE)
 }
 
-stage_main_update_paddle :: proc(stage: StageMain, frame_input: input.FrameInput) {
+stage_main_update_paddle :: proc(stage: ^StageMain, frame_input: input.FrameInput) {
 	// This happens a lot. I should create a method where it panics
 	// for each of the types I wanna pull
 	paddle := get_paddle(&g_mem.entities, stage.paddle)
@@ -163,7 +164,7 @@ stage_main_update_paddle :: proc(stage: StageMain, frame_input: input.FrameInput
 	}
 }
 
-stage_main_update_ball :: proc(stage: StageMain, frame_input: input.FrameInput) {
+stage_main_update_ball :: proc(stage: ^StageMain, frame_input: input.FrameInput) {
 	ball := get_ball(&g_mem.entities, stage.ball)
 
 	dt := input.frame_query_delta(frame_input)

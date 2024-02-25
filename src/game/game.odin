@@ -44,8 +44,6 @@ GameEvent :: union {
 
 StageWin :: struct {}
 
-StageLose :: struct {}
-
 StageTypes :: enum {
 	StageMain,
 	WinStage,
@@ -142,8 +140,6 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
-	// Soft Reset, I want to crash if there is dangling handles between resets
-	data_pool_reset(&g_mem.entities)
 
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
@@ -245,7 +241,7 @@ game_draw :: proc() {
 	case StageMain:
 		stage_main_draw(s)
 	case StageLose:
-		panic("LostStage is not implemented")
+		stage_lose_render(s)
 	case StageWin:
 		panic("WinStage is not implemented")
 	}
@@ -283,7 +279,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 					ball := get_ball(&g_mem.entities, stage.ball)
 					ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
 				} else {
-					game_setup()
+					switch_stage(StageLose{})
 				}
 			}
 		case DestroyEvent:
@@ -297,28 +293,44 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		}
 	}
 
-	switch stage in g_mem.stage {
+	switch stage in &g_mem.stage {
 	case StageMain:
-		stage_main_update(stage, frame_input)
+		stage_main_update(&stage, frame_input)
 	case StageWin:
 		panic("Lose Stage Not implemented")
 	case StageLose:
-		panic("Lose Stage Not implemented")
+		stage_lose_update(&stage, frame_input)
 	}
 
 }
 
+switch_stage :: proc(next_stage: Stages) {
+	cleanup_previous_stage(&g_mem.stage)
+	setup_next_stage(next_stage)
+}
+
 setup_next_stage :: proc(stage: Stages) {
-	stage_cpy := stage
-	switch s in &stage_cpy {
+	g_mem.stage = stage
+	switch s in &g_mem.stage {
 	case StageMain:
-		setup_stage_main(&s)
+		stage_main_setup(&s)
 	case StageWin:
-		panic("Not main stage")
 	case StageLose:
-		panic("Not main stage")
+		stage_lose_setup(&s)
 	}
-	g_mem.stage = stage_cpy
+}
+
+cleanup_previous_stage :: proc(stage: ^Stages) {
+	switch s in stage {
+	case StageMain:
+		fmt.println("Cleanup")
+		// Soft Reset, I want to crash if there is dangling handles between resets
+		data_pool_reset(&g_mem.entities)
+	case StageWin:
+		panic("Cleaning up StageWin")
+	case StageLose:
+		stage_lose_cleanup(&s)
+	}
 }
 
 get_frame_id :: proc(frame_input: input.FrameInput) -> int {
