@@ -1,5 +1,7 @@
 package game
 
+import "core:fmt"
+
 import "./input"
 
 StageLose :: struct {}
@@ -15,4 +17,12 @@ stage_lose_render :: proc(stage: StageLose) {
 	draw_cmds.clear(BLACK)
 
 	width, height := input.frame_query_dimensions(g_input)
+
+	draw_cmds.draw_text(
+		fmt.ctprintf("Entities Len: %v", data_pool_len(&g_mem.entities)),
+		10,
+		50,
+		20,
+		RED,
+	)
 }
