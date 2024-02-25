@@ -481,3 +481,8 @@ test_data_pool_add_empty :: proc(t: ^testing.T) {
 	testing.expect(t, found, "Handle should have data in pool")
 	testing.expectf(t, data == TestStructB{-8}, "Data should Exists, found %v", data)
 }
+
+@(test)
+test_data_pool_len :: proc(t: ^testing.T) {
+	testing.expect(t, false, "Test Not Implemented")
+}
