@@ -5,6 +5,7 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Game Over Scene
+[ ] Extended Font Platform API
 
 ## Core
 

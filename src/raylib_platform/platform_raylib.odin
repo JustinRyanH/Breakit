@@ -10,6 +10,11 @@ import rl "vendor:raylib"
 import "../game"
 import "../game/input"
 
+
+// This doesn't need to be a data pool. I can just
+// generate a 64bit hash from the string and store
+// that. I only care about DataPool style API from
+// within the GAME
 PlatformStorage :: struct {
 	fonts: game.DataPool(32, PlatformFont, game.FontHandle),
 }
