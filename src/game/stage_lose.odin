@@ -21,17 +21,6 @@ stage_lose_render :: proc(stage: StageLose) {
 
 	width, height := input.frame_query_dimensions(g_input)
 
-
-
-
-	draw_cmds.text.draw(
-		g_mem.fonts.kenney_future,
-		fmt.ctprintf("dims: %v", dims),
-		Vector2{10, 50},
-		24,
-		0,
-		RED,
-	)
 	settings := FancyTextDefaults
 	settings.alignment = .Middle
 	draw_text_fancy(g_mem.fonts.kenney_future, fmt.ctprintf("Entities Len: %v", data_pool_len(&g_mem.entities)), Vector2{width * 0.5, height * 0.5}, 60, settings)
