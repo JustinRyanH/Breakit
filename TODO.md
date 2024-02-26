@@ -5,6 +5,7 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Game Over Scene
+[ ] Color in game is "noramlized" f32 instead of bytes
 
 ## Core
 
