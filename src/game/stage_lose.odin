@@ -23,7 +23,7 @@ stage_lose_render :: proc(stage: StageLose) {
 
 	settings := FancyTextDefaults
 	settings.alignment = .Middle
-	draw_text_fancy(g_mem.fonts.kenney_future, fmt.ctprintf("Entities Len: %v", data_pool_len(&g_mem.entities)), Vector2{width * 0.5, height * 0.5}, 60, settings)
+	draw_text_fancy(g_mem.fonts.kenney_future, "Restart", Vector2{width * 0.5, height * 0.5}, 60, settings)
 }
 
 
