@@ -148,6 +148,8 @@ game_init :: proc() {
 
 @(export)
 game_setup :: proc() {
+	// We're doing hard reset. This will clear out any lingering handles between frame
+	g_mem^ = GameMemory{}
 
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
