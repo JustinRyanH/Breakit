@@ -16,10 +16,10 @@ import "../game/input"
 // that. I only care about DataPool style API from
 // within the GAME
 PlatformStorage :: struct {
-	fonts: game.DataPool(32, PlatformFont, game.FontHandle),
+	fonts: map[game.FontHandle]PlatformFont,
 }
 
-platform_storage: ^PlatformStorage
+platform_storage: PlatformStorage
 
 PlatformFont :: struct {
 	game_font: game.Font,
@@ -174,7 +174,7 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 }
 
 new_platform_storage :: proc() {
-	platform_storage = new(PlatformStorage)
+	platform_storage.fonts = make(map[game.FontHandle]game.Font)
 }
 
 free_platform_storage :: proc() {
@@ -227,6 +227,10 @@ setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 	draw.draw_text = raylib_draw_text
 	draw.draw_shape = raylib_draw_shape
 
+	draw.text_cmds.load_font = raylib_load_font
+	draw.text_cmds.unload_font = raylib_unload_font
+	draw.text_cmds.measure_text = raylib_measure_text
+	draw.text_cmds.draw = raylib_draw_text_ex
 }
 
 @(private)
@@ -263,22 +267,25 @@ raylib_end_drawing_2d :: proc() {
 	rl.EndMode2D()
 }
 
-raylib_load_font :: proc(path: cstring) -> (font: game.Font, err: game.TextCommandErrors) {
-	rl_font := rl.LoadFontEx(path, 96, nil, 0)
+raylib_load_font :: proc(path: cstring) -> (font: game.Font) {
+	handle := transmute(game.FontHandle)game.generate_u64_from_cstring(path)
 
-	// TODO: Search for existing fonts and reload it instead
-	ptr, handle, success := game.data_pool_add_empty(&platform_storage.fonts)
-	if (!success) {
-		err = .FontPoolFull
-		return
+	if !(handle in platform_storage.fonts) {
+		rl_font := rl.LoadFontEx(path, 96, nil, 0)
+		font.handle = handle
+		font.name = strings.clone_from_cstring(path)
+
+		f := &platform_storage.fonts[handle]
+		f.rl_font = rl_font
+		f.game_font = font
+
+		return f.game_font
 	}
-	font.handle = handle
-	font.name = strings.clone_from_cstring(path)
+	return platform_storage.fonts[handle].game_font
+}
 
-	ptr.rl_font = rl_font
-	ptr.game_font = font
-
-	return
+raylib_unload_font :: proc(font: game.Font) {
+	delete_key(&platform_storage.fonts, font.handle)
 }
 
 raylib_draw_text_ex :: proc(
@@ -289,11 +296,23 @@ raylib_draw_text_ex :: proc(
 	spacing: f32,
 	color: game.Color,
 ) -> game.TextCommandErrors {
-	f, found := game.data_pool_get(&platform_storage.fonts, font.handle)
-	if !found {
-		return .FontNotFound
+	if font.handle in platform_storage.fonts {
+		f := platform_storage.fonts[font.handle]
+		rl.DrawTextEx(f.rl_font, text, pos, size, spacing, cast(rl.Color)color)
+		return .NoError
 	}
+	return .FontNotFound
+}
 
-	rl.DrawTextEx(f.rl_font, text, pos, size, spacing, cast(rl.Color)color)
-	return .NoError
+raylib_measure_text :: proc(
+	font: game.Font,
+	text: cstring,
+	size: f32,
+	spacing: f32,
+) -> math.Vector2f32 {
+	f, exist := platform_storage.fonts[font.handle]
+	if !exist {
+		return math.Vector2f32{}
+	}
+	return rl.MeasureTextEx(f.rl_font, text, size, spacing)
 }

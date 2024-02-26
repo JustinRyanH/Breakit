@@ -6,6 +6,7 @@ import "core:hash"
 import math "core:math/linalg"
 import "core:math/rand"
 import "core:mem"
+import "core:strings"
 
 import "./input"
 
@@ -346,5 +347,11 @@ bounce_normal :: #force_inline proc(dir: Vector2, normal: Vector2) -> Vector2 {
 }
 
 generate_u64_from_string :: proc(s: string) -> u64 {
+	return hash.murmur64b(transmute([]u8)s)
+}
+
+
+generate_u64_from_cstring :: proc(cs: cstring) -> u64 {
+	s := strings.clone_from_cstring(cs, context.temp_allocator)
 	return hash.murmur64b(transmute([]u8)s)
 }
