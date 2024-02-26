@@ -2,6 +2,7 @@ package platform_raylib
 
 import "core:fmt"
 import math "core:math/linalg"
+import "core:strings"
 
 import mu "../microui"
 import rl "vendor:raylib"
@@ -9,8 +10,15 @@ import rl "vendor:raylib"
 import "../game"
 import "../game/input"
 
-PlayformStorage :: struct {
-	fonts: game.DataPool(32, game.Font, game.FontHandle),
+PlatformStorage :: struct {
+	fonts: game.DataPool(32, PlatformFont, game.FontHandle),
+}
+
+platform_storage: ^PlatformStorage
+
+PlatformFont :: struct {
+	game_font: game.Font,
+	rl_font:   rl.Font,
 }
 
 RlToGameKeyMap :: struct {
@@ -160,12 +168,12 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 	free(ctx)
 }
 
-new_platform_storage :: proc() -> ^PlayformStorage {
-	return new(PlayformStorage)
+new_platform_storage :: proc() {
+	platform_storage = new(PlatformStorage)
 }
 
-free_platform_storage :: proc(storage: ^PlayformStorage) {
-	free(storage)
+free_platform_storage :: proc() {
+	free(platform_storage)
 }
 
 
@@ -213,6 +221,7 @@ setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 	draw.clear = raylib_clear_background
 	draw.draw_text = raylib_draw_text
 	draw.draw_shape = raylib_draw_shape
+
 }
 
 @(private)
@@ -247,4 +256,39 @@ raylib_begin_drawing_2d :: proc(camera: game.Camera2D) {
 
 raylib_end_drawing_2d :: proc() {
 	rl.EndMode2D()
+}
+
+raylib_load_font :: proc(path: cstring) -> (font: game.Font, err: game.TextCommandErrors) {
+	rl_font := rl.LoadFontEx(path, 96, nil, 0)
+
+	// TODO: Search for existing fonts and reload it instead
+	ptr, handle, success := game.data_pool_add_empty(&platform_storage.fonts)
+	if (!success) {
+		err = .FontPoolFull
+		return
+	}
+	font.handle = handle
+	font.name = strings.clone_from_cstring(path)
+
+	ptr.rl_font = rl_font
+	ptr.game_font = font
+
+	return
+}
+
+raylib_draw_text_ex :: proc(
+	font: game.Font,
+	text: cstring,
+	pos: math.Vector2f32,
+	size: f32,
+	spacing: f32,
+	color: game.Color,
+) -> game.TextCommandErrors {
+	f, found := game.data_pool_get(&platform_storage.fonts, font.handle)
+	if !found {
+		return .FontNotFound
+	}
+
+	rl.DrawTextEx(f.rl_font, text, pos, size, spacing, cast(rl.Color)color)
+	return .NoError
 }

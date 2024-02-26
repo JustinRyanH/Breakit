@@ -46,8 +46,8 @@ main :: proc() {
 	context.allocator = ta.allocator_from_tracking_allocator(&tracking_allocator)
 	defer ta.tracking_allocator_destroy(&tracking_allocator)
 
-	storage := rl_platform.new_platform_storage()
-	defer rl_platform.free_platform_storage(storage)
+	rl_platform.new_platform_storage()
+	defer rl_platform.free_platform_storage()
 
 	rl.InitWindow(800, 600, "Breakit")
 	rl.SetTargetFPS(60.0)
@@ -70,6 +70,15 @@ main :: proc() {
 	game_api.update_ctx(ctx)
 	game_api.init()
 	game_api.setup()
+
+	fnt, err := rl_platform.raylib_load_font("assets/fonts/Kenney Future.ttf")
+	if err != .NoError {
+		fmt.printf("Err: %v", err)
+	}
+
+
+	f := rl.LoadFontEx("assets/fonts/Kenney Blocks.ttf", 96, nil, 0)
+	b := rl.LoadFontEx("assets/fonts/Kenney.ttf", 96, nil, 0)
 
 	for {
 		defer {
@@ -124,6 +133,7 @@ main :: proc() {
 			rl.BeginDrawing()
 			defer rl.EndDrawing()
 
+
 			game_api.update_ctx(ctx)
 			should_exit := game_api.update(current_frame)
 
@@ -131,6 +141,8 @@ main :: proc() {
 			game_api.draw()
 
 			rl.DrawFPS(10, 10)
+			rl_platform.raylib_draw_text_ex(fnt, "fiz", rl.Vector2{100, 100}, 40, 4, game.RED)
+			rl.DrawTextEx(b, "Foo", rl.Vector2{400, 100}, 40, 4, rl.RED)
 			rl_platform.render_mui(&ctx.mui)
 
 

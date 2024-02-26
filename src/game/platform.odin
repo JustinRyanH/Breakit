@@ -62,9 +62,17 @@ TextCommandErrors :: enum {
 //////////////////////////
 
 TextCommands :: struct {
-	load_font:    proc(path: string) -> (Font, TextCommandErrors),
+	load_font:    proc(path: cstring) -> (Font, TextCommandErrors),
 	unload_font:  proc(font: Font),
 	measure_text: proc(font: Font, text: string, font_size: i32, spacing: i32) -> (f32, f32),
+	draw:         proc(
+		font: Font,
+		text: cstring,
+		pos: math.Vector2f32,
+		size: f32,
+		spacing: f32,
+		color: Color,
+	) -> TextCommandErrors,
 	get_fonts:    proc() -> []Font,
 }
 
