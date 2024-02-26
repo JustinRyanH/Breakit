@@ -5,7 +5,6 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Game Over Scene
-[ ] Extended Font Platform API
 
 ## Core
 
@@ -29,6 +28,7 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] Extended Font Platform API
 [x] Push Ball out if overlaps
 [x] Event Pool
 [x] Blocks to Break
