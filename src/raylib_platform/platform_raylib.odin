@@ -174,11 +174,11 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 }
 
 new_platform_storage :: proc() {
-	platform_storage.fonts = make(map[game.FontHandle]game.Font)
+	platform_storage.fonts = make(map[game.FontHandle]PlatformFont)
 }
 
 free_platform_storage :: proc() {
-	free(platform_storage)
+	delete(platform_storage.fonts)
 }
 
 
@@ -227,10 +227,10 @@ setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 	draw.draw_text = raylib_draw_text
 	draw.draw_shape = raylib_draw_shape
 
-	draw.text_cmds.load_font = raylib_load_font
-	draw.text_cmds.unload_font = raylib_unload_font
-	draw.text_cmds.measure_text = raylib_measure_text
-	draw.text_cmds.draw = raylib_draw_text_ex
+	draw.text.load_font = raylib_load_font
+	draw.text.unload_font = raylib_unload_font
+	draw.text.measure_text = raylib_measure_text
+	draw.text.draw = raylib_draw_text_ex
 }
 
 @(private)
@@ -275,11 +275,10 @@ raylib_load_font :: proc(path: cstring) -> (font: game.Font) {
 		font.handle = handle
 		font.name = strings.clone_from_cstring(path)
 
-		f := &platform_storage.fonts[handle]
-		f.rl_font = rl_font
-		f.game_font = font
-
-		return f.game_font
+		pff := PlatformFont{}
+		pff.rl_font = rl_font
+		pff.game_font = font
+		platform_storage.fonts[handle] = pff
 	}
 	return platform_storage.fonts[handle].game_font
 }

@@ -113,6 +113,11 @@ Entity :: union {
 	Wall,
 }
 
+GameFonts :: struct {
+	kenney_block:  Font,
+	kenney_future: Font,
+}
+
 GameMemory :: struct {
 	scene_width:  f32,
 	scene_height: f32,
@@ -123,6 +128,7 @@ GameMemory :: struct {
 	// Game Entities
 	entities:     DataPool(512, Entity, EntityHandle),
 	event_queue:  RingBuffer(256, GameEvent),
+	fonts:        GameFonts,
 }
 
 
@@ -146,6 +152,9 @@ game_setup :: proc() {
 	g_mem.scene_width = 800
 	g_mem.scene_height = 600
 
+	draw_cmds := ctx.draw_cmds
+	g_mem.fonts.kenney_block = draw_cmds.text.load_font("assets/fonts/Kenney Blocks.ttf")
+	g_mem.fonts.kenney_future = draw_cmds.text.load_font("assets/fonts/Kenney Future.ttf")
 
 	stage_main := StageMain{}
 	setup_next_stage(stage_main)

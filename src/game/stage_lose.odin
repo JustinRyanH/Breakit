@@ -18,11 +18,12 @@ stage_lose_render :: proc(stage: StageLose) {
 
 	width, height := input.frame_query_dimensions(g_input)
 
-	draw_cmds.draw_text(
+	draw_cmds.text.draw(
+		g_mem.fonts.kenney_block,
 		fmt.ctprintf("Entities Len: %v", data_pool_len(&g_mem.entities)),
-		10,
-		50,
-		20,
+		Vector2{10, 50},
+		24,
+		0,
 		RED,
 	)
 }

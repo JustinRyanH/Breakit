@@ -71,15 +71,6 @@ main :: proc() {
 	game_api.init()
 	game_api.setup()
 
-	fnt, err := rl_platform.raylib_load_font("assets/fonts/Kenney Future.ttf")
-	if err != .NoError {
-		fmt.printf("Err: %v", err)
-	}
-
-
-	f := rl.LoadFontEx("assets/fonts/Kenney Blocks.ttf", 96, nil, 0)
-	b := rl.LoadFontEx("assets/fonts/Kenney.ttf", 96, nil, 0)
-
 	for {
 		defer {
 			clear(&ctx.events)
@@ -141,10 +132,7 @@ main :: proc() {
 			game_api.draw()
 
 			rl.DrawFPS(10, 10)
-			rl_platform.raylib_draw_text_ex(fnt, "fiz", rl.Vector2{100, 100}, 40, 4, game.RED)
-			rl.DrawTextEx(b, "Foo", rl.Vector2{400, 100}, 40, 4, rl.RED)
 			rl_platform.render_mui(&ctx.mui)
-
 
 			if (should_exit) {
 				break
