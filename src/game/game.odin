@@ -2,6 +2,7 @@ package game
 
 import sa "core:container/small_array"
 import "core:fmt"
+import "core:hash"
 import math "core:math/linalg"
 import "core:math/rand"
 import "core:mem"
@@ -342,4 +343,8 @@ bounce_normal :: #force_inline proc(dir: Vector2, normal: Vector2) -> Vector2 {
 	surface_axis := dir - surface_perp_projection
 
 	return surface_axis - surface_perp_projection
+}
+
+generate_u64_from_string :: proc(s: string) -> u64 {
+	return hash.murmur64b(transmute([]u8)s)
 }
