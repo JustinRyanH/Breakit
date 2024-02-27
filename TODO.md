@@ -8,19 +8,23 @@ There are the tasks I want to work on next
 
 ## Core
 
-## Nice to Haves
-
 [ ] Main Menu
 [ ] Actually Finish the loop for Playback
-[ ] Particles on Hit
-[ ] Input Recording, Save to File
-[ ] Start Menu with Keyboard Selectable Options
 [ ] Bounce Sounds
+
+## Nice to Haves
+
+[ ] Input Recording, Save to File
 [ ] Render Textures for the bricks
-[ ] Make a MicroUI style/atlas editor
-[ ] Move main.odin to src
-[ ] Propertly close out the debug input, and compress them
+[ ] Propertly close out the debug input
+[ ] Particles on Hit
+
+## Do Much Later
+
 [ ] Crash on hot reload if the memory structure changes
+[ ] Start Menu with Keyboard Selectable Options
+[ ] Compress the recorded inputs
+[ ] Make a MicroUI style/atlas editor (I might do my own IMGUI for game UI)
 
 ## DONE
 
