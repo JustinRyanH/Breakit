@@ -4,30 +4,29 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Game Over Scene Win
+[ ] Actually Finish the loop for Playback
 
 ## Core
 
-[ ] Main Menu
-[ ] Actually Finish the loop for Playback
 [ ] Bounce Sounds
+[ ] Input Recording, Save to File
 
 ## Nice to Haves
 
-[ ] Input Recording, Save to File
+[ ] Main Menu
 [ ] Render Textures for the bricks
 [ ] Propertly close out the debug input
 [ ] Particles on Hit
 
 ## Do Much Later
 
-[ ] Crash on hot reload if the memory structure changes
-[ ] Start Menu with Keyboard Selectable Options
+[ ] Clean reload the memory, and playback if memory structure changes
 [ ] Compress the recorded inputs
 [ ] Make a MicroUI style/atlas editor (I might do my own IMGUI for game UI)
 
 ## DONE
 
+[x] Game Over Scene Win
 [x] Game Over Scene
 [x] Color in game is "noramlized" f32 instead of bytes
 [x] Extended Font Platform API
