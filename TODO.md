@@ -11,7 +11,6 @@ There are the tasks I want to work on next
 ## Nice to Haves
 
 [ ] Main Menu
-[ ] Steal Small_Array `as_slice` for DataPool
 [ ] Actually Finish the loop for Playback
 [ ] Particles on Hit
 [ ] Input Recording, Save to File
