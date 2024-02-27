@@ -12,13 +12,18 @@ StageLose :: struct {
 
 FancyTextDefaults :: FancyText{WHITE, .Left, 0}
 
-stage_lose_setup :: proc(stage: ^StageLose) {}
+stage_lose_setup :: proc(stage: ^StageLose) {
+	stage.flash_timer = -math.TAU
+}
 
 stage_lose_cleanup :: proc(stage: ^StageLose) {}
 
 stage_lose_update :: proc(stage: ^StageLose, frame: input.FrameInput) {
 	dt := input.frame_query_delta(frame)
-	stage.flash_timer += dt * 2
+	stage.flash_timer += dt * 4
+	if stage.flash_timer > math.TAU {
+		stage.flash_timer = -math.TAU
+	}
 }
 
 stage_lose_render :: proc(stage: StageLose) {
