@@ -24,6 +24,11 @@ stage_lose_update :: proc(stage: ^StageLose, frame: input.FrameInput) {
 	if stage.flash_timer > math.TAU {
 		stage.flash_timer = -math.TAU
 	}
+
+
+	if (input.was_just_released(frame, .SPACE)) {
+		ring_buffer_append(&g_mem.event_queue, RestartEvent{})
+	}
 }
 
 stage_lose_render :: proc(stage: StageLose) {

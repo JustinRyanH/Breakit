@@ -37,10 +37,13 @@ BallDeathEvent :: struct {
 	ball: EntityHandle,
 }
 
+RestartEvent :: struct {}
+
 GameEvent :: union {
 	DestroyEvent,
 	BeginFreeMovement,
 	BallDeathEvent,
+	RestartEvent,
 }
 
 
@@ -303,6 +306,8 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 		case BeginFreeMovement:
 			ball := get_ball(&g_mem.entities, evt.ball_handle)
 			ball.state = FreeMovement{evt.direction, evt.speed}
+		case RestartEvent:
+			switch_stage(StageMain{})
 		}
 	}
 
