@@ -172,6 +172,8 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 	dt := input.frame_query_delta(frame_input)
 	g_input = frame_input
 
+	fmt.printf("Color: %v\n", Color{230 / 255.0, 41 / 255, 55 / 255, 255 / 255})
+
 	if (ctx.last_frame_id != get_frame_id(frame_input)) {
 		update_gameplay(frame_input)
 	}

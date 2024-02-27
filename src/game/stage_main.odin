@@ -123,7 +123,7 @@ stage_main_draw :: proc(stage: StageMain) {
 		case Paddle:
 			draw_cmds.draw_shape(e.shape, e.color)
 		case Wall:
-			draw_cmds.draw_shape(e.shape, Color{36, 36, 32, 255})
+			draw_cmds.draw_shape(e.shape, Color{.14, .14, .12, 1})
 		}
 	}
 

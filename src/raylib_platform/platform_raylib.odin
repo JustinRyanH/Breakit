@@ -235,27 +235,28 @@ setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 
 @(private)
 raylib_clear_background :: proc(color: game.Color) {
-	rl.ClearBackground(rl.Color(color))
+	rl.ClearBackground(game_color_to_raylib_color(color))
 }
 
 @(private)
 raylib_draw_text :: proc(msg: cstring, x, y: i32, font_size: i32, color: game.Color) {
-	rl.DrawText(msg, x, y, font_size, rl.Color(color))
+	rl.DrawText(msg, x, y, font_size, game_color_to_raylib_color(color))
 }
 
+// game_color_to_raylib_color
 @(private)
 raylib_draw_shape :: proc(shape: game.Shape, color: game.Color) {
 	switch s in shape {
 	case game.Circle:
-		rl.DrawCircleV(s.pos, s.radius, cast(rl.Color)(color))
+		rl.DrawCircleV(s.pos, s.radius, game_color_to_raylib_color(color))
 	case game.Rectangle:
 		origin := s.size * 0.5
 		rl_rect: rl.Rectangle = {s.pos.x, s.pos.y, s.size.x, s.size.y}
-		rl.DrawRectanglePro(rl_rect, origin, s.rotation, cast(rl.Color)(color))
+		rl.DrawRectanglePro(rl_rect, origin, s.rotation, game_color_to_raylib_color(color))
 	case game.Line:
-		rl.DrawLineEx(s.start, s.end, s.thickness, cast(rl.Color)(color))
-		rl.DrawCircleV(s.start, s.thickness / 2, cast(rl.Color)(color))
-		rl.DrawCircleV(s.end, s.thickness / 2, cast(rl.Color)(color))
+		rl.DrawLineEx(s.start, s.end, s.thickness, game_color_to_raylib_color(color))
+		rl.DrawCircleV(s.start, s.thickness / 2, game_color_to_raylib_color(color))
+		rl.DrawCircleV(s.end, s.thickness / 2, game_color_to_raylib_color(color))
 	}
 }
 
@@ -297,7 +298,7 @@ raylib_draw_text_ex :: proc(
 ) -> game.TextCommandErrors {
 	if font.handle in platform_storage.fonts {
 		f := platform_storage.fonts[font.handle]
-		rl.DrawTextEx(f.rl_font, text, pos, size, spacing, cast(rl.Color)color)
+		rl.DrawTextEx(f.rl_font, text, pos, size, spacing, game_color_to_raylib_color(color))
 		return .NoError
 	}
 	return .FontNotFound
@@ -314,4 +315,14 @@ raylib_measure_text :: proc(
 		return math.Vector2f32{}
 	}
 	return rl.MeasureTextEx(f.rl_font, text, size, spacing)
+}
+
+// Clamps the color between 0 and 1. (Sorry no HDR colors for Direct Raylib API)
+game_color_to_raylib_color :: proc "contextless" (color: game.Color) -> rl.Color {
+	out := rl.Color{}
+	out.r = cast(u8)(math.clamp(color.r, 0, 1) * 255)
+	out.b = cast(u8)(math.clamp(color.b, 0, 1) * 255)
+	out.g = cast(u8)(math.clamp(color.g, 0, 1) * 255)
+	out.a = cast(u8)(math.clamp(color.a, 0, 1) * 255)
+	return out
 }
