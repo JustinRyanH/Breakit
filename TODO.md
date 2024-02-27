@@ -4,8 +4,6 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Game Over Scene
-[ ] Color in game is "noramlized" f32 instead of bytes
 
 ## Core
 
@@ -29,6 +27,8 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] Game Over Scene
+[x] Color in game is "noramlized" f32 instead of bytes
 [x] Extended Font Platform API
 [x] Push Ball out if overlaps
 [x] Event Pool
