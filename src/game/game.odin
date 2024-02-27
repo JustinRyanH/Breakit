@@ -47,8 +47,6 @@ GameEvent :: union {
 }
 
 
-StageWin :: struct {}
-
 StageTypes :: enum {
 	StageMain,
 	WinStage,
@@ -257,9 +255,9 @@ game_draw :: proc() {
 	case StageMain:
 		stage_main_draw(s)
 	case StageLose:
-		stage_lose_render(s)
+		stage_lose_draw(s)
 	case StageWin:
-		panic("WinStage is not implemented")
+		stage_win_draw(s)
 	}
 }
 
@@ -292,7 +290,6 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			if is_stage {
 				if (stage.lives > 0) {
 					stage.lives -= 1
-					stage.bricks_left -= 1
 					ball := get_ball(&g_mem.entities, stage.ball)
 					ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
 				} else {
@@ -325,7 +322,7 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 	case StageMain:
 		stage_main_update(&stage, frame_input)
 	case StageWin:
-		panic("Lose Stage Not implemented")
+		stage_win_update(&stage, frame_input)
 	case StageLose:
 		stage_lose_update(&stage, frame_input)
 	}
@@ -343,6 +340,7 @@ setup_next_stage :: proc(stage: Stages) {
 	case StageMain:
 		stage_main_setup(&s)
 	case StageWin:
+		stage_win_setup(&s)
 	case StageLose:
 		stage_lose_setup(&s)
 	}
@@ -355,7 +353,7 @@ cleanup_previous_stage :: proc(stage: ^Stages) {
 		// Soft Reset, I want to crash if there is dangling handles between resets
 		data_pool_reset(&g_mem.entities)
 	case StageWin:
-		panic("Cleaning up StageWin")
+		stage_win_cleanup(&s)
 	case StageLose:
 		stage_lose_cleanup(&s)
 	}
