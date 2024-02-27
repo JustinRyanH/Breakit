@@ -10,8 +10,6 @@ StageLose :: struct {
 	flash_timer: f32,
 }
 
-FancyTextDefaults :: FancyText{WHITE, .Left, 0}
-
 stage_lose_setup :: proc(stage: ^StageLose) {
 	stage.flash_timer = -math.TAU
 }

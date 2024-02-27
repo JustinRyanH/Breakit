@@ -1,5 +1,7 @@
 package game
 
+FancyTextDefaults :: FancyText{WHITE, .Left, 0}
+
 FancyText :: struct {
 	color:     Color,
 	alignment: TextAlignment,
