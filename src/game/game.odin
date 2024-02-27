@@ -23,7 +23,7 @@ ObjectKind :: enum {
 	Paddle,
 }
 
-DestroyEvent :: struct {
+DestroyBrickEvent :: struct {
 	handle: EntityHandle,
 }
 
@@ -40,7 +40,7 @@ BallDeathEvent :: struct {
 RestartEvent :: struct {}
 
 GameEvent :: union {
-	DestroyEvent,
+	DestroyBrickEvent,
 	BeginFreeMovement,
 	BallDeathEvent,
 	RestartEvent,
@@ -292,17 +292,27 @@ update_gameplay :: proc(frame_input: input.FrameInput) {
 			if is_stage {
 				if (stage.lives > 0) {
 					stage.lives -= 1
+					stage.bricks_left -= 1
 					ball := get_ball(&g_mem.entities, stage.ball)
 					ball.state = LockedToEntity{stage.paddle, Vector2{0, -20}}
 				} else {
 					switch_stage(StageLose{})
 				}
 			}
-		case DestroyEvent:
+		case DestroyBrickEvent:
 			removed := data_pool_remove(&g_mem.entities, evt.handle)
 			if !removed {
 				fmt.println("Failed to remove brick at handle", evt)
 			}
+			stage, is_stage := &g_mem.stage.(StageMain)
+			if is_stage {
+				stage.bricks_left -= 1
+				if (stage.bricks_left == 0) {
+					switch_stage(StageWin{})
+				}
+			}
+
+
 		case BeginFreeMovement:
 			ball := get_ball(&g_mem.entities, evt.ball_handle)
 			ball.state = FreeMovement{evt.direction, evt.speed}

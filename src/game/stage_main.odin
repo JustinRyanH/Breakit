@@ -6,9 +6,10 @@ import math "core:math/linalg"
 import "input"
 
 StageMain :: struct {
-	paddle: EntityHandle,
-	ball:   EntityHandle,
-	lives:  int,
+	paddle:      EntityHandle,
+	ball:        EntityHandle,
+	lives:       int,
+	bricks_left: int,
 }
 
 stage_main_update :: proc(stage: ^StageMain, frame_input: input.FrameInput) {
@@ -33,7 +34,7 @@ stage_main_update :: proc(stage: ^StageMain, frame_input: input.FrameInput) {
 stage_main_setup :: proc(stage: ^StageMain) {
 	width, height := g_mem.scene_width, g_mem.scene_height
 
-	stage.lives = 1
+	stage.lives = 3
 
 	setup_and_add_paddle(stage)
 	setup_and_add_ball(stage)
@@ -78,8 +79,8 @@ stage_main_setup :: proc(stage: ^StageMain) {
 	brickable_area_min, brickable_area_max := shape_get_rect_extends(brickable_area)
 
 	gap: f32 = 2
-	bricks_per_row: int = 7
-	bricks_per_column: int = 7
+	bricks_per_row: int = 3
+	bricks_per_column: int = 3
 
 	brick_width: f32 = (brickable_area.size.x / cast(f32)bricks_per_row)
 	brick_height: f32 = (brickable_area.size.y / cast(f32)bricks_per_column)
@@ -102,6 +103,7 @@ stage_main_setup :: proc(stage: ^StageMain) {
 			Color{255, 0, 0, 128},
 			true,
 		}
+		stage.bricks_left += 1
 		e_ptr^ = brick
 	}
 }
@@ -195,7 +197,10 @@ stage_main_update_ball :: proc(stage: ^StageMain, frame_input: input.FrameInput)
 					}
 					_, is_brick := entity.(Brick)
 					if is_brick {
-						ring_buffer_append(&g_mem.event_queue, DestroyEvent{collidable.handle})
+						ring_buffer_append(
+							&g_mem.event_queue,
+							DestroyBrickEvent{collidable.handle},
+						)
 					}
 					bs.direction = bounce_normal(bs.direction, evt.normal)
 					ball.shape.pos += evt.normal * evt.depth
