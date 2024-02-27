@@ -102,3 +102,6 @@ myself of my decisions. Basically my personal Architect of Record
   but this is because I won't need to save it.
 - I kind of think I should have groupings that are similiar to the
   raylib cheatsheet
+- I think the events happening outside of the stage is kind of weird,
+  and I also think draining the events might seem like a mistake, but
+  eh. I'm going to leave it.
