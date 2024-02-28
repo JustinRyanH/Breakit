@@ -92,7 +92,7 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	}
 
 	api.setup = cast(proc())(dynlib.symbol_address(lib, "game_setup") or_else nil)
-	if api.init == nil {
+	if api.setup == nil {
 		fmt.println("game_setup not found in dll")
 		return {}, false
 	}
@@ -107,32 +107,32 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 
 	api.update =
 	cast(proc(_: input.FrameInput) -> bool)(dynlib.symbol_address(lib, "game_update") or_else nil)
-	if api.init == nil {
+	if api.update == nil {
 		fmt.println("game_update not found in dll")
 		return {}, false
 	}
 
 	api.draw = cast(proc())(dynlib.symbol_address(lib, "game_draw") or_else nil)
-	if api.init == nil {
+	if api.draw == nil {
 		fmt.println("game_draw not found in dll")
 		return {}, false
 	}
 
 	api.shutdown = cast(proc())(dynlib.symbol_address(lib, "game_shutdown") or_else nil)
-	if api.init == nil {
+	if api.shutdown == nil {
 		fmt.println("game_shutdown not found in dll")
 		return {}, false
 	}
 
 	api.memory = cast(proc() -> rawptr)(dynlib.symbol_address(lib, "game_memory") or_else nil)
-	if api.init == nil {
+	if api.memory == nil {
 		fmt.println("game_memory not found in dll")
 		return {}, false
 	}
 
 	api.hot_reloaded =
 	cast(proc(_: rawptr))(dynlib.symbol_address(lib, "game_hot_reloaded") or_else nil)
-	if api.init == nil {
+	if api.hot_reloaded == nil {
 		fmt.println("game_hot_reloaded not found in dll")
 		return {}, false
 
