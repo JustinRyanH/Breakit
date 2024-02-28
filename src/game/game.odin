@@ -349,8 +349,6 @@ setup_next_stage :: proc(stage: Stages) {
 cleanup_previous_stage :: proc(stage: ^Stages) {
 	switch s in stage {
 	case StageMain:
-		fmt.println("Cleanup")
-		// Soft Reset, I want to crash if there is dangling handles between resets
 		data_pool_reset(&g_mem.entities)
 	case StageWin:
 		stage_win_cleanup(&s)
