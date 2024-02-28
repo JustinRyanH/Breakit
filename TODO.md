@@ -5,11 +5,11 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Actually Finish the loop for Playback
+[ ] Input Recording, Save to File
 
 ## Core
 
 [ ] Bounce Sounds
-[ ] Input Recording, Save to File
 
 ## Nice to Haves
 
