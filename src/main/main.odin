@@ -4,6 +4,7 @@ package main
 import "core:c/libc"
 import "core:dynlib"
 import "core:fmt"
+import "core:math"
 import "core:os"
 import "core:path/filepath"
 
@@ -16,6 +17,8 @@ import ta "../tracking_alloc"
 
 frame_zero: rawptr = nil
 
+
+FPS: i32 = 60
 
 input_stream: [dynamic]input.UserInput
 
@@ -50,7 +53,7 @@ main :: proc() {
 	defer rl_platform.free_platform_storage()
 
 	rl.InitWindow(800, 600, "Breakit")
-	rl.SetTargetFPS(60.0)
+	rl.SetTargetFPS(FPS)
 	defer rl.CloseWindow()
 
 	input_stream = make([dynamic]input.UserInput, 0, 1024)
@@ -96,7 +99,7 @@ main :: proc() {
 				replay.active = true
 
 				ctx.playback = replay
-			case input.Replay:
+			case input.ReplayTo, input.Replay:
 				clear(&input_stream)
 				ctx.last_frame_id = 0
 				ctx.playback = input.Recording{0}
@@ -107,11 +110,34 @@ main :: proc() {
 		current_frame: input.FrameInput
 		err: input.InputError
 
-		switch pb in ctx.playback {
+		switch pb in &ctx.playback {
 		case input.Recording:
 			add_frame()
 
 			current_frame, err = get_current_frame(pb.index)
+		case input.ReplayTo:
+			target_time := rl.GetTime() + (1 / cast(f64)FPS)
+			time := rl.GetTime()
+			for idx in pb.index ..= pb.target_index {
+				temp_frame, err := get_current_frame(idx)
+				if err != nil {
+					fmt.printf("Error: %v\n", err)
+					return
+				}
+				game_api.update(temp_frame)
+
+				time = rl.GetTime()
+				if time > target_time {
+					pb.index = idx + 1
+
+					temp_frame, err := get_current_frame(idx)
+					current_frame = temp_frame
+					break
+				}
+			}
+			if time < target_time {
+				ctx.playback = input.Replay{pb.target_index, pb.last_frame_index, pb.was_active}
+			}
 		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
 		}
@@ -150,20 +176,13 @@ main :: proc() {
 			case game.JumpToFrame:
 				game_api.setup()
 				ctx.last_frame_id = 0
-				for idx in 0 ..= evt.frame_idx {
-					temp_frame, err := get_current_frame(idx)
-					if err != nil {
-						fmt.printf("Error: %v\n", err)
-						return
-					}
-					game_api.update(temp_frame)
 
-				}
 				pb, ok := &ctx.playback.(input.Replay)
 				if ok {
-					pb.index = evt.frame_idx
+					ctx.playback = input.ReplayTo{0, evt.frame_idx, pb.last_frame_index, pb.active}
+				} else {
+					panic("Can only Jump to Frame from Playback")
 				}
-
 			}
 
 		}
@@ -171,6 +190,7 @@ main :: proc() {
 		switch pb in &ctx.playback {
 		case input.Recording:
 			pb.index += 1
+		case input.ReplayTo:
 		case input.Replay:
 			if pb.active {
 
