@@ -34,6 +34,7 @@ GameAPI :: struct {
 	hot_reloaded:     proc(_: rawptr),
 	save_to_stream:   proc(_: io.Stream) -> io.Error,
 	load_from_stream: proc(_: io.Stream) -> io.Error,
+	mem_size:         proc() -> int,
 
 
 	// DLL specific items
@@ -156,6 +157,13 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 			"game_load_from_stream",
 		) or_else nil)
 	if api.load_from_stream == nil {
+		fmt.println("game_hot_reloaded not found in dll")
+		return {}, false
+	}
+
+
+	api.mem_size = cast(proc() -> int)(dynlib.symbol_address(lib, "game_mem_size") or_else nil)
+	if api.mem_size == nil {
 		fmt.println("game_hot_reloaded not found in dll")
 		return {}, false
 	}

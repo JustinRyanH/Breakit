@@ -304,6 +304,11 @@ game_load_from_stream :: proc(stream: io.Stream) -> io.Error {
 	return .None
 }
 
+@(export)
+game_mem_size :: proc() -> int {
+	return size_of(GameMemory)
+}
+
 update_gameplay :: proc(frame_input: input.FrameInput) {
 
 	dt := input.frame_query_delta(frame_input)
