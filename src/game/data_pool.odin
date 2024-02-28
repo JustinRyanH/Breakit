@@ -106,8 +106,6 @@ data_pool_len :: proc(dp: ^DataPool($N, $T, $H)) -> int {
 	return cast(int)(dp.items_len - dp.unused_items_len)
 }
 
-data_pool_valid :: proc(dp: ^DataPool($N, $T, $H), h: Handle) -> bool {}
-
 data_pool_new_iter :: proc(dp: ^DataPool($N, $T, $H)) -> DataPoolIterator(N, T, H) {
 	return DataPoolIterator(N, T, H){dp = dp}
 }
