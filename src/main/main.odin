@@ -1,6 +1,7 @@
 package main
 
 
+import "core:bytes"
 import "core:c/libc"
 import "core:dynlib"
 import "core:fmt"
@@ -73,6 +74,24 @@ main :: proc() {
 	game_api.update_ctx(ctx)
 	game_api.init()
 	game_api.setup()
+
+	game_size := game_api.mem_size()
+	mem := game_api.memory()
+
+	tb: bytes.Buffer
+	bytes.buffer_init_allocator(&tb, 0, game_size)
+	fmt.println("Size of game", game_size)
+
+	stream := bytes.buffer_to_stream(&tb)
+
+	err := game_api.save_to_stream(stream)
+	if err != .None {
+		fmt.println("err", err)
+		return
+	}
+
+	fmt.println("loaded")
+
 
 	for {
 		defer {

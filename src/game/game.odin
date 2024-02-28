@@ -296,7 +296,8 @@ game_hot_reloaded :: proc(mem: ^GameMemory) {
 
 @(export)
 game_save_to_stream :: proc(stream: io.Stream) -> io.Error {
-	return .None
+	_, err := io.write_ptr(stream, g_mem, size_of(GameMemory))
+	return err
 }
 
 @(export)
