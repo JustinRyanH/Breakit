@@ -5,7 +5,6 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Actually Finish the loop for Playback
-[ ] If playback takes longer than a frame, pause and continue next frame
 
 ## Core
 
@@ -27,6 +26,7 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] If playback takes longer than a frame, pause and continue next frame
 [x] Game Over Scene Win
 [x] Game Over Scene
 [x] Color in game is "noramlized" f32 instead of bytes
