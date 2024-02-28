@@ -79,8 +79,8 @@ stage_main_setup :: proc(stage: ^StageMain) {
 	brickable_area_min, brickable_area_max := shape_get_rect_extends(brickable_area)
 
 	gap: f32 = 2
-	bricks_per_row: int = 3
-	bricks_per_column: int = 3
+	bricks_per_row: int = 7
+	bricks_per_column: int = 5
 
 	brick_width: f32 = (brickable_area.size.x / cast(f32)bricks_per_row)
 	brick_height: f32 = (brickable_area.size.y / cast(f32)bricks_per_column)
