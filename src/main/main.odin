@@ -80,7 +80,6 @@ main :: proc() {
 
 	tb: bytes.Buffer
 	bytes.buffer_init_allocator(&tb, 0, game_size)
-	fmt.println("Size of game", game_size)
 
 	stream := bytes.buffer_to_stream(&tb)
 
@@ -89,8 +88,6 @@ main :: proc() {
 		fmt.println("err", err)
 		return
 	}
-
-	fmt.println("loaded")
 
 
 	for {
