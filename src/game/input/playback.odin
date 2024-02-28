@@ -35,6 +35,7 @@ Playback :: union {
 	Recording,
 	Replay,
 	ReplayTo,
+	Loop,
 }
 
 PlaybackError :: enum {

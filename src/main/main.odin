@@ -123,6 +123,8 @@ main :: proc() {
 				ctx.last_frame_id = 0
 				ctx.playback = input.Recording{0}
 				game_api.setup()
+			case input.Loop:
+				panic("Unimplemented")
 			}
 		}
 
@@ -155,8 +157,10 @@ main :: proc() {
 				}
 			}
 			if time < target_time {
-				ctx.playback = input.Replay{pb.target_index, pb.last_frame_index, pb.was_active}
+				ctx.playback = input.Replay{pb.target_index, len(input_stream) - 1, pb.was_active}
 			}
+		case input.Loop:
+			panic("Unimplemented")
 		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
 		}
@@ -198,10 +202,22 @@ main :: proc() {
 
 				pb, ok := &ctx.playback.(input.Replay)
 				if ok {
-					ctx.playback = input.ReplayTo{0, evt.frame_idx, pb.last_frame_index, pb.active}
+					ctx.playback = input.ReplayTo {
+						0,
+						evt.frame_idx,
+						len(input_stream) - 1,
+						pb.active,
+					}
 				} else {
 					panic("Can only Jump to Frame from Playback")
 				}
+			case game.BeginLoop:
+				loop := input.Loop{}
+				loop.last_frame_index = len(input_stream) - 1
+				loop.start_index = evt.start_idx
+				loop.end_index = evt.end_idx
+				loop.state = .PlayingToStartIndex
+				ctx.playback = loop
 			}
 
 		}
@@ -209,6 +225,18 @@ main :: proc() {
 		switch pb in &ctx.playback {
 		case input.Recording:
 			pb.index += 1
+		case input.Loop:
+			switch pb.state {
+			case .Looping:
+				pb.index += 1
+				if pb.index > pb.last_frame_index {
+					pb.index = pb.start_index
+					panic("TODO: reload memory from copy")
+				}
+			case .PlayingToStartIndex:
+				panic("Unimplemented")
+			}
+
 		case input.ReplayTo:
 		case input.Replay:
 			if pb.active {

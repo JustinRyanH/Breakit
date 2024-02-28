@@ -236,7 +236,6 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 			mu.slider(mui_ctx, &target_frame, 0, cast(mu.Real)rp.last_frame_index, 1, "%.0f")
 
 			mu.layout_row(mui_ctx, {80, 75, 75})
-			res = mu.button(mui_ctx, "Loop Between")
 			@(static)
 			start_frame: mu.Real
 			@(static)
@@ -246,6 +245,10 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 				end_frame = cast(mu.Real)rp.last_frame_index - 1
 			}
 
+			res = mu.button(mui_ctx, "Loop Between")
+			if .SUBMIT in res {
+				append(&ctx.events, BeginLoop{cast(int)start_frame, cast(int)end_frame})
+			}
 			mu.slider(mui_ctx, &start_frame, 0, end_frame, 1, "From: %.0f")
 			mu.slider(
 				mui_ctx,

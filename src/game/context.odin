@@ -10,9 +10,15 @@ JumpToFrame :: struct {
 	frame_idx: int,
 }
 
+BeginLoop :: struct {
+	start_idx: int,
+	end_idx:   int,
+}
+
 ContextEvents :: union {
 	StepEvent,
 	JumpToFrame,
+	BeginLoop,
 }
 
 import mu "../microui"
