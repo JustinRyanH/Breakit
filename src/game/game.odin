@@ -3,6 +3,7 @@ package game
 import sa "core:container/small_array"
 import "core:fmt"
 import "core:hash"
+import "core:io"
 import math "core:math/linalg"
 import "core:math/rand"
 import "core:mem"
@@ -291,6 +292,16 @@ game_memory :: proc() -> rawptr {
 @(export)
 game_hot_reloaded :: proc(mem: ^GameMemory) {
 	g_mem = mem
+}
+
+@(export)
+game_save_to_stream :: proc(stream: io.Stream) -> io.Error {
+	return .None
+}
+
+@(export)
+game_load_from_stream :: proc(stream: io.Stream) -> io.Error {
+	return .None
 }
 
 update_gameplay :: proc(frame_input: input.FrameInput) {

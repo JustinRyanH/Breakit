@@ -3,6 +3,7 @@ package main
 
 import "core:dynlib"
 import "core:fmt"
+import "core:io"
 import "core:os"
 import "core:path/filepath"
 
@@ -19,24 +20,26 @@ when ODIN_OS == .Darwin {
 }
 
 GameAPI :: struct {
-	name:         string,
-	path:         string,
+	name:             string,
+	path:             string,
 
 	// Accessible Procs
-	init:         proc(),
-	setup:        proc(),
-	update_ctx:   proc(ctx: ^game.Context),
-	update:       proc(_: input.FrameInput) -> bool,
-	draw:         proc(),
-	shutdown:     proc(),
-	memory:       proc() -> rawptr,
-	hot_reloaded: proc(_: rawptr),
+	init:             proc(),
+	setup:            proc(),
+	update_ctx:       proc(ctx: ^game.Context),
+	update:           proc(_: input.FrameInput) -> bool,
+	draw:             proc(),
+	shutdown:         proc(),
+	memory:           proc() -> rawptr,
+	hot_reloaded:     proc(_: rawptr),
+	save_to_stream:   proc(_: io.Stream) -> io.Error,
+	load_from_stream: proc(_: io.Stream) -> io.Error,
 
 
 	// DLL specific items
-	lib:          dynlib.Library,
-	dll_time:     os.File_Time,
-	iteration:    int,
+	lib:              dynlib.Library,
+	dll_time:         os.File_Time,
+	iteration:        int,
 }
 
 game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameAPI, failed: bool) {
@@ -135,7 +138,26 @@ game_api_load :: proc(iteration: int, name: string, path: string) -> (api: GameA
 	if api.hot_reloaded == nil {
 		fmt.println("game_hot_reloaded not found in dll")
 		return {}, false
+	}
 
+	api.save_to_stream =
+	cast(proc(_: io.Stream) -> io.Error)(dynlib.symbol_address(
+			lib,
+			"game_save_to_stream",
+		) or_else nil)
+	if api.save_to_stream == nil {
+		fmt.println("game_save_to_stream not found in dll")
+		return {}, false
+	}
+
+	api.load_from_stream =
+	cast(proc(_: io.Stream) -> io.Error)(dynlib.symbol_address(
+			lib,
+			"game_load_from_stream",
+		) or_else nil)
+	if api.load_from_stream == nil {
+		fmt.println("game_hot_reloaded not found in dll")
+		return {}, false
 	}
 
 	api.lib = lib
