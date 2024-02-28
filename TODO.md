@@ -5,6 +5,7 @@ There are the tasks I want to work on next
 ## Active
 
 [ ] Actually Finish the loop for Playback
+[ ] If playback takes longer than a frame, pause and continue next frame
 
 ## Core
 
