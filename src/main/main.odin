@@ -23,7 +23,7 @@ FPS: i32 = 60
 
 input_stream: [dynamic]input.UserInput
 
-fast_forward_loop :: proc(loop: ^input.Loop, game_api: GameAPI) -> (frame: input.FrameInput) {
+loop_fast_forward :: proc(loop: ^input.Loop, game_api: GameAPI) -> (frame: input.FrameInput) {
 	target_time := rl.GetTime() + (1 / cast(f64)FPS)
 	time := rl.GetTime()
 
@@ -46,6 +46,22 @@ fast_forward_loop :: proc(loop: ^input.Loop, game_api: GameAPI) -> (frame: input
 	return
 }
 
+
+loop_load_frame_data :: proc(loop: ^input.Loop, game_api: GameAPI) {
+	game_size := game_api.mem_size()
+	tb: bytes.Buffer
+	bytes.buffer_init_allocator(&tb, 0, game_size)
+
+	stream := bytes.buffer_to_stream(&tb)
+	err := game_api.save_to_stream(stream)
+	if err != .None {
+		panic(fmt.tprintf("Save to Stream Error: %v", err))
+	}
+
+	loop.start_index_data = bytes.buffer_to_bytes(&tb)
+	loop.state = .Looping
+
+}
 
 get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: input.InputError) {
 	if (idx >= len(input_stream)) {
@@ -174,21 +190,10 @@ main :: proc() {
 		case input.Loop:
 			switch pb.state {
 			case .PlayingToStartIndex:
-				current_frame = fast_forward_loop(&pb, game_api)
+				current_frame = loop_fast_forward(&pb, game_api)
 
 				if pb.index == pb.start_index {
-					game_size := game_api.mem_size()
-					tb: bytes.Buffer
-					bytes.buffer_init_allocator(&tb, 0, game_size)
-
-					stream := bytes.buffer_to_stream(&tb)
-					err := game_api.save_to_stream(stream)
-					if err != .None {
-						panic(fmt.tprintf("Save to Stream Error: %v", err))
-					}
-
-					pb.start_index_data = bytes.buffer_to_bytes(&tb)
-					pb.state = .Looping
+					loop_load_frame_data(&pb, game_api)
 				}
 			case .Looping:
 				current_frame, err = get_current_frame(pb.index)
