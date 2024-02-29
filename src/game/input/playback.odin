@@ -21,6 +21,7 @@ Loop :: struct {
 	end_index:        int,
 	last_frame_index: int,
 	state:            LoopState,
+	active:           bool,
 	start_index_data: []u8,
 }
 

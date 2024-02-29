@@ -200,6 +200,18 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 			mu.layout_row(mui_ctx, {100, 100})
 			mu.label(mui_ctx, fmt.tprintf("Start: %d", lp.start_index))
 			mu.label(mui_ctx, fmt.tprintf("End: %d", lp.end_index))
+
+			if (lp.active) {
+				mu.layout_row(mui_ctx, {75})
+				mu.checkbox(mui_ctx, "Active", &lp.active)
+			} else {
+				mu.layout_row(mui_ctx, {75, 50})
+				mu.checkbox(mui_ctx, "Active", &lp.active)
+				res := mu.button(mui_ctx, "Step")
+				if .SUBMIT in res {
+					append(&ctx.events, StepEvent{1})
+				}
+			}
 		}
 
 		rp, is_replay := &ctx.playback.(input.Replay)

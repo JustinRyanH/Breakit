@@ -167,10 +167,13 @@ main :: proc() {
 		for ctx_evt in ctx.events {
 			switch evt in ctx_evt {
 			case game.StepEvent:
-				pb, ok := &ctx.playback.(input.Replay)
-				if ok {
+				#partial switch pb in &ctx.playback {
+				case input.Replay:
+					pb.index += 1
+				case input.Loop:
 					pb.index += 1
 				}
+
 			case game.BeginLoop:
 				game_api.setup()
 
@@ -179,6 +182,10 @@ main :: proc() {
 				loop.start_index = evt.start_idx
 				loop.end_index = evt.end_idx
 				loop.state = .PlayingToStartIndex
+				pb, ok := &ctx.playback.(input.Replay)
+				if ok {
+					loop.active = pb.active
+				}
 
 				ctx.playback = loop
 				ctx.last_frame_id = 0
@@ -191,7 +198,9 @@ main :: proc() {
 			pb.index += 1
 		case input.Loop:
 			if pb.state == .Looping {
-				pb.index += 1
+				if pb.active {
+					pb.index += 1
+				}
 				if pb.index > pb.end_index {
 					loop_return_to_start_of_loop(&pb, game_api)
 				}
