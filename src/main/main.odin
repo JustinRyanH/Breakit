@@ -98,7 +98,7 @@ main :: proc() {
 				replay.active = true
 
 				ctx.playback = replay
-			case input.ReplayTo, input.Replay:
+			case input.Replay:
 				clear(&input_stream)
 				ctx.last_frame_id = 0
 				ctx.playback = input.Recording{0}
@@ -122,29 +122,6 @@ main :: proc() {
 			add_frame()
 
 			current_frame, err = get_current_frame(pb.index)
-		case input.ReplayTo:
-			// I see a lot code duplication here. I think
-			// just need to combine ReplayTo into Loop,
-			// and make it a special state
-			pb_index := pb.index
-			for idx in pb.index ..= pb.target_index {
-				pb.index = idx
-				temp_frame, err := get_current_frame(idx)
-				if err != nil {
-					fmt.printf("Error: %v\n", err)
-					return
-				}
-				game_api.update(temp_frame)
-
-				time = rl.GetTime()
-				if time > target_time {
-					current_frame = temp_frame
-					break
-				}
-			}
-			if time < target_time {
-				ctx.playback = input.Replay{pb.target_index, len(input_stream) - 1, pb.was_active}
-			}
 		case input.Loop:
 			switch pb.state {
 			case .PlayingToStartIndex:
@@ -158,6 +135,9 @@ main :: proc() {
 				if err != nil {
 					panic(fmt.tprintf("Frame Err: %v", err))
 				}
+			case .LoopingFull:
+				panic("Unimplemented")
+
 			}
 		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
@@ -194,21 +174,6 @@ main :: proc() {
 				if ok {
 					pb.index += 1
 				}
-			case game.JumpToFrame:
-				game_api.setup()
-				ctx.last_frame_id = 0
-
-				pb, ok := &ctx.playback.(input.Replay)
-				if ok {
-					ctx.playback = input.ReplayTo {
-						0,
-						evt.frame_idx,
-						len(input_stream) - 1,
-						pb.active,
-					}
-				} else {
-					panic("Can only Jump to Frame from Playback")
-				}
 			case game.BeginLoop:
 				game_api.setup()
 
@@ -234,7 +199,6 @@ main :: proc() {
 					loop_return_to_start_of_loop(&pb, game_api)
 				}
 			}
-		case input.ReplayTo:
 		case input.Replay:
 			if pb.active {
 

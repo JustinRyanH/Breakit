@@ -10,15 +10,9 @@ Replay :: struct {
 	active:           bool,
 }
 
-ReplayTo :: struct {
-	index:            int,
-	target_index:     int,
-	last_frame_index: int,
-	was_active:       bool,
-}
-
 LoopState :: enum {
 	Looping,
+	LoopingFull,
 	PlayingToStartIndex,
 }
 
@@ -34,7 +28,6 @@ Loop :: struct {
 Playback :: union {
 	Recording,
 	Replay,
-	ReplayTo,
 	Loop,
 }
 

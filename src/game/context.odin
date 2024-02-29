@@ -6,10 +6,6 @@ StepEvent :: struct {
 	steps: int,
 }
 
-JumpToFrame :: struct {
-	frame_idx: int,
-}
-
 BeginLoop :: struct {
 	start_idx: int,
 	end_idx:   int,
@@ -17,7 +13,6 @@ BeginLoop :: struct {
 
 ContextEvents :: union {
 	StepEvent,
-	JumpToFrame,
 	BeginLoop,
 }
 

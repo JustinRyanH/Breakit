@@ -183,22 +183,6 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 		mu.begin(mui_ctx)
 		defer mu.end(mui_ctx)
 
-		jt, is_jump_to := &ctx.playback.(input.ReplayTo)
-		if is_jump_to {
-			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175}, {.NO_CLOSE})
-			mu.layout_row(mui_ctx, {-1})
-			frame := cast(mu.Real)jt.index
-			mu.slider(
-				mui_ctx,
-				&frame,
-				0,
-				cast(mu.Real)jt.last_frame_index,
-				1,
-				"%.0f",
-				{.NO_INTERACT},
-			)
-
-		}
 		lp, is_loop := &ctx.playback.(input.Loop)
 		if is_loop {
 			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175}, {.NO_CLOSE})
@@ -247,11 +231,6 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 
 			@(static)
 			target_frame: mu.Real
-			mu.layout_row(mui_ctx, {80, -1})
-			res := mu.button(mui_ctx, "Jump to Frame")
-			if .SUBMIT in res {
-				append(&ctx.events, JumpToFrame{cast(int)target_frame})
-			}
 			mu.slider(mui_ctx, &target_frame, 0, cast(mu.Real)rp.last_frame_index, 1, "%.0f")
 
 			mu.layout_row(mui_ctx, {80, 75, 75})
@@ -264,7 +243,7 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 				end_frame = cast(mu.Real)rp.last_frame_index - 1
 			}
 
-			res = mu.button(mui_ctx, "Loop Between")
+			res := mu.button(mui_ctx, "Loop Between")
 			if .SUBMIT in res {
 				append(&ctx.events, BeginLoop{cast(int)start_frame, cast(int)end_frame})
 			}
