@@ -125,6 +125,9 @@ main :: proc() {
 
 			current_frame, err = get_current_frame(pb.index)
 		case input.ReplayTo:
+			// I see a lot code duplication here. I think
+			// just need to combine ReplayTo into Loop,
+			// and make it a special state
 			pb_index := pb.index
 			for idx in pb.index ..= pb.target_index {
 				pb.index = idx
@@ -173,6 +176,7 @@ main :: proc() {
 					if err != .None {
 						panic(fmt.tprintf("Save to Stream Error: %v", err))
 					}
+
 					pb.start_index_data = bytes.buffer_to_bytes(&tb)
 					pb.state = .Looping
 				}
