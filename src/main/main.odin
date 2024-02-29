@@ -23,6 +23,30 @@ FPS: i32 = 60
 
 input_stream: [dynamic]input.UserInput
 
+fast_forward_loop :: proc(loop: ^input.Loop, game_api: GameAPI) -> (frame: input.FrameInput) {
+	target_time := rl.GetTime() + (1 / cast(f64)FPS)
+	time := rl.GetTime()
+
+	pb_index := loop.index
+	for idx in pb_index ..= loop.start_index {
+		loop.index = idx
+		temp_frame, err := get_current_frame(idx)
+		frame = temp_frame
+		if err != nil {
+			fmt.printf("Error: %v\n", err)
+			return
+		}
+		game_api.update(temp_frame)
+
+		time = rl.GetTime()
+		if time > target_time {
+			return
+		}
+	}
+	return
+}
+
+
 get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: input.InputError) {
 	if (idx >= len(input_stream)) {
 		err = .StreamOverflow
@@ -150,22 +174,8 @@ main :: proc() {
 		case input.Loop:
 			switch pb.state {
 			case .PlayingToStartIndex:
-				pb_index := pb.index
-				for idx in pb_index ..= pb.start_index {
-					pb.index = idx
-					temp_frame, err := get_current_frame(idx)
-					if err != nil {
-						fmt.printf("Error: %v\n", err)
-						return
-					}
-					game_api.update(temp_frame)
+				current_frame = fast_forward_loop(&pb, game_api)
 
-					time = rl.GetTime()
-					if time > target_time {
-						current_frame = temp_frame
-						break
-					}
-				}
 				if pb.index == pb.start_index {
 					game_size := game_api.mem_size()
 					tb: bytes.Buffer
