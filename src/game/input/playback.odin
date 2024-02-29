@@ -12,7 +12,6 @@ Replay :: struct {
 
 LoopState :: enum {
 	Looping,
-	LoopingFull,
 	PlayingToStartIndex,
 }
 

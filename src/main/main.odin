@@ -135,9 +135,6 @@ main :: proc() {
 				if err != nil {
 					panic(fmt.tprintf("Frame Err: %v", err))
 				}
-			case .LoopingFull:
-				panic("Unimplemented")
-
 			}
 		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
