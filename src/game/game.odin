@@ -212,6 +212,12 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 					append(&ctx.events, StepEvent{1})
 				}
 			}
+
+			mu.layout_row(mui_ctx, {75})
+			res := mu.button(mui_ctx, "Resume")
+			if .SUBMIT in res {
+				append(&ctx.events, Resume{get_frame_id(frame_input)})
+			}
 		}
 
 		rp, is_replay := &ctx.playback.(input.Replay)

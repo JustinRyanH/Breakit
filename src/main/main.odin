@@ -174,6 +174,15 @@ main :: proc() {
 					pb.index += 1
 				}
 
+			case game.Resume:
+				loop, is_loop := ctx.playback.(input.Loop)
+				if is_loop {
+					rp := input.Replay{}
+					rp.index = loop.index
+					rp.active = loop.active
+					rp.last_frame_index = len(input_stream) - 1
+					ctx.playback = rp
+				}
 			case game.BeginLoop:
 				game_api.setup()
 

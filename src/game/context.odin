@@ -6,6 +6,10 @@ StepEvent :: struct {
 	steps: int,
 }
 
+Resume :: struct {
+	frame: int,
+}
+
 BeginLoop :: struct {
 	start_idx: int,
 	end_idx:   int,
@@ -14,6 +18,7 @@ BeginLoop :: struct {
 ContextEvents :: union {
 	StepEvent,
 	BeginLoop,
+	Resume,
 }
 
 import mu "../microui"
