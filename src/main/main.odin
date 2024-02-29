@@ -195,6 +195,10 @@ main :: proc() {
 				if ok {
 					loop.active = pb.active
 				}
+				lp, lp_ok := &ctx.playback.(input.Loop)
+				if lp_ok {
+					loop.active = lp.active
+				}
 
 				ctx.playback = loop
 				ctx.last_frame_id = 0
