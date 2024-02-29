@@ -199,6 +199,25 @@ game_update :: proc(frame_input: input.FrameInput) -> bool {
 			)
 
 		}
+		lp, is_loop := &ctx.playback.(input.Loop)
+		if is_loop {
+			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175}, {.NO_CLOSE})
+			mu.layout_row(mui_ctx, {-1})
+			frame := cast(mu.Real)lp.index
+			mu.slider(
+				mui_ctx,
+				&frame,
+				0,
+				cast(mu.Real)lp.last_frame_index,
+				1,
+				"%.0f",
+				{.NO_INTERACT},
+			)
+			mu.layout_row(mui_ctx, {100, 100})
+			mu.label(mui_ctx, fmt.tprintf("Start: %d", lp.start_index))
+			mu.label(mui_ctx, fmt.tprintf("End: %d", lp.end_index))
+		}
+
 		rp, is_replay := &ctx.playback.(input.Replay)
 		if is_replay {
 			mu.window(mui_ctx, "Replay Controls", {500, 100, 300, 175}, {.NO_CLOSE})
@@ -305,7 +324,8 @@ game_save_to_stream :: proc(stream: io.Stream) -> io.Error {
 
 @(export)
 game_load_from_stream :: proc(stream: io.Stream) -> io.Error {
-	return .None
+	_, err := io.read_ptr(stream, g_mem, size_of(GameMemory))
+	return err
 }
 
 @(export)

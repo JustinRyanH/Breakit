@@ -75,21 +75,6 @@ main :: proc() {
 	game_api.init()
 	game_api.setup()
 
-	game_size := game_api.mem_size()
-	mem := game_api.memory()
-
-	tb: bytes.Buffer
-	bytes.buffer_init_allocator(&tb, 0, game_size)
-
-	stream := bytes.buffer_to_stream(&tb)
-
-	err := game_api.save_to_stream(stream)
-	if err != .None {
-		fmt.println("err", err)
-		return
-	}
-
-
 	for {
 		defer {
 			clear(&ctx.events)
@@ -105,7 +90,7 @@ main :: proc() {
 
 		rl_platform.load_input(&ctx.mui)
 		if rl.IsKeyPressed(.F2) {
-			switch _ in ctx.playback {
+			switch pb in &ctx.playback {
 			case input.Recording:
 				game_api.setup()
 				ctx.last_frame_id = 0
@@ -121,22 +106,28 @@ main :: proc() {
 				ctx.playback = input.Recording{0}
 				game_api.setup()
 			case input.Loop:
-				panic("Unimplemented")
+				delete(pb.start_index_data)
+
+				ctx.last_frame_id = 0
+				ctx.playback = input.Recording{0}
+				game_api.setup()
 			}
 		}
 
 		current_frame: input.FrameInput
 		err: input.InputError
 
+		target_time := rl.GetTime() + (1 / cast(f64)FPS)
+		time := rl.GetTime()
 		switch pb in &ctx.playback {
 		case input.Recording:
 			add_frame()
 
 			current_frame, err = get_current_frame(pb.index)
 		case input.ReplayTo:
-			target_time := rl.GetTime() + (1 / cast(f64)FPS)
-			time := rl.GetTime()
+			pb_index := pb.index
 			for idx in pb.index ..= pb.target_index {
+				pb.index = idx
 				temp_frame, err := get_current_frame(idx)
 				if err != nil {
 					fmt.printf("Error: %v\n", err)
@@ -146,9 +137,6 @@ main :: proc() {
 
 				time = rl.GetTime()
 				if time > target_time {
-					pb.index = idx + 1
-
-					temp_frame, err := get_current_frame(idx)
 					current_frame = temp_frame
 					break
 				}
@@ -157,7 +145,43 @@ main :: proc() {
 				ctx.playback = input.Replay{pb.target_index, len(input_stream) - 1, pb.was_active}
 			}
 		case input.Loop:
-			panic("Unimplemented")
+			switch pb.state {
+			case .PlayingToStartIndex:
+				pb_index := pb.index
+				for idx in pb_index ..= pb.start_index {
+					pb.index = idx
+					temp_frame, err := get_current_frame(idx)
+					if err != nil {
+						fmt.printf("Error: %v\n", err)
+						return
+					}
+					game_api.update(temp_frame)
+
+					time = rl.GetTime()
+					if time > target_time {
+						current_frame = temp_frame
+						break
+					}
+				}
+				if pb.index == pb.start_index {
+					game_size := game_api.mem_size()
+					tb: bytes.Buffer
+					bytes.buffer_init_allocator(&tb, 0, game_size)
+
+					stream := bytes.buffer_to_stream(&tb)
+					err := game_api.save_to_stream(stream)
+					if err != .None {
+						panic(fmt.tprintf("Save to Stream Error: %v", err))
+					}
+					pb.start_index_data = bytes.buffer_to_bytes(&tb)
+					pb.state = .Looping
+				}
+			case .Looping:
+				current_frame, err = get_current_frame(pb.index)
+				if err != nil {
+					panic(fmt.tprintf("Frame Err: %v", err))
+				}
+			}
 		case input.Replay:
 			current_frame, err = get_current_frame(pb.index)
 		}
@@ -209,12 +233,16 @@ main :: proc() {
 					panic("Can only Jump to Frame from Playback")
 				}
 			case game.BeginLoop:
+				game_api.setup()
+
 				loop := input.Loop{}
 				loop.last_frame_index = len(input_stream) - 1
 				loop.start_index = evt.start_idx
 				loop.end_index = evt.end_idx
 				loop.state = .PlayingToStartIndex
+
 				ctx.playback = loop
+				ctx.last_frame_id = 0
 			}
 
 		}
@@ -223,17 +251,18 @@ main :: proc() {
 		case input.Recording:
 			pb.index += 1
 		case input.Loop:
-			switch pb.state {
-			case .Looping:
+			if pb.state == .Looping {
 				pb.index += 1
-				if pb.index > pb.last_frame_index {
+				if pb.index > pb.end_index {
 					pb.index = pb.start_index
-					panic("TODO: reload memory from copy")
-				}
-			case .PlayingToStartIndex:
-				panic("Unimplemented")
-			}
 
+					tb: bytes.Buffer
+					bytes.buffer_init(&tb, pb.start_index_data)
+
+					stream := bytes.buffer_to_stream(&tb)
+					game_api.load_from_stream(stream)
+				}
+			}
 		case input.ReplayTo:
 		case input.Replay:
 			if pb.active {
