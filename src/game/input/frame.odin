@@ -132,6 +132,9 @@ MouseButton :: enum {
 	BACK, // Mouse button back (advanced mouse device)
 }
 
+MouseButtonBitSet :: bit_set[MouseButton]
+KeyboardBitSet :: bit_set[KeyboardKey]
+
 FrameMeta :: struct {
 	frame_id:      int,
 	frame_delta:   f32,
@@ -141,7 +144,7 @@ FrameMeta :: struct {
 
 MouseInput :: struct {
 	pos:     math.Vector2f32,
-	buttons: bit_set[MouseButton],
+	buttons: MouseButtonBitSet,
 }
 
 KeyboardInput :: struct {
@@ -154,7 +157,7 @@ KeyboardInput :: struct {
 UserInput :: struct {
 	meta:     FrameMeta,
 	mouse:    MouseInput,
-	keyboard: bit_set[KeyboardKey],
+	keyboard: KeyboardBitSet,
 }
 
 

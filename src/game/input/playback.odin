@@ -38,3 +38,19 @@ PlaybackError :: enum {
 InputError :: union {
 	PlaybackError,
 }
+
+FileHeader :: struct {
+	version:     u32le,
+	header_size: u32le,
+	frame_size:  u32le,
+}
+
+get_file_header :: proc() -> FileHeader {
+	header := FileHeader{}
+
+	header.version = 1
+	header.header_size = size_of(FileHeader)
+	header.frame_size = size_of(UserInput)
+
+	return header
+}

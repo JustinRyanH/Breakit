@@ -34,12 +34,12 @@ get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: inpu
 	return
 }
 
-add_frame :: proc() {
+add_frame :: proc(file: os.Handle) {
 	u_input := rl_platform.get_current_user_input()
 	u_input.meta.frame_id = len(&input_stream)
+	os.write_ptr(file, &u_input, size_of(input.UserInput))
 	append(&input_stream, u_input)
 }
-
 
 main :: proc() {
 	default_allocator := context.allocator
@@ -72,6 +72,15 @@ main :: proc() {
 	game_api.update_ctx(ctx)
 	game_api.init()
 	game_api.setup()
+
+	log_file, err := os.open("logs/input.log", os.O_WRONLY | os.O_TRUNC | os.O_CREATE)
+	if err != os.ERROR_NONE {
+		panic(fmt.tprintf("File Open Error: %v", err))
+	}
+	{
+		header := input.get_file_header()
+		os.write_ptr(log_file, &header, size_of(header))
+	}
 
 	for {
 		defer {
@@ -119,7 +128,7 @@ main :: proc() {
 		time := rl.GetTime()
 		switch pb in &ctx.playback {
 		case input.Recording:
-			add_frame()
+			add_frame(log_file)
 
 			current_frame, err = get_current_frame(pb.index)
 		case input.Loop:
