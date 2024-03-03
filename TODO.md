@@ -10,11 +10,11 @@ There are the tasks I want to work on next
 ## Core
 
 [ ] Bounce Sounds
+[ ] Render Textures for the bricks
 
 ## Nice to Haves
 
 [ ] Main Menu
-[ ] Render Textures for the bricks
 [ ] Propertly close out the debug input
 [ ] Particles on Hit
 
