@@ -34,11 +34,9 @@ get_current_frame :: proc(idx: int) -> (frame_input: input.FrameInput, err: inpu
 	return
 }
 
-add_frame :: proc(ipf: ^InputRecordingFile) {
+add_frame :: proc() {
 	u_input := rl_platform.get_current_user_input()
-	u_input.meta.frame_id = ipf.length
-	input_recording_append(ipf, &u_input)
-	ipf.length += 1
+	u_input.meta.frame_id = len(input_stream)
 	append(&input_stream, u_input)
 }
 
@@ -163,7 +161,7 @@ main :: proc() {
 		time := rl.GetTime()
 		switch pb in &ctx.playback {
 		case input.Recording:
-			add_frame(&ipf)
+			add_frame()
 
 			current_frame, err = get_current_frame(pb.index)
 		case input.Loop:
