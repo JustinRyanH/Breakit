@@ -374,11 +374,10 @@ raylib_draw_img :: proc(img: game.AtlasImage, color: game.Color) -> game.Platfor
 	if img.image in platform_storage.images {
 		f := platform_storage.images[img.image]
 
-		r := rl.Rectangle{img.pos.x, img.pos.y, img.size.x, img.size.y}
 		rl.DrawTexturePro(
 			f.rl_img,
 			rl.Rectangle{img.src.pos.x, img.src.pos.y, img.src.size.x, img.src.size.y},
-			r,
+			rl.Rectangle{img.pos.x, img.pos.y, img.size.x, img.size.y},
 			img.origin,
 			img.rotation,
 			game_color_to_raylib_color(color),

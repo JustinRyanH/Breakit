@@ -195,6 +195,7 @@ game_api_hot_load :: proc(api: GameAPI) -> GameAPI {
 		game_api_unload(api)
 
 		new_api.hot_reloaded(game_memory)
+		fmt.println("HOT RELOAD SUCCESS")
 		return new_api
 	}
 	return api
