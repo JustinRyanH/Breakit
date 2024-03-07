@@ -24,7 +24,7 @@ tasks:
       - ./**/*.odin
 
   game:
-    deps: [test]
+    deps: []
     cmds:
       - odin build src/game -build-mode:dll -out:bin/game.dll -debug
     aliases:
@@ -33,7 +33,8 @@ tasks:
     generates:
       - ./bin/game.dll
     sources:
-      - ./src/game/**/*.odin
+      - ./**/*.odin
+      - ./assets/**/*.png
 
   test:
     cmds:
