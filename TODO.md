@@ -4,11 +4,9 @@ There are the tasks I want to work on next
 
 ## Active
 
-[ ] Actually Finish the loop for Playback
-[ ] Input Recording, Save to File
-
 ## Core
 
+[ ] Input Recording, Save to File
 [ ] Bounce Sounds
 [ ] Render Textures for the bricks
 
@@ -26,6 +24,7 @@ There are the tasks I want to work on next
 
 ## DONE
 
+[x] Actually Finish the loop for Playback
 [x] If playback takes longer than a frame, pause and continue next frame
 [x] Game Over Scene Win
 [x] Game Over Scene
