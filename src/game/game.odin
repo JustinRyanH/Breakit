@@ -314,36 +314,36 @@ game_draw :: proc() {
 	ctx.draw_cmds.clear(BLACK)
 
 
-	atlas, err := ctx.draw_cmds.load_img(
-		"assets/textures/monochrome_tilemap_transparent_packed.png",
-	)
-	if err != .NoError {
-		panic("Failed to load Atlas")
-	}
-
-
-	spot := AtlasImage{}
-	spot.image = atlas.handle
-	spot.pos = Vector2{width / 2, height / 2 - 20}
-	spot.size = Vector2{64, 64}
-	spot.origin = spot.size * 0.5
-
-	spot.src = Rectangle{Vector2{8 * 16, 0}, Vector2{16, 16}, 0}
-
-	err = ctx.draw_cmds.draw_img(spot, WHITE)
-	if err != .NoError {
-		fmt.println("err: ", err)
-	}
-
-
-	// switch s in g_mem.stage {
-	// case StageMain:
-	// 	stage_main_draw(s)
-	// case StageLose:
-	// 	stage_lose_draw(s)
-	// case StageWin:
-	// 	stage_win_draw(s)
+	// atlas, err := ctx.draw_cmds.load_img(
+	// 	"assets/textures/monochrome_tilemap_transparent_packed.png",
+	// )
+	// if err != .NoError {
+	// 	panic("Failed to load Atlas")
 	// }
+
+
+	// spot := AtlasImage{}
+	// spot.image = atlas.handle
+	// spot.pos = Vector2{width / 2, height / 2 - 20}
+	// spot.size = Vector2{64, 64}
+	// spot.origin = spot.size * 0.5
+
+	// spot.src = BottomMiddle
+
+	// err = ctx.draw_cmds.draw_img(spot, WHITE)
+	// if err != .NoError {
+	// 	fmt.println("err: ", err)
+	// }
+
+
+	switch s in g_mem.stage {
+	case StageMain:
+		stage_main_draw(s)
+	case StageLose:
+		stage_lose_draw(s)
+	case StageWin:
+		stage_win_draw(s)
+	}
 }
 
 
