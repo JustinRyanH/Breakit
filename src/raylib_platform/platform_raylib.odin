@@ -16,7 +16,8 @@ import "../game/input"
 // that. I only care about DataPool style API from
 // within the GAME
 PlatformStorage :: struct {
-	fonts: map[game.FontHandle]PlatformFont,
+	fonts:  map[game.FontHandle]PlatformFont,
+	images: map[game.ImageHandle]PlatformImage,
 }
 
 platform_storage: PlatformStorage
@@ -24,6 +25,11 @@ platform_storage: PlatformStorage
 PlatformFont :: struct {
 	game_font: game.Font,
 	rl_font:   rl.Font,
+}
+
+PlatformImage :: struct {
+	game_img: game.Image,
+	rl_img:   rl.Texture,
 }
 
 RlToGameKeyMap :: struct {
@@ -175,10 +181,12 @@ deinit_game_context :: proc(ctx: ^game.Context) {
 
 new_platform_storage :: proc() {
 	platform_storage.fonts = make(map[game.FontHandle]PlatformFont)
+	platform_storage.images = make(map[game.ImageHandle]PlatformImage)
 }
 
 free_platform_storage :: proc() {
 	delete(platform_storage.fonts)
+	delete(platform_storage.images)
 }
 
 
@@ -219,18 +227,26 @@ setup_raylib_platform :: proc(cmds: ^game.PlatformCommands) {
 @(private)
 setup_raylib_draw_cmds :: proc(draw: ^game.PlatformDrawCommands) {
 	draw.begin_drawing = cast(proc())(rl.BeginDrawing)
-	draw.begin_drawing_2d = raylib_begin_drawing_2d
 	draw.draw_mui = render_mui
 	draw.end_drawing = cast(proc())(rl.EndDrawing)
-	draw.end_drawing_2d = raylib_end_drawing_2d
 	draw.clear = raylib_clear_background
 	draw.draw_text = raylib_draw_text
 	draw.draw_shape = raylib_draw_shape
+	draw.draw_grid = raylib_draw_grid
+
+	draw.load_img = raylib_load_img
+	draw.unload_img = raylib_unload_img
+	draw.draw_img = raylib_draw_img
 
 	draw.text.load_font = raylib_load_font
 	draw.text.unload_font = raylib_unload_font
 	draw.text.measure_text = raylib_measure_text
 	draw.text.draw = raylib_draw_text_ex
+
+	draw.camera.begin_drawing_2d = raylib_begin_drawing_2d
+	draw.camera.end_drawing_2d = raylib_end_drawing_2d
+	draw.camera.screen_to_world_2d = raylib_camera_screen_to_world_2d
+	draw.camera.world_to_sreen_2d = raylib_camera_world_to_sreen_2d
 }
 
 @(private)
@@ -268,6 +284,19 @@ raylib_end_drawing_2d :: proc() {
 	rl.EndMode2D()
 }
 
+raylib_camera_screen_to_world_2d :: proc(
+	camera: game.Camera2D,
+	screen_pos: game.Vector2,
+) -> game.Vector2 {
+	return rl.GetScreenToWorld2D(screen_pos, cast(rl.Camera2D)camera)
+}
+raylib_camera_world_to_sreen_2d :: proc(
+	camera: game.Camera2D,
+	world_pos: game.Vector2,
+) -> game.Vector2 {
+	return rl.GetWorldToScreen2D(world_pos, cast(rl.Camera2D)camera)
+}
+
 raylib_load_font :: proc(path: cstring) -> (font: game.Font) {
 	handle := transmute(game.FontHandle)game.generate_u64_from_cstring(path)
 
@@ -285,6 +314,11 @@ raylib_load_font :: proc(path: cstring) -> (font: game.Font) {
 }
 
 raylib_unload_font :: proc(font: game.Font) {
+	f, exists := platform_storage.fonts[font.handle]
+	if exists {
+		delete(f.game_font.name)
+		rl.UnloadFont(f.rl_font)
+	}
 	delete_key(&platform_storage.fonts, font.handle)
 }
 
@@ -295,13 +329,63 @@ raylib_draw_text_ex :: proc(
 	size: f32,
 	spacing: f32,
 	color: game.Color,
-) -> game.TextCommandErrors {
+) -> game.PlatformCommandError {
 	if font.handle in platform_storage.fonts {
 		f := platform_storage.fonts[font.handle]
 		rl.DrawTextEx(f.rl_font, text, pos, size, spacing, game_color_to_raylib_color(color))
 		return .NoError
 	}
 	return .FontNotFound
+}
+
+raylib_draw_grid :: proc(slices: int, spacing: f32, offset: math.Vector2f32) {
+	using rl
+	rlPushMatrix()
+	defer rlPopMatrix()
+
+	rlTranslatef(offset.x, offset.y, 0)
+	rlRotatef(90, 1, 0, 0)
+	DrawGrid(cast(i32)slices, spacing)
+}
+
+raylib_load_img :: proc(path: cstring) -> (img: game.Image, err: game.PlatformCommandError) {
+	handle := transmute(game.ImageHandle)game.generate_u64_from_cstring(path)
+	if !(handle in platform_storage.images) {
+		rl_img := rl.LoadTexture(path)
+		img.handle = handle
+		img.path = strings.clone_from_cstring(path)
+		platform_storage.images[handle] = PlatformImage{img, rl_img}
+		return
+	}
+	img = platform_storage.images[handle].game_img
+	return
+}
+
+raylib_unload_img :: proc(img: game.ImageHandle) {
+	f, exists := platform_storage.images[img]
+	if exists {
+		delete(f.game_img.path)
+		rl.UnloadTexture(f.rl_img)
+	}
+	delete_key(&platform_storage.images, img)
+}
+
+raylib_draw_img :: proc(img: game.AtlasImage, color: game.Color) -> game.PlatformCommandError {
+	if img.image in platform_storage.images {
+		f := platform_storage.images[img.image]
+
+		r := rl.Rectangle{img.pos.x, img.pos.y, img.size.x, img.size.y}
+		rl.DrawTexturePro(
+			f.rl_img,
+			rl.Rectangle{img.src.pos.x, img.src.pos.y, img.src.size.x, img.src.size.y},
+			r,
+			img.origin,
+			img.rotation,
+			game_color_to_raylib_color(color),
+		)
+		return .NoError
+	}
+	return .ImageNotFound
 }
 
 raylib_measure_text :: proc(

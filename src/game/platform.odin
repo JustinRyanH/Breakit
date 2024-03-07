@@ -51,11 +51,27 @@ Font :: struct {
 	name:   string,
 }
 
-TextCommandErrors :: enum {
-	NoError,
-	FontPoolFull,
-	FontNotFound,
+ImageHandle :: distinct Handle
+Image :: struct {
+	handle: ImageHandle,
+	path:   string,
 }
+
+PlatformCommandError :: enum {
+	NoError,
+	FontNotFound,
+	ImageNotFound,
+}
+
+AtlasImage :: struct {
+	image:    ImageHandle,
+	pos:      Vector2,
+	size:     Vector2,
+	origin:   Vector2,
+	src:      Rectangle,
+	rotation: f32,
+}
+
 
 //////////////////////////
 // Platform Abstraction //
@@ -72,7 +88,14 @@ TextCommands :: struct {
 		size: f32,
 		spacing: f32,
 		color: Color,
-	) -> TextCommandErrors,
+	) -> PlatformCommandError,
+}
+
+CameraCommands :: struct {
+	begin_drawing_2d:   proc(camera: Camera2D),
+	end_drawing_2d:     proc(),
+	screen_to_world_2d: proc(camera: Camera2D, screen_pos: Vector2) -> Vector2,
+	world_to_sreen_2d:  proc(camera: Camera2D, world_pos: Vector2) -> Vector2,
 }
 
 
@@ -81,13 +104,16 @@ PlatformCommands :: struct {
 }
 
 PlatformDrawCommands :: struct {
-	begin_drawing:    proc(),
-	begin_drawing_2d: proc(camera: Camera2D),
-	draw_mui:         proc(mui: ^mu.Context),
-	end_drawing_2d:   proc(),
-	end_drawing:      proc(),
-	clear:            proc(color: Color),
-	draw_text:        proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
-	draw_shape:       proc(shape: Shape, color: Color),
-	text:             TextCommands,
+	begin_drawing: proc(),
+	draw_mui:      proc(mui: ^mu.Context),
+	end_drawing:   proc(),
+	clear:         proc(color: Color),
+	draw_text:     proc(msg: cstring, x, y: i32, font_size: i32, color: Color),
+	draw_shape:    proc(shape: Shape, color: Color),
+	load_img:      proc(file: cstring) -> (Image, PlatformCommandError),
+	unload_img:    proc(img: ImageHandle),
+	draw_img:      proc(image: AtlasImage, color: Color) -> PlatformCommandError,
+	draw_grid:     proc(slices: int, spacing: f32, offset: Vector2),
+	text:          TextCommands,
+	camera:        CameraCommands,
 }
