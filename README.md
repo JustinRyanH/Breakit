@@ -4,6 +4,10 @@ This is a project to create a full finished Block Breaker game.
 Then to go through several iteration of polish. Hopefully,
 this will result in lovely little game with depth.
 
+However, this is more of a template I use to kick off new projects,
+I will backport stuff from other projects into this project when it
+is implemented.
+
 ## How to Build
 
 Clone this repository `git clone https://github.com/JustinRyanH/Breakit.git`
@@ -15,7 +19,6 @@ install `odin` version from [here](https://odin-lang.org/docs/install/)
 ### Linux or OSX
 
 run `./build.sh`
-
 
 ### Windows
 
@@ -38,18 +41,13 @@ You can run `task cmd:game --watch` to have the effects live load
 
 ### To play the game
 
-from `./Breakit` run `./bin/Breakit` or `./bin/Breakit.exe`  on windows
+build the projects
+then from `./Breakit` run `./bin/Breakit` or `./bin/Breakit.exe`  on windows
 
----
 ### Gameplay Overview
 
 The player controls a **paddle** that they use to launch a
 **ball** that collides with terrain above the paddle.
-
-Powerups drop as well as items that increase the code.
-
-Each time the ball bounces on the paddle it increases
-the velocity of ball and the paddle.
 
 ### UI
 
