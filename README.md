@@ -12,6 +12,17 @@ Clone this repository `git clone https://github.com/JustinRyanH/Breakit.git`
 
 install `odin` version from [here](https://odin-lang.org/docs/install/)
 
+### Linux or OSX
+
+run `./build.sh`
+
+
+### Windows
+
+run `./build.bat`
+
+### For Development
+
 install Taskfile from [here](https://taskfile.dev/installation/)
 
 Run `task cmd:setup`. Run the executable from `bin`.
@@ -25,50 +36,11 @@ If you run `task cmd:game` tell Tasklist to watch `game/*` and rebuild the DLL
 
 You can run `task cmd:game --watch` to have the effects live load
 
+### To play the game
+
+from `./Breakit` run `./bin/Breakit` or `./bin/Breakit.exe`  on windows
+
 ---
-GDD
-
-## Introduction
-
-### Summary Pitch
-
-### Inspiration
-
-### Player Experience
-
-### Platform
-
-The game will target Mac, Windows, Linux, Chrome, and Steamdeck
-
-### Development Software
-
-- Odin
-- Raylib
-- Asesprites
-- Music? TBD
-
-### Genre
-
-Block Breaker
-
-### Target Audience
-
-None. This is an Experiment that 3 people will play on Itch.io
-
-## Concept
-
-## Art
-
-Pixel Art. Maybe initially 4-8 colors pallete.
-
-## Audio
-
-First iteration is likely Kenney assets,
-however, future iterations will be me using existing
-tools to learn better audio for gamedev.
-
-## Game Experience
-
 ### Gameplay Overview
 
 The player controls a **paddle** that they use to launch a
