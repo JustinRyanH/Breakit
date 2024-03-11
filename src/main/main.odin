@@ -40,7 +40,13 @@ add_frame :: proc() {
 	append(&input_stream, u_input)
 }
 
+InputPlaybackStateError :: enum {
+	NoError,
+	NotReady,
+}
+
 InputPlaybackError :: union {
+	InputPlaybackStateError,
 	os.Errno,
 }
 
@@ -95,6 +101,23 @@ input_reading_begin :: proc(ipf: ^InputReadingFile, file: string) -> InputPlayba
 	ipf.ready = true
 	ipf.handle = handle
 	return os.ERROR_NONE
+}
+
+input_recording_load_header :: proc(
+	ipf: ^InputReadingFile,
+) -> (
+	header: input.FileHeader,
+	err: InputPlaybackError,
+) {
+	if !ipf.ready {
+		err = .NotReady
+		return
+	}
+	_, err = os.read_ptr(ipf.handle, &header, size_of(input.FileHeader))
+	if err != os.ERROR_NONE {
+		return
+	}
+	return
 }
 
 
