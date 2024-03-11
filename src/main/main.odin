@@ -46,8 +46,8 @@ InputPlaybackStateError :: enum {
 }
 
 InputPlaybackError :: union {
-	InputPlaybackStateError,
 	os.Errno,
+	InputPlaybackStateError,
 }
 
 InputRecordingFile :: struct {
@@ -58,7 +58,7 @@ InputRecordingFile :: struct {
 }
 
 input_recording_begin :: proc(ipf: ^InputRecordingFile, file: string) -> InputPlaybackError {
-	handle, err := os.open(file, os.O_WRONLY | os.O_TRUNC | os.O_CREATE)
+	handle, err := os.open(file, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0o666)
 	if err != os.ERROR_NONE {
 		return err
 	}
@@ -103,7 +103,7 @@ input_reading_begin :: proc(ipf: ^InputReadingFile, file: string) -> InputPlayba
 	return os.ERROR_NONE
 }
 
-input_recording_load_header :: proc(
+input_reading_load_header :: proc(
 	ipf: ^InputReadingFile,
 ) -> (
 	header: input.FileHeader,
@@ -113,8 +113,9 @@ input_recording_load_header :: proc(
 		err = .NotReady
 		return
 	}
-	_, err = os.read_ptr(ipf.handle, &header, size_of(input.FileHeader))
-	if err != os.ERROR_NONE {
+	_, read_err := os.read_ptr(ipf.handle, &header, size_of(input.FileHeader))
+	if read_err != os.ERROR_NONE {
+		err = read_err
 		return
 	}
 	return
@@ -122,6 +123,13 @@ input_recording_load_header :: proc(
 
 
 main :: proc() {
+	start_off_playback := false
+	args := os.args[1:]
+	for arg in args {
+		if arg == "-reload" {
+			start_off_playback = true
+		}
+	}
 	default_allocator := context.allocator
 	tracking_allocator: ta.Tracking_Allocator
 	ta.tracking_allocator_init(&tracking_allocator, default_allocator)
@@ -154,9 +162,30 @@ main :: proc() {
 	game_api.init()
 	game_api.setup()
 
-	ipf := InputRecordingFile{}
-	input_recording_begin(&ipf, "logs/input.log")
-	input_recording_write_header(&ipf)
+	if os.exists("logs/input.log") {
+		irf := InputReadingFile{}
+		init_err := input_reading_begin(&irf, "logs/input.log")
+		if init_err != os.ERROR_NONE {
+			panic(fmt.tprintf("Error %v", init_err))
+		}
+		header, err := input_reading_load_header(&irf)
+		if err != nil {
+			panic(fmt.tprintf("Error loading header: %v\n", err))
+		}
+		assert(header.version == input.HEADER_VERSION, "Unsupported Header Version")
+		assert(
+			header.header_size == size_of(input.FileHeader),
+			"Header Size has changed, Invalid Recording",
+		)
+		assert(
+			header.frame_size == size_of(input.UserInput),
+			"Frame Size has changed, Invalid Recording",
+		)
+	}
+
+	irf := InputRecordingFile{}
+	input_recording_begin(&irf, "logs/input.log")
+	input_recording_write_header(&irf)
 
 	for {
 		defer {

@@ -45,10 +45,12 @@ FileHeader :: struct {
 	frame_size:  u32le,
 }
 
+HEADER_VERSION :: 1
+
 get_file_header :: proc() -> FileHeader {
 	header := FileHeader{}
 
-	header.version = 1
+	header.version = HEADER_VERSION
 	header.header_size = size_of(FileHeader)
 	header.frame_size = size_of(UserInput)
 
