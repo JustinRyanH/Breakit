@@ -40,7 +40,7 @@ add_frame :: proc() {
 	append(&input_stream, u_input)
 }
 
-InputErroringError :: union {
+InputPlaybackError :: union {
 	os.Errno,
 }
 
@@ -51,7 +51,7 @@ InputRecordingFile :: struct {
 	length:   int,
 }
 
-input_recording_begin :: proc(ipf: ^InputRecordingFile, file: string) -> InputErroringError {
+input_recording_begin :: proc(ipf: ^InputRecordingFile, file: string) -> InputPlaybackError {
 	handle, err := os.open(file, os.O_WRONLY | os.O_TRUNC | os.O_CREATE)
 	if err != os.ERROR_NONE {
 		return err
@@ -75,6 +75,26 @@ input_recording_append :: proc(
 input_recording_write_header :: proc(ipf: ^InputRecordingFile) {
 	header := input.get_file_header()
 	os.write_ptr(ipf.handle, &header, size_of(header))
+}
+
+
+InputReadingFile :: struct {
+	handle:           os.Handle,
+	filepath:         string,
+	ready:            bool,
+	finished_reading: bool,
+}
+
+input_reading_begin :: proc(ipf: ^InputReadingFile, file: string) -> InputPlaybackError {
+	handle, err := os.open(file, os.O_RDONLY)
+	if err != os.ERROR_NONE {
+		return err
+	}
+
+	ipf.filepath = file
+	ipf.ready = true
+	ipf.handle = handle
+	return os.ERROR_NONE
 }
 
 
